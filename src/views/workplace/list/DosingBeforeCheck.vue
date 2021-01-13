@@ -379,6 +379,18 @@ export default {
       if (res.data && res.success) {
         this.InjectionForm = res.data
       }
+      if (!res.data.execDrugTypeId) {
+        this.InjectionForm.execDrugTypeId = 1
+      }
+      if (!res.data.afterDosageUnit) {
+        this.InjectionForm.afterDosageUnit = 'mCi'
+      }
+      if (!res.data.beforeDosageUnit) {
+        this.InjectionForm.beforeDosageUnit = 'mCi'
+      }
+      if (!res.data.realDosageUnit) {
+        this.InjectionForm.realDosageUnit = 'mCi'
+      }
     })
   },
   methods: {
