@@ -2,7 +2,7 @@
   <div class="patient">
     <div class="patientTop">
       <div class="tabsBtn">
-        <a-radio-group default-value="a" button-style="solid" @change="rdChange">
+        <a-radio-group v-model="value" button-style="solid" @change="rdChange">
           <a-radio-button value="a"> 个人信息 </a-radio-button>
           <a-radio-button value="b"> 电子病历 </a-radio-button>
         </a-radio-group>
@@ -25,11 +25,17 @@ export default {
   data() {
     return {
       page: '',
+      value: 'a',
       patientId: '',
       disabled: false,
     }
   },
   created() {
+    if (this.$route.name == 'PatientInfo') {
+      this.value = 'a'
+    } else {
+      this.value = 'b'
+    }
     this.page = this.$route.params.page
     this.patientId = this.$route.query.patientId
     if (this.$route.query.disabled) {

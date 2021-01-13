@@ -14,7 +14,7 @@
           <div class="leftTable">
             <a-table :columns="columns" :data-source="data" :pagination="false" :scroll="{ y: 350 }" style="height: 350px" :rowKey="(record, index) => {return record.examineId;}">
               <template slot="partName" slot-scope="text,record">
-                <a-auto-complete :disabled="recipe.recipeOrderStatus!=0" v-model="record.partName" style="width: 100%;color:#000;" optionLabelProp="title" @select="(value, option)=>selectPatient(value,option,record)" @change="(value)=>partInput(value,record)">
+                <a-auto-complete :disabled="recipe.recipeOrderStatus!=0" v-model="record.partName" style="width: 100%;color:#000;" optionLabelProp="title" @select="(value, option)=>selectPatient(value,option,record)" @search="(value)=>partInput(value,record)">
                   <template slot="dataSource">
                     <a-select-option v-for="item in dataSource" :key="`${item.id}`" :title="item.partName">
                       {{item.partName}}
@@ -360,17 +360,21 @@ export default {
       })
     },
     partInput(value, record) {
+      console.log(value)
       if (!value) {
         record.partId = ''
       }
       this.getBodyPart(value)
     },
     filterOptionPart(input, option) {
+      console.log(input, option)
       return (
         option.componentOptions.children[0].text.toUpperCase().indexOf(input.toUpperCase()) >= 0
       )
     },
     selectPatient(value, option, record) {
+      console.log(value, option, record)
+      this.getBodyPart()
       if (option.key == value) {
         record.partId = option.key
         record.partName = option.componentOptions.propsData.title

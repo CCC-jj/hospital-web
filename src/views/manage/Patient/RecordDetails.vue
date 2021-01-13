@@ -62,14 +62,25 @@
         <div class="detailMainBottom">
           <div class="detaiTitle">处方信息</div>
           <div class="detailInfo" v-for="(item,index) in record.recipe" :key="index">
-            <div class="colorInfo">西药处方</div>
-            <div class="prInfo">
-              <span class="serialNumber">1</span>
-              <span class="name">抗骨增生片</span>
-              <span class="unit">4片</span>
-              <span class="quantity">共16片</span>
-              <span class="usage">用法：口服每日两次(bid)</span>
-              <span class="days">2天</span>
+            <div class="colorInfo">{{item.recipeName}}</div>
+            <div class="prInfo" v-for="(items,indexs) in item.recipeItem" :key="indexs">
+              <span class="serialNumber">{{indexs+1}}</span>&nbsp;&nbsp;
+              <span class="name">{{items.name}}</span>&nbsp;&nbsp;
+              <span v-if="items.specs" class="unit">{{items.specs}}{{items.numUnit}}</span>&nbsp;&nbsp;
+              <span v-if="items.nums" class="quantity">共{{items.nums}}{{items.numUnit}}</span>&nbsp;&nbsp;
+              <span v-if="items.usage" class="usage">用法:
+                <span v-for="useItem in usage" :key="useItem.id">
+                  <span v-if="useItem.id==items.usage">
+                    {{useItem.name}}
+                  </span>
+                </span>
+                <span v-for="freItem in frequency" :key="'0'+freItem.id">
+                  <span v-if="freItem.id==items.rate">
+                    ({{freItem.name}})
+                  </span>
+                </span>
+              </span>&nbsp;&nbsp;
+              <span v-if="items.days!=''" class="days">{{items.days}}天</span>
             </div>
           </div>
         </div>
@@ -80,6 +91,7 @@
 </template>
 
 <script>
+import { getAdviceUsage, getAdviceFrequency } from '@/api/common'
 import { getPatientRmrDetail } from '@/api/patient'
 export default {
   props: ['recordId'],
@@ -88,6 +100,8 @@ export default {
       record: {
         childSpinning: false,
         firstVisit: 0,
+        usage: [],
+        frequency: [],
         history: {
           accidentTime: '',
           allergyHistory: '',
@@ -129,6 +143,13 @@ export default {
     },
   },
   created() {
+    getAdviceUsage().then((res) => {
+      this.usage = res.data
+    })
+    // 获取频度
+    getAdviceFrequency().then((res) => {
+      this.frequency = res.data
+    })
     this.getPatientRmrDetail(this.recordId)
   },
   methods: {

@@ -409,16 +409,6 @@ export default {
     changeExecDrugTime(times, timeStrings) {
       this.InjectionForm.execDrugTime = timeStrings
     },
-    // clickToNowTime() {
-    //   let hh = new Date().getHours() < 10 ? '0' + new Date().getHours() : new Date().getHours()
-    //   let mf =
-    //     new Date().getMinutes() < 10 ? '0' + new Date().getMinutes() : new Date().getMinutes()
-    //   let ss =
-    //     new Date().getSeconds() < 10 ? '0' + new Date().getSeconds() : new Date().getSeconds()
-    //   let gettime = hh + ':' + mf + ':' + ss
-    //   this.InjectionForm.execDrugTime = gettime
-    //   this.openTimePicker = false
-    // },
     execDrugTimeDisabledDate(current) {
       return current
     },
