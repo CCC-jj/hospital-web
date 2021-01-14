@@ -113,7 +113,7 @@ export default {
       this.getMaintainList()
     },
     onDelete(id) {
-      deleteP_illnessList(id).then((res) => {
+      deleteAllergyList(id).then((res) => {
         if (res.success) {
           this.$message.success('删除成功！')
           const data = [...this.tableData]

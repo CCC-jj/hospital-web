@@ -360,20 +360,17 @@ export default {
       })
     },
     partInput(value, record) {
-      console.log(value)
       if (!value) {
         record.partId = ''
       }
       this.getBodyPart(value)
     },
     filterOptionPart(input, option) {
-      console.log(input, option)
       return (
         option.componentOptions.children[0].text.toUpperCase().indexOf(input.toUpperCase()) >= 0
       )
     },
     selectPatient(value, option, record) {
-      console.log(value, option, record)
       this.getBodyPart()
       if (option.key == value) {
         record.partId = option.key
@@ -381,11 +378,9 @@ export default {
       }
     },
     onSelectChange(selectedRowKeys) {
-      console.log('selectedRowKeys changed: ', selectedRowKeys)
       this.selectedRowKeys = selectedRowKeys
     },
     onSelectChange2(selectedRowKeys) {
-      console.log('selectedRowKeys changed: ', selectedRowKeys)
       this.selectedRowKeys2 = selectedRowKeys
     },
     handleChange(value) {

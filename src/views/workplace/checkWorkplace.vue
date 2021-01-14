@@ -106,7 +106,7 @@
             <a-row class="dateRow" :gutter="50">
               <a-col :span="24">
                 <a-form-model-item label="预约日期" prop="appointDate">
-                  <a-date-picker valueFormat="value" style="width:100%;" v-model="bookForm.appointDate" :disabled-date="disabledDate" @change="onChange" size="large" />
+                  <a-date-picker :showToday="false" valueFormat="value" style="width:100%;" v-model="bookForm.appointDate" :disabled-date="disabledDate" @change="onChange" size="large" />
                 </a-form-model-item>
               </a-col>
             </a-row>
