@@ -44,7 +44,7 @@
     </div>
     <div class="manageDown">
       <a-spin :spinning="spinning">
-        <a-table :columns="columns" :data-source="tableData" :pagination="{ showQuickJumper: true, pageSize: 10, total: total, showTotal: ((total) => {return `每页10条，共 ${total} 条`}) }" @change="tableChange" :rowKey="
+        <a-table :columns="columns" :data-source="tableData" :pagination="{ showQuickJumper: true, pageSize: 10, total: total, current:queryInfo.page, showTotal: ((total) => {return `每页10条，共 ${total} 条`}) }" @change="tableChange" :rowKey="
           (record, index) => {
             return record.drugSpecId;
           }
@@ -204,18 +204,22 @@ export default {
       this.getDrugList()
     },
     handleChange(value) {
+      this.queryInfo.page = 1
       this.getDrugList()
     },
     onChange(dates, dateStrings) {
+      this.queryInfo.page = 1
       this.queryInfo.startDate = dateStrings[0]
       this.queryInfo.endDate = dateStrings[1]
       this.getDrugList()
     },
     onSearch(value) {
+      this.queryInfo.page = 1
       this.queryInfo.searchWords = value
       this.getDrugList()
     },
     onChangeSearch(e) {
+      this.queryInfo.page = 1
       this.queryInfo.searchWords = e.target.value
       this.getDrugList()
     },

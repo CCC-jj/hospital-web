@@ -117,7 +117,7 @@ export default {
       // 判断用户是否勾选记住密码，如果勾选，向cookie中储存登录信息，
       // 如果没有勾选，储存的信息为空
       if (this.ruleForm.checked) {
-        // base64加密账户密码
+        // 加密密码后在存入cookie
         if (!this.getCookie('password') || this.ruleForm.password != this.getCookie('password')) {
           const account = this.ruleForm.mobile
           const passWord = md5(this.ruleForm.password)

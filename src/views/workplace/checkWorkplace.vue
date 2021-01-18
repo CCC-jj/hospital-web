@@ -33,7 +33,7 @@
       <a-input-search placeholder="姓名/手机号/证件号" enter-button @search="onSearch" @change="onChangeSearch" style="width: 30%" />
     </div>
     <div class="manageDown">
-      <a-table :loading="spinning" :columns="columns" :data-source="tableData" :pagination="{ showQuickJumper: true, pageSize: 10, total: total }" :rowKey="
+      <a-table :loading="spinning" :columns="columns" :data-source="tableData" :pagination="{ showQuickJumper: true, pageSize: 10, total: total, current:queryInfo.page, showTotal: ((total) => {return `每页10条，共 ${total} 条`}) }" @change="tableChange" :rowKey="
           (record, index) => {
             return record.recordId;
           }
@@ -297,12 +297,9 @@ export default {
         this.spinning = false
       })
     },
-    // 禁用一个月之前日期
+    // 禁用今日之后日期
     searchDisabledDate(current) {
-      return (
-        (current && current < moment().startOf('day').subtract(1, 'month')) ||
-        (current && current > moment().endOf('day'))
-      )
+      return current && current > moment().endOf('day')
     },
     // 禁用今日之前日期
     disabledDate(current) {
@@ -310,6 +307,7 @@ export default {
       return current && current < moment().endOf('day')
     },
     handleChange(value) {
+      this.queryInfo.page = 1
       this.getWorkbenchInfo()
     },
     addCheckingChange(code, name) {
@@ -319,6 +317,7 @@ export default {
       })
     },
     onChangeQuery(dates, dateStrings) {
+      this.queryInfo.page = 1
       this.queryInfo.searchBeginDate = dateStrings[0]
       this.queryInfo.searchEndDate = dateStrings[1]
       this.getWorkbenchInfo()
@@ -330,11 +329,17 @@ export default {
       console.log(`checked = ${e.target.checked}`)
     },
     onSearch(value) {
+      this.queryInfo.page = 1
       this.queryInfo.searchWord = value
       this.getWorkbenchInfo()
     },
     onChangeSearch(e) {
+      this.queryInfo.page = 1
       this.queryInfo.searchWord = e.target.value
+      this.getWorkbenchInfo()
+    },
+    tableChange(pagination, filters, sorter) {
+      this.queryInfo.page = pagination.current
       this.getWorkbenchInfo()
     },
     toAdmission() {
@@ -523,9 +528,6 @@ export default {
 }
 .manageDown {
   margin-top: 25px;
-}
-.editBtn /deep/ .ant-btn {
-  /* color: #656ee8; */
 }
 .editBtn /deep/ .editBtnHover:hover {
   color: #656ee8;

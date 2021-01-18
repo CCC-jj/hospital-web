@@ -27,7 +27,7 @@
     </div>
 
     <div class="manageDown">
-      <a-table :loading="spinning" :columns="columns" :data-source="tableData" @change="tableChange" :pagination="{ showQuickJumper: true, pageSize: 10, total: total, showTotal: ((total) => {return `每页10条，共 ${total} 条`;})}" :rowKey="(record, index) => {return record.orderNo;}">
+      <a-table :loading="spinning" :columns="columns" :data-source="tableData" @change="tableChange" :pagination="{ showQuickJumper: true, pageSize: 10, total: total, current:queryInfo.page, showTotal: ((total) => {return `每页10条，共 ${total} 条`;})}" :rowKey="(record, index) => {return record.orderNo;}">
         <span slot="sex" slot-scope="text">
           <span v-if="text == 0">保密</span>
           <span v-if="text == 1">男</span>
@@ -180,27 +180,25 @@ export default {
     },
     // 禁用一个月前后日期
     disabledDate(current) {
-      return (
-        (current && current < moment().startOf('day').subtract(1, 'month')) ||
-        (current && current > moment().endOf('day'))
-      )
+      return current && current > moment().endOf('day')
     },
     onChange(dates, dateStrings) {
-      console.log('From: ', dates[0], ', to: ', dates[1])
-      console.log('From: ', dateStrings[0], ', to: ', dateStrings[1])
+      this.queryInfo.page = 1
       this.queryInfo.startDate = dateStrings[0]
       this.queryInfo.endDate = dateStrings[1]
       this.getQueryCompleted()
     },
     handleChange(value) {
-      console.log(`selected ${value}`)
+      this.queryInfo.page = 1
       this.getQueryCompleted()
     },
     onSearch(value) {
+      this.queryInfo.page = 1
       this.queryInfo.searchWord = value
       this.getQueryCompleted()
     },
     onChangeSearch(e) {
+      this.queryInfo.page = 1
       this.queryInfo.searchWord = e.target.value
       this.getQueryCompleted()
     },

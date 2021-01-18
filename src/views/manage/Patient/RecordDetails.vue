@@ -156,9 +156,9 @@ export default {
     getPatientRmrDetail(recordId) {
       this.childSpinning = true
       getPatientRmrDetail(recordId).then((res) => {
+        this.childSpinning = false
         if (res.success) {
           this.record = res.data
-          this.childSpinning = false
         }
       })
     },

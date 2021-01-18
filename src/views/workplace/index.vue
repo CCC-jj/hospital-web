@@ -74,7 +74,7 @@
       </div>
     </a-spin>
     <div class="paginationBox">
-      <a-pagination show-quick-jumper :pageSize='9' :total="total" :showTotal="((total) => {return `每页 9 条，共 ${total} 条`;})" @change="pageOnChange" />
+      <a-pagination v-model="params.page" show-quick-jumper :pageSize='9' :total="total" :showTotal="((total) => {return `每页 9 条，共 ${total} 条`;})" @change="pageOnChange" />
     </div>
   </div>
 </template>
@@ -131,22 +131,22 @@ export default {
       })
     },
     onChange(dates, dateStrings) {
+      this.params.page = 1
       this.params.orderStartDate = dateStrings[0]
       this.params.orderFinishDate = dateStrings[1]
       this.getWorkplaceList()
     },
     // 禁用一个月前后日期
     disabledDate(current) {
-      return (
-        (current && current < moment().startOf('day').subtract(1, 'month')) ||
-        (current && current > moment().endOf('day'))
-      )
+      return current && current > moment().endOf('day')
     },
     handleChange(value) {
+      this.params.page = 1
       this.params.orderStatus = value
       this.getWorkplaceList()
     },
     handleChange2(value) {
+      this.params.page = 1
       this.params.bizType = value
       this.getWorkplaceList()
     },
@@ -179,10 +179,12 @@ export default {
       })
     },
     onSearch(value) {
+      this.params.page = 1
       this.params.patientName = value
       this.getWorkplaceList()
     },
     onChangeSearch(e) {
+      this.params.page = 1
       this.params.patientName = e.target.value
       this.getWorkplaceList()
     },

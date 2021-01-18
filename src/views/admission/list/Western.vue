@@ -185,7 +185,7 @@
             <a-table :loading="drugLoading" :row-selection="{
                 selectedRowKeys: selectedRowKeys2,
                 onChange: onSelectChange2,
-              }" :columns="columns2" :data-source="data2" @change="changeDurgTable" :pagination="{ showQuickJumper: true, pageSize: 10, total: drugTotal, simple: true, size: 'small', }" :scroll="{ y: 375 }" :rowKey="
+              }" :columns="columns2" :data-source="data2" @change="changeDurgTable" :pagination="{ showQuickJumper: true, pageSize: 10, total: drugTotal, current:queryDrugList.page, simple: true, size: 'small', }" :scroll="{ y: 375 }" :rowKey="
               (record, index) => {return record.id;}">
             </a-table>
           </div>
@@ -592,6 +592,7 @@ export default {
       console.log(`selected ${value}`)
     },
     handleChangeDrug(value) {
+      this.queryDrugList.page = 1
       this.queryDrugList.categoryId = value
       this.getReceiveDrugList()
     },
@@ -627,10 +628,12 @@ export default {
       this.getPrSumP()
     },
     onSearch(value) {
+      this.queryDrugList.page = 1
       this.queryDrugList.keyWord = value
       this.getReceiveDrugList()
     },
     onChangeSearch(e) {
+      this.queryDrugList.page = 1
       this.queryDrugList.keyWord = e.target.value
       this.getReceiveDrugList()
     },
