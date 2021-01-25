@@ -153,11 +153,11 @@ export default {
     getSumPrice() {
       let totalFee = 0
       this.recipe.forEach((item) => {
-        let price = Number(item.recipeAmount)
+        let price = Number(item.recipeAmount) * 100
         totalFee += price
       })
       this.allPrInfo.total = this.recipe.length
-      this.allPrInfo.totalFee = totalFee
+      this.allPrInfo.totalFee = totalFee / 100
     },
     // formateArrObjData(initialArr, obj, pro) {
     //   let index = initialArr.findIndex((val) => val[pro] === obj[pro])
@@ -284,6 +284,7 @@ export default {
             this.activeTitle = activeTitle
             this.activePath = activePath
           }
+          this.getSumPrice()
         },
         onCancel: () => {},
       })

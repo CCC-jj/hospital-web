@@ -459,9 +459,9 @@ export default {
           },
         ],
       },
-      prPrice: '0.00',
-      prNum: 0,
-      sumPrice: '0.00',
+      prPrice: 0,
+      // prNum: 0,
+      // sumPrice: '0.00',
       DrugCategoryList: [],
       drugLoading: false,
       queryDrugList: {
