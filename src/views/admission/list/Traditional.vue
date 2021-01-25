@@ -362,10 +362,10 @@ export default {
             this.allPrInfo.total = this.allRecipe.length
             let sum = 0
             this.allRecipe.forEach((item) => {
-              let price = Number(item.recipeAmount)
+              let price = Number(item.recipeAmount) * 100
               sum += price
             })
-            this.allPrInfo.totalFee = sum
+            this.allPrInfo.totalFee = sum / 100
           })
         }
         this.$emit('chineseMedicine', this.recipe)
@@ -459,19 +459,22 @@ export default {
     dosageChange(e, record) {
       const value = e.target.value
       record.usageNumber = value
-      record.totalFee = Number(value) * Number(record.dosageNumber) * Number(record.drugPrice)
+      record.totalFee =
+        (Number(value) * Number(record.dosageNumber) * (Number(record.drugPrice) * 100)) / 100
       this.getPrSumP()
     },
     quantityChange(e, record) {
       const value = e.target.value
       record.dosageNumber = value
-      record.totalFee = Number(record.usageNumber) * Number(value) * Number(record.drugPrice)
+      record.totalFee =
+        (Number(record.usageNumber) * Number(value) * (Number(record.drugPrice) * 100)) / 100
       this.getPrSumP()
     },
     priceChange(e, record) {
       const value = e.target.value
       record.drugPrice = value
-      record.totalFee = Number(record.usageNumber) * Number(record.dosageNumber) * Number(value)
+      record.totalFee =
+        (Number(record.usageNumber) * Number(record.dosageNumber) * (Number(value) * 100)) / 100
       this.getPrSumP()
     },
     onDelete(key, recipeItemId) {
@@ -486,6 +489,7 @@ export default {
       }
       const data = [...this.data]
       this.data = data.filter((item) => item.drugId !== key)
+      this.getPrSumP()
     },
     onSearch(value) {
       this.queryDrugList.page = 1
@@ -554,10 +558,10 @@ export default {
     getPrSumP() {
       let sum = 0
       this.data.forEach((item, index) => {
-        let price = Number(item.totalFee)
+        let price = Number(item.totalFee) * 100
         sum += price
       })
-      this.prPrice = sum
+      this.prPrice = sum / 100
     },
   },
 }

@@ -506,10 +506,10 @@ export default {
             this.allPrInfo.total = this.allRecipe.length
             let sum = 0
             this.allRecipe.forEach((item) => {
-              let price = Number(item.recipeAmount)
+              let price = Number(item.recipeAmount) * 100 //*100是为了避免精度缺失
               sum += price
             })
-            this.allPrInfo.totalFee = sum
+            this.allPrInfo.totalFee = sum / 100
           })
         }
         // console.log(newVal, this.recipe, this.allPrInfo)
@@ -703,11 +703,11 @@ export default {
     getPrSumP() {
       let sum = 0
       this.data.forEach((item, index) => {
-        let sumPrice = item.drugNum * item.drugPrice
+        let sumPrice = item.drugNum * (item.drugPrice * 100)
         let price = Number(sumPrice)
         sum += price
       })
-      this.prPrice = sum
+      this.prPrice = sum / 100
     },
   },
 }
