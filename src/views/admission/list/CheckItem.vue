@@ -14,13 +14,18 @@
           <div class="leftTable">
             <a-table :columns="columns" :data-source="data" :pagination="false" :scroll="{ y: 350 }" style="height: 350px" :rowKey="(record, index) => {return record.examineId;}">
               <template slot="partName" slot-scope="text,record">
-                <a-auto-complete :disabled="recipe.recipeOrderStatus!=0" v-model="record.partName" style="width: 100%;color:#000;" optionLabelProp="title" @select="(value, option)=>selectPatient(value,option,record)" @search="(value)=>partInput(value,record)">
+                <!-- <a-auto-complete :disabled="recipe.recipeOrderStatus!=0" v-model="record.partName" style="width: 100%;color:#000;" optionLabelProp="value" @select="(value, option)=>selectPatient(value,option,record)" @search="(value)=>partInput(value,record)">
                   <template slot="dataSource">
-                    <a-select-option v-for="item in dataSource" :key="`${item.id}`" :title="item.partName">
+                    <a-select-option v-for="item in dataSource" :key="item.partName" :title="`${item.id}`">
                       {{item.partName}}
                     </a-select-option>
                   </template>
-                </a-auto-complete>
+                </a-auto-complete> -->
+                <a-select style="width:100%;" optionLabelProp="title" show-search placeholder="选择部位" :show-arrow="false" :filter-option="false" v-model="record.partName" @select="(value, option)=>selectPatient(value,option,record)" @search="(value)=>partInput(value,record)">
+                  <a-select-option v-for="item in dataSource" :key="item.id" :title="item.partName">
+                    {{item.partName}}
+                  </a-select-option>
+                </a-select>
               </template>
               <template slot="number" slot-scope="text, record">
                 <a-input :disabled="recipe.recipeOrderStatus!=0" @change="(e) => quantityChange(e, record)" style="width: 70%;color:#000;" v-model="record.number"></a-input>
@@ -50,13 +55,13 @@
           <div class="leftBottom">
             <div class="leftBottomPrice">
               <span>此方合计：<span style="color: red; font-weight: bold">{{
-                  prPrice
+                  Number(prPrice).toFixed(2)
                 }}</span>
                 元；</span>
               <span>共
                 <span style="color: red; font-weight: bold">{{ allPrInfo.total }}</span>
                 个处方，共计：<span style="color: red; font-weight: bold">{{
-                  allPrInfo.totalFee
+                  Number(allPrInfo.totalFee).toFixed(2)
                 }}</span>
                 元
               </span>
@@ -122,7 +127,7 @@ const columns = [
   },
   {
     title: '类型',
-    width: 120,
+    // width: 120,
     dataIndex: 'examineType',
     scopedSlots: {
       customRender: 'examineType',
@@ -180,7 +185,6 @@ const columns2 = [
     dataIndex: 'price',
   },
 ]
-
 
 export default {
   name: 'Examine',
@@ -336,6 +340,7 @@ export default {
       })
     },
     partInput(value, record) {
+      console.log(value)
       if (!value) {
         record.partId = ''
       }
@@ -347,6 +352,7 @@ export default {
       )
     },
     selectPatient(value, option, record) {
+      console.log(value, option, record)
       this.getBodyPart()
       if (option.key == value) {
         record.partId = option.key

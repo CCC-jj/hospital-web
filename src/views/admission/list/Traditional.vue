@@ -103,13 +103,13 @@
             </div>
             <div class="leftBottomPrice">
               <span>此方合计：<span style="color: red; font-weight: bold">{{
-                  prPrice
+                  Number(prPrice).toFixed(2)
                 }}</span>
                 元；</span>
               <span>共
                 <span style="color: red; font-weight: bold">{{ allPrInfo.total }}</span>
                 个处方，共计：<span style="color: red; font-weight: bold">{{
-                  allPrInfo.totalFee
+                  Number(allPrInfo.totalFee).toFixed(2)
                 }}</span>
                 元
               </span>
@@ -216,8 +216,6 @@ const columns = [
   },
 ]
 
-const data = []
-
 const columns2 = [
   {
     title: '名称',
@@ -236,8 +234,6 @@ const columns2 = [
     dataIndex: 'price',
   },
 ]
-
-const data2 = []
 
 const columns3 = [
   {
@@ -281,9 +277,9 @@ export default {
       qtUnit: '剂',
       usage: [],
       frequency: [],
-      data,
+      data: [],
       columns,
-      data2,
+      data2: [],
       columns2,
       data3,
       columns3,

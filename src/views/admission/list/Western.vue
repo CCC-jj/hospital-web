@@ -156,13 +156,13 @@
             </div>
             <div class="leftBottomPrice">
               <span>此方合计：<span style="color: red; font-weight: bold">{{
-                  prPrice
+                  Number(prPrice).toFixed(2)
                 }}</span>
                 元；</span>
               <span>共
                 <span style="color: red; font-weight: bold">{{ allPrInfo.total }}</span>
                 个处方，共计：<span style="color: red; font-weight: bold">{{
-                  allPrInfo.totalFee
+                  Number(allPrInfo.totalFee).toFixed(2)
                 }}</span>
                 元
               </span>
@@ -277,27 +277,6 @@ const columns = [
     },
   },
 ]
-
-const data = []
-// for (let i = 0; i < 2; i++) {
-//   data.push({
-//     drugId: i,
-//     groupNumber: undefined,
-//     drugName: '雷丁、舒必利盖子',
-//     usageNumber: '1',
-//     usageUnit: '片',
-//     drugUnit: '瓶',
-//     itemTypeId: '',
-//     usage: undefined,
-//     rateId: '',
-//     rateName: undefined,
-//     recipeItemId: '',
-//     days: undefined,
-//     drugNum: '1',
-//     drugPrice: '6.00',
-//     sumPrice: '6.00',
-//   })
-// }
 
 const columns2 = [
   {
@@ -418,7 +397,7 @@ export default {
       catId: 1,
       addVisible: false,
       settingVisible: false,
-      data,
+      data: [],
       columns,
       // groupNumber: [1, 2, 3],
       usage: [],

@@ -711,6 +711,7 @@ export default {
           this.patientId = this.$route.params.patientId
           this.regOrderNo = this.$route.params.regOrderNo
           this.outNo = this.$route.params.outpatientNo
+          // 从接诊工作台接诊
           this.getWorkbenchReceive()
         } else if (this.$route.params.patientId) {
           this.patientId = this.$route.params.patientId
@@ -718,6 +719,8 @@ export default {
             if (res.success) {
               let data = res.data
               this.form = data
+              // 搜索患者
+              this.searchPatient()
               if (data.provinceCode) {
                 const list = this.options.filter((item) => item.value == data.provinceCode)
                 this.loadData(list)
@@ -746,11 +749,14 @@ export default {
         }
       })
     },
+    // 接诊工作台进入获取数据
     getWorkbenchReceive() {
       getWorkbenchReceive(this.outNo, this.patientId, this.regOrderNo).then((res) => {
         if (res.success) {
           let data = res.data.patient
           this.form = data
+          // 搜索患者
+          this.searchPatient()
           if (data.provinceCode) {
             const list = this.options.filter((item) => item.value == data.provinceCode)
             this.loadData(list)
