@@ -162,21 +162,6 @@ const columns = [
   },
 ]
 
-const data = []
-// for (let i = 0; i < 2; i++) {
-//   data.push({
-//     examineFee: '30.00',
-//     examineName: '拔牙',
-//     examinePrice: '30.00',
-//     examineType: undefined,
-//     itemTypeId: '',
-//     number: 1,
-//     part: '',
-//     recipeItemId: i,
-//     remark: '',
-//   })
-// }
-
 const columns2 = [
   {
     title: '名称',
@@ -196,16 +181,6 @@ const columns2 = [
   },
 ]
 
-const data2 = []
-// for (let i = 0; i < 20; i++) {
-//   data2.push({
-//     key: i,
-//     name: '局部推拿',
-//     format: '检查费',
-//     stock: '次',
-//     price: '10',
-//   })
-// }
 
 export default {
   name: 'Examine',
@@ -216,9 +191,9 @@ export default {
       addVisible: false,
       qtUnit: '次',
       dataSource: [],
-      data,
+      data: [],
       columns,
-      data2,
+      data2: [],
       columns2,
       selectedRowKeys: [], // Check here to configure the default column
       selectedRowKeys2: [],
@@ -351,6 +326,7 @@ export default {
         this.data2 = res.data
         this.drugTotal = res.count
         this.drugLoading = false
+        this.selectedRowKeys2 = []
       })
     },
     // 搜索部位
@@ -386,6 +362,7 @@ export default {
     handleChange(value) {
       console.log(`selected ${value}`)
     },
+    // 切换分类
     handleChangeDrug(value) {
       this.queryDrugList.page = 1
       this.queryDrugList.categoryId = value

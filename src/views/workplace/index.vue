@@ -97,7 +97,7 @@ export default {
         limit: 9,
         orderFiled: '',
         orderFinishDate: moment().endOf('day'),
-        orderStartDate: moment().startOf('day'),
+        orderStartDate: moment().endOf('day'),
         orderStatus: '',
         orderType: 'asc',
         page: 1,
@@ -107,6 +107,7 @@ export default {
     }
   },
   created() {
+    this.addDate()
     getTreatState().then((res) => {
       this.stateList = res.data
     })
@@ -117,6 +118,17 @@ export default {
   },
   methods: {
     moment,
+    // 当前时间
+    addDate() {
+      let nowDate = new Date()
+      let date = {
+        year: nowDate.getFullYear(),
+        month: nowDate.getMonth() + 1,
+        date: nowDate.getDate(),
+      }
+      this.params.orderStartDate = date.year + '-' + date.month + '-' + date.date
+      this.params.orderFinishDate = date.year + '-' + date.month + '-' + date.date
+    },
     getWorkplaceList() {
       this.spinning = true
       getWorkplaceList(this.params).then((res) => {

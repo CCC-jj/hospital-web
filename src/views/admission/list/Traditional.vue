@@ -429,6 +429,7 @@ export default {
         this.data2 = res.data
         this.drugTotal = res.count
         this.drugLoading = false
+        this.selectedRowKeys2 = []
       })
     },
     onSelectChange(selectedRowKeys) {

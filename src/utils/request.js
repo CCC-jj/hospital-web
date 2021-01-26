@@ -30,7 +30,7 @@ service.interceptors.response.use(response => {
       localStorage.removeItem("token")
       Vue.prototype.$message.info('token过期，请退出并重新登录！')
       router.push('/login')
-      window.document.title = "医生工作站";
+      window.document.title = "医生端";
     }
   return response.data;
 });

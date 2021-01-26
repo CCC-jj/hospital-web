@@ -318,7 +318,7 @@ export default {
             if (res.success) {
               localStorage.removeItem('token')
               localStorage.removeItem('orgName')
-              window.document.title = '医生工作站'
+              window.document.title = '医生端'
               this.$router.push({ path: '/' })
             } else {
               this.$message.error(res.message)
