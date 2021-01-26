@@ -13,8 +13,20 @@
         </div>
         <a-modal :okButtonProps="{ props: { disabled: orderTime==0 } }" centered style="color: #000" width="700px" v-model="visible" title="收费" @ok="handleOk" @cancel="handleCancel">
           <div class="totalPayAmount">
-            应收金额
-            <span style="font-size: 20px; font-weight: bold">{{bill.payAmount}}</span> 元 <span style="margin-left:20px;">当前订单剩余支付时间：<span style="color:red;">{{orderTime}}</span></span>
+            <a-row class="countDown">
+              <a-col :span="6" style="height:30px;">
+                应收金额
+                <span style="font-size: 20px; font-weight: bold">{{bill.payAmount}}</span> 元
+              </a-col>
+              <a-col :span="7">
+                <!-- <span style="margin-left:20px;">当前订单剩余支付时间：<span style="color:red;">{{orderTime}}</span></span> -->
+                <span style="margin-left:20px;">当前订单剩余支付时间：
+                </span>
+              </a-col>
+              <a-col :span="6">
+                <a-statistic-countdown valueStyle="color:red;font-size:14px;line-height:30px;" :value="deadline" format="H 时 m 分 s 秒" />
+              </a-col>
+            </a-row>
           </div>
 
           <div class="bill">
@@ -227,6 +239,7 @@ export default {
       payingStatus: 'loading',
       payedStatus: 'smile-o',
       timer: null,
+      deadline: 0,
     }
   },
   created() {
@@ -296,7 +309,9 @@ export default {
           if (res.data < 0) {
             this.orderTime = '∞'
           } else {
-            this.countDown(res.data)
+            console.log(Date.now() + 1000 * 60 * 60 * 24 * 2 + 1000 * 30)
+            this.deadline = Date.now() + res.data * 60 * 1000
+            // this.countDown(res.data)
           }
         } else {
           this.$message.error(res.message)
@@ -589,5 +604,10 @@ export default {
   padding: 0 30px;
   line-height: 60px;
   float: right;
+}
+.countDown {
+  height: 30px;
+  line-height: 30px;
+  margin: 0;
 }
 </style>

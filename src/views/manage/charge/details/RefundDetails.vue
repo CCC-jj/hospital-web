@@ -17,7 +17,7 @@
             <div class="refundInfo">
               <div>应收金额：{{orderInfo.receiveFee}} 元</div>
               <div>实收金额：{{orderInfo.payFee}} 元</div>
-              <div>可退全额：{{orderInfo.payFee}} 元</div>
+              <div>可退金额：{{canRefundFee}} 元</div>
               <div>支付方式：{{orderInfo.payMode}}</div>
             </div>
           </div>
@@ -396,6 +396,7 @@ export default {
       },
       plainOptions: [],
       orderInfo: {},
+      canRefundFee: 0,
       patientInfo: {},
       receiveInfo: {},
       panes: [],
@@ -597,6 +598,7 @@ export default {
         })
         refundInfoConfirm({ items: this.refundInfoData, orderNo: this.orderNo }).then((res) => {
           if (res.success) {
+            this.canRefundFee = res.data
             this.visible = true
             let sum = 0
             this.refundInfoData.forEach((item) => {
