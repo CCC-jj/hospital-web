@@ -33,8 +33,8 @@
             </div>
           </div> -->
           <div class="refundBottom">
-            <div><span class="refundBottomTitle">实退金额：</span>
-              <a-input style="width:80px;" :value="refund.actualRefund"></a-input> 元
+            <div><span class="refundBottomTitle">合计退费金额：</span>
+              <a-input disabled style="width:80px;" :value="refund.actualRefund"></a-input> 元
             </div>
             <div><span class="refundBottomTitle">退费方式：</span>
               <!-- <a-radio-group :options="plainOptions" :default-value="payTypesValue" @change="payTypesChange" /> -->
@@ -46,7 +46,8 @@
                   现金
                 </a-radio>
                 <a-radio :disabled="orderInfo.payMode=='现金'" :value="2">
-                  {{orderInfo.payMode}}
+                  <span v-if="orderInfo.payMode=='现金'">微信</span>
+                  <span v-else>{{orderInfo.payMode}}</span>
                 </a-radio>
                 <a-radio :disabled="orderInfo.payMode=='现金'" :value="3">
                   银行卡

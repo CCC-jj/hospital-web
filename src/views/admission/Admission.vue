@@ -831,10 +831,10 @@ export default {
     // },
     clickConfirmInfo() {
       this.regOrderNo = ''
-      this.iconLoadingConfirmInfo = true
       // this.disabledBtn = false
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
+          this.iconLoadingConfirmInfo = true
           this.spinning = true
           getReceivePatientInfo(this.form, this.regOrderNo).then((res) => {
             if (res.success) {
@@ -865,7 +865,6 @@ export default {
             }
           })
         } else {
-          this.iconLoadingConfirmInfo = false
           this.$message.warning('请填写信息后再提交')
           return false
         }

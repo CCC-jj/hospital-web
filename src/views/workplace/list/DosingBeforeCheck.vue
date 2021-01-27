@@ -113,7 +113,7 @@
           <a-row class="form-row" :gutter="16">
             <a-col :span="6">
               <a-form-model-item class="redLabel" label="给药方式" prop="execDrugTypeName">
-                <a-select v-model="InjectionForm.execDrugTypeId" size="large" @change="changeDrugType">
+                <a-select placeholder="请选择给药方式" v-model="InjectionForm.execDrugTypeId" size="large" @change="changeDrugType">
                   <a-select-option v-for="item in drugTypes" :key="item.typeCode" :title="item.typeName"> {{item.typeName}} </a-select-option>
                 </a-select>
               </a-form-model-item>
@@ -380,7 +380,7 @@ export default {
         this.InjectionForm = res.data
       }
       if (!res.data.execDrugTypeId) {
-        this.InjectionForm.execDrugTypeId = 1
+        this.InjectionForm.execDrugTypeId = undefined
       }
       if (!res.data.afterDosageUnit) {
         this.InjectionForm.afterDosageUnit = 'mCi'
