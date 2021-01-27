@@ -148,6 +148,7 @@ export default {
     }
   },
   created() {
+    this.addDate()
     getOrderTypes().then((res) => {
       if (res.success) {
         this.orderTypes = res.data
@@ -157,6 +158,17 @@ export default {
   },
   methods: {
     moment,
+    // 当前时间
+    addDate() {
+      let nowDate = new Date()
+      let date = {
+        year: nowDate.getFullYear(),
+        month: nowDate.getMonth() + 1,
+        date: nowDate.getDate(),
+      }
+      this.queryInfo.startDate = date.year + '-' + date.month + '-' + date.date
+      this.queryInfo.endDate = date.year + '-' + date.month + '-' + date.date
+    },
     getQueryRefund() {
       this.spinning = true
       getQueryRefund(this.queryInfo).then((res) => {
