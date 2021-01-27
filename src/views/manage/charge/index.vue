@@ -24,7 +24,7 @@
                 </span>
               </a-col>
               <a-col :span="6">
-                <a-statistic-countdown valueStyle="color:red;font-size:14px;line-height:30px;" :value="deadline" format="H 时 m 分 s 秒" />
+                <a-statistic-countdown valueStyle="color:red;font-size:14px;line-height:30px;" :value="deadline" format="H 小时 m 分钟 s 秒" @finish="onFinish" />
               </a-col>
             </a-row>
           </div>
@@ -278,30 +278,30 @@ export default {
       // }
     },
     // 倒计时方法
-    countDown(time) {
-      if (time === 0) {
-        this.orderTime = time
-        return
-      } else {
-        if (time > 60) {
-          this.orderTime =
-            (Math.floor(time / 60).toString().length < 2
-              ? '0' + Math.floor(time / 60).toString()
-              : Math.floor(time / 60).toString()) +
-            '小时' +
-            ((time % 60).toString().length < 2
-              ? '0' + (time % 60).toString()
-              : (time % 60).toString()) +
-            '分钟'
-        } else {
-          this.orderTime = time + '分钟'
-        }
-        time--
-      }
-      this.timer = setTimeout(() => {
-        this.countDown(time)
-      }, 60000)
-    },
+    // countDown(time) {
+    //   if (time === 0) {
+    //     this.orderTime = time
+    //     return
+    //   } else {
+    //     if (time > 60) {
+    //       this.orderTime =
+    //         (Math.floor(time / 60).toString().length < 2
+    //           ? '0' + Math.floor(time / 60).toString()
+    //           : Math.floor(time / 60).toString()) +
+    //         '小时' +
+    //         ((time % 60).toString().length < 2
+    //           ? '0' + (time % 60).toString()
+    //           : (time % 60).toString()) +
+    //         '分钟'
+    //     } else {
+    //       this.orderTime = time + '分钟'
+    //     }
+    //     time--
+    //   }
+    //   this.timer = setTimeout(() => {
+    //     this.countDown(time)
+    //   }, 60000)
+    // },
     showChargeModal() {
       getOrderQuery(this.orderNo).then((res) => {
         if (res.success) {
@@ -309,7 +309,7 @@ export default {
           if (res.data < 0) {
             this.orderTime = '∞'
           } else {
-            console.log(Date.now() + 1000 * 60 * 60 * 24 * 2 + 1000 * 30)
+            this.orderTime = res.data
             this.deadline = Date.now() + res.data * 60 * 1000
             // this.countDown(res.data)
           }
@@ -317,6 +317,10 @@ export default {
           this.$message.error(res.message)
         }
       })
+    },
+    // 倒计时完成
+    onFinish() {
+      this.orderTime = 0
     },
     handleOk(e) {
       this.$refs.ruleForm.validate((valid) => {
