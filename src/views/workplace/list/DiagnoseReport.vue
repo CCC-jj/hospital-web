@@ -74,25 +74,25 @@
 
       <a-form-model ref="saveRuleForm" :model="saveForm" :rules="saveRules" :label-col="labelCol" :wrapper-col="wrapperCol">
         <a-row>
-          <a-col :span="12">
+          <a-col class="saveCol" :span="12">
             <a-form-model-item label="模板编号" prop="number">
               <a-input v-model="saveForm.number" disabled />
             </a-form-model-item>
           </a-col>
-          <a-col :span="12">
+          <a-col class="saveCol" :span="12">
             <a-form-model-item label="创建人" prop="creator">
               <a-input v-model="saveForm.creator" disabled />
             </a-form-model-item>
           </a-col>
         </a-row>
         <a-row>
-          <a-col :span="12">
+          <a-col class="saveCol" :span="12">
             <a-form-model-item label="模板名称" prop="name">
               <a-input v-model="saveForm.name" />
             </a-form-model-item>
           </a-col>
 
-          <a-col :span="12">
+          <a-col class="saveCol" :span="12">
             <a-form-model-item label="模板权限" prop="authority">
               <a-radio-group class="authority" v-model="saveForm.authority">
                 <a-radio value="1">私人模板</a-radio>
@@ -844,5 +844,8 @@ a {
 }
 .ant-col {
   width: 20%;
+}
+.saveCol{
+  width: 50%;
 }
 </style>

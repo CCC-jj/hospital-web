@@ -111,12 +111,12 @@ const columns = [
     align: 'center',
   },
   {
-    title: '采购价',
+    title: '采购价（元）',
     dataIndex: 'biddingPrice',
     align: 'center',
   },
   {
-    title: '售药价',
+    title: '售药价（元）',
     dataIndex: 'retailPrice',
     align: 'center',
   },

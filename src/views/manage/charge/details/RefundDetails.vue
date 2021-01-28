@@ -45,11 +45,11 @@
                 <a-radio :value="1">
                   现金
                 </a-radio>
-                <a-radio :disabled="orderInfo.payMode=='现金'" :value="2">
-                  <span v-if="orderInfo.payMode=='现金'">微信</span>
+                <a-radio :disabled="orderInfo.payMode=='现金支付'" :value="2">
+                  <span v-if="orderInfo.payMode=='现金支付'">微信</span>
                   <span v-else>{{orderInfo.payMode}}</span>
                 </a-radio>
-                <a-radio :disabled="orderInfo.payMode=='现金'" :value="3">
+                <a-radio :disabled="orderInfo.payMode=='现金支付'" :value="3">
                   银行卡
                 </a-radio>
               </a-radio-group>
@@ -541,7 +541,7 @@ export default {
       } else {
         record.refundPrice = value * record.price
       }
-      if (value == 0 || value == '') {
+      if (value == 0 || value == '' || record.refundPrice == 0) {
         this.selectedRowKeys = this.selectedRowKeys.filter((item) => item != record.recipeItemId)
       } else if (
         value > 0 &&
