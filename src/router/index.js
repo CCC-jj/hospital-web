@@ -14,11 +14,13 @@ import Business from "@/views/business/index";
 import Admission from "@/views/admission/Admission";
 import Prescription from "@/views/admission/Prescription";
 import CaseHistory from "@/views/admission/CaseHistory";
+
 import CheckWorkplace from "@/views/workplace/checkWorkplace";
 import ReportReview from "@/views/workplace/list/ReportReview";
 // import Western from "@/views/admission/list/Western";
 // import Traditional from "@/views/admission/list/Traditional";
 // import CheckItem from "@/views/admission/list/CheckItem";
+
 import ManageCharge from "@/views/manage/manageCharge";
 import ToCharge from "@/views/manage/charge/ToCharge";
 import Charged from "@/views/manage/charge/Charged";
@@ -30,12 +32,16 @@ import Charge from "@/views/manage/charge/index";
 import ChargedDetails from "@/views/manage/charge/details/ChargedDetails";
 import RefundDetails from "@/views/manage/charge/details/RefundDetails";
 import RefundedDetails from "@/views/manage/charge/details/RefundedDetails";
+
 import DosingBeforeCheck from "@/views/workplace/list/DosingBeforeCheck";
 import DiagnoseReport from "@/views/workplace/list/DiagnoseReport";
+
 import DrugInfoSet from "@/views/manage/projectDrugs/DrugInfoSet";
 import ProjectSet from "@/views/manage/projectDrugs/ProjectSet";
+
 import StatisticalReport from "@/views/StatisticalReport/index";
 import DoctorPerformance from "@/views/StatisticalReport/DoctorPerformance";
+
 import Maintain from "@/views/setting/maintain/index";
 import Advice from "@/views/setting/maintain/advice";
 import AuxiliaryCheck from "@/views/setting/maintain/auxiliaryCheck";
@@ -46,15 +52,25 @@ import HistoryIllness from "@/views/setting/maintain/historyIllness";
 import HistoryPerson from "@/views/setting/maintain/historyPerson";
 import PersonOpinion from "@/views/setting/maintain/personOpinion";
 import PresentIllness from "@/views/setting/maintain/presentIllness";
+
 import Template from "@/views/setting/template/index";
 import MedicalList from "@/views/setting/template/list/Medical";
 import PrescriptionList from "@/views/setting/template/list/Prescription";
 import ReportList from "@/views/setting/template/list/Report";
-import NewMedicalRecordTemplate from "../views/setting/template/list/newTemplate/medicalRecord/index";
-import NewWesternTemplate from "../views/setting/template/list/newTemplate/prescription/Western";
-import NewChineseTemplate from "../views/setting/template/list/newTemplate/prescription/Chinese";
-import NewCheckItemTemplate from "../views/setting/template/list/newTemplate/prescription/CheckItem";
-import NewReportTemplate from "../views/setting/template/list/newTemplate/report/index";
+import NewMedicalRecordTemplate from "@/views/setting/template/list/newTemplate/medicalRecord/index";
+import NewWesternTemplate from "@/views/setting/template/list/newTemplate/prescription/Western";
+import NewChineseTemplate from "@/views/setting/template/list/newTemplate/prescription/Chinese";
+import NewCheckItemTemplate from "@/views/setting/template/list/newTemplate/prescription/CheckItem";
+import NewReportTemplate from "@/views/setting/template/list/newTemplate/report/index";
+
+import StaffManage from '@/views/setting/staffManage/index'
+import StaffList from '@/views/setting/staffManage/list/StaffList'
+import DepartmentList from '@/views/setting/staffManage/list/DepartmentList'
+import RoleList from '@/views/setting/staffManage/list/RoleList'
+import StaffInfo from '@/views/setting/staffManage/list/add/StaffInfo'
+import DepartmentInfo from '@/views/setting/staffManage/list/add/DepartmentInfo'
+import RoleInfo from '@/views/setting/staffManage/list/add/RoleInfo'
+
 
 Vue.use(Router);
 
@@ -414,7 +430,52 @@ export default new Router({
           name: "NewReportTemplate",
           component: NewReportTemplate,
           meta: { title: "模板维护", key: "14", path: "Template" }
-        }
+        },
+        {
+          path: "/home/staffManage",
+          name: "StaffManage",
+          component: StaffManage,
+          meta: { title: "员工管理", key: "18", path: "StaffManage" },
+          redirect: "/home/staffManage/staffList",
+          children: [
+            {
+              path: "/home/staffManage/staffList",
+              name: "StaffList",
+              component: StaffList,
+              meta: { title: "员工管理", key: "18", path: "StaffManage" }
+            },
+            {
+              path: "/home/staffManage/departmentList",
+              name: "DepartmentList",
+              component: DepartmentList,
+              meta: { title: "员工管理", key: "18", path: "StaffManage" }
+            },
+            {
+              path: "/home/staffManage/roleList",
+              name: "RoleList",
+              component: RoleList,
+              meta: { title: "员工管理", key: "18", path: "StaffManage" }
+            }
+          ]
+        },
+        {
+          path: "/home/staffManage/staffInfo",
+          name: "StaffInfo",
+          component: StaffInfo,
+          meta: { title: "员工管理", key: "18", path: "StaffManage" },
+        },
+        {
+          path: "/home/staffManage/departmentInfo",
+          name: "DepartmentInfo",
+          component: DepartmentInfo,
+          meta: { title: "员工管理", key: "18", path: "StaffManage" },
+        },
+        {
+          path: "/home/staffManage/roleInfo",
+          name: "RoleInfo",
+          component: RoleInfo,
+          meta: { title: "员工管理", key: "18", path: "StaffManage" },
+        },
       ]
     }
   ]

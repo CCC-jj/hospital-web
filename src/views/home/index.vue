@@ -57,6 +57,7 @@
             </span>
             <a-menu-item key="13" title="病历信息维护" value="Maintain"> 病历信息维护 </a-menu-item>
             <a-menu-item key="14" title="模板维护" value="Template"> 模板维护 </a-menu-item>
+            <a-menu-item key="18" title="员工管理" value="StaffManage"> 员工管理 </a-menu-item>
           </a-sub-menu>
           <a-menu-item key="17" title="操作日志" value="OperationLog">
             <a-icon type="audit" />

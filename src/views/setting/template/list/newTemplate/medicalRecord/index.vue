@@ -166,7 +166,6 @@
 import { getReceiveDiagnosis, getReceiveAdvice, getReceiveChief } from '@/api/admission'
 export default {
   name: 'ChargedDetails',
-  inject: ['reload'],
   data() {
     return {
       page: '',
