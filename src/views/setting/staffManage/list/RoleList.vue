@@ -8,12 +8,12 @@
         return `每页10条，共 ${total} 条`;
       }) }" :rowKey="(record, index) => {return index;}">
 				<span slot="status" slot-scope="text, record">
-					<a-switch v-model="record.status" @change="onChangeStatus" />
+					<a-switch :defaultChecked="record.status===1 ? true : false" @change="onChangeStatus" />
 				</span>
         <span class="editBtn" slot="action" slot-scope="text, record">
           <a @click="toEdit">编辑</a>
           <a-divider type="vertical" />
-          <a-popconfirm v-if="tableData.length" title="角色正在使用，确定要删除此科室吗？" @confirm="() => onDelete(record.key)">
+          <a-popconfirm v-if="tableData.length" title="角色正在使用，确定要删除此角色吗？" @confirm="() => onDelete(record.key)">
             <a href="javascript:;"> 删除 </a>
           </a-popconfirm>
         </span>
@@ -30,32 +30,32 @@ const columns = [
     customRender: (text, record, index) => `${index + 1}`,
   },
   {
-    title: '科室编号',
+    title: '角色编号',
     align: 'center',
-    dataIndex: 'orderNum',
+    dataIndex: 'code',
   },
   {
-    title: '科室名称',
+    title: '角色名称',
     dataIndex: 'name',
     align: 'center',
   },
   {
-    title: '科室简介',
-    dataIndex: 'info',
+    title: '角色描述',
+    dataIndex: 'intro',
     align: 'center',
   },
 	{
     title: '创建时间',
-    dataIndex: 'creatTime',
+    dataIndex: 'createTime',
     align: 'center',
 	},
 	{
     title: '创建人员',
-    dataIndex: 'doPeople',
+    dataIndex: 'creator',
     align: 'center',
 	},
 	{
-    title: '科室状态',
+    title: '角色状态',
 		dataIndex: 'status',
 		scopedSlots: { customRender: 'status' },
     align: 'center',
@@ -73,12 +73,12 @@ for (let i = 0; i < 4; i++) {
   tableData.push(
     {
       key: i,
-      orderNum: '04',
+      code: '04',
       name: '超级管理',
-			info: '通用',
-      creatTime: '2019-11-12 12:08:12',
-			doPeople: '王冕',
-			status: true,
+			intro: '通用',
+      createTime: '2019-11-12 12:08:12',
+			creator: '王冕',
+			status: 1,
     }
   )
 }
@@ -104,8 +104,10 @@ export default {
 		onChangeStatus(checked) {
 			console.log(`a-switch to ${checked}`)
 			if (checked) {
+        this.tableData.status = 1
         this.$message.success('角色启用成功')
       } else {
+        this.tableData.status = 0
         this.$message.success('角色停用成功')
       }
 		},

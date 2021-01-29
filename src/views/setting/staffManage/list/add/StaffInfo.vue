@@ -16,8 +16,8 @@
       <a-form-model ref="ruleForm" :model="form" :rules="rules" layout="vertical">
         <a-row :gutter="30">
           <a-col :span="6">
-            <a-form-model-item label="员工编号" prop="no">
-              <a-input v-model="form.no" disabled size="large" />
+            <a-form-model-item label="员工编号" prop="code">
+              <a-input v-model="form.code" disabled size="large" />
             </a-form-model-item>
           </a-col>
           <a-col :span="6">
@@ -47,8 +47,8 @@
 
         <a-row :gutter="30">
           <a-col :span="6">
-            <a-form-model-item label="手机号码" prop="phone">
-              <a-input placeholder="请输入手机号码" v-model="form.phone" size="large" />
+            <a-form-model-item label="手机号码" prop="mobile">
+              <a-input placeholder="请输入手机号码" v-model="form.mobile" size="large" />
             </a-form-model-item>
           </a-col>
           <a-col :span="6">
@@ -57,13 +57,13 @@
             </a-form-model-item>
           </a-col>
           <a-col :span="6">
-            <a-form-model-item label="身份证号码" prop="idCard">
-              <a-input placeholder="请输入身份证号码" v-model="form.idCard" size="large" />
+            <a-form-model-item label="证件号码" prop="certNo">
+              <a-input placeholder="请输入身份证号码" v-model="form.certNo" size="large" />
             </a-form-model-item>
           </a-col>
           <a-col :span="6">
-            <a-form-model-item label="职位" prop="position">
-              <a-input placeholder="请输入职位名称" v-model="form.position" size="large" />
+            <a-form-model-item label="职位" prop="jobTitle">
+              <a-input placeholder="请输入职位名称" v-model="form.jobTitle" size="large" />
             </a-form-model-item>
           </a-col>
         </a-row>
@@ -82,8 +82,8 @@
 
         <a-row :gutter="30">
           <a-col :span="6">
-            <a-form-model-item label="所属科室" prop="room">
-              <a-select v-model="form.room" placeholder="请选择" size="large">
+            <a-form-model-item label="所属科室" prop="departmentCode">
+              <a-select v-model="form.departmentCode" placeholder="请选择" size="large">
                 <a-select-option key="全科">全科</a-select-option>
                 <a-select-option key="儿科">儿科</a-select-option>
                 <a-select-option key="骨科">骨科</a-select-option>
@@ -91,29 +91,48 @@
             </a-form-model-item>
           </a-col>
           <a-col :span="6">
-            <a-form-model-item label="角色" prop="role">
-              <a-select mode="multiple" placeholder="选择角色" v-model="form.role" style="width: 100%" @change="handleChangeRoles" size="large">
-                <a-select-option v-for="item in filteredOptions" :key="item" :value="item">
-                  {{ item }}
-                </a-select-option>
-              </a-select>
+            <a-form-model-item label="角色" prop="roleCode">
+              <div class="clickRoleBox" @click="clickRole">
+                <a-select class="seleteRole" mode="multiple" placeholder="选择角色" v-model="form.roleCode" style="width: 100%" @change="handleChangeRoles" size="large">
+                  <a-select-option v-for="item in rolesList" :key="item.code">
+                    {{ item.name }}
+                  </a-select-option>
+                </a-select>
+              </div>
             </a-form-model-item>
           </a-col>
         </a-row>
 
-				<a-row :gutter="30">
+        <a-row :gutter="30">
           <a-col :span="6">
             <a-form-model-item label="密码" prop="password">
-							<a-input v-model="form.password" size="large"></a-input>
+              <a-input v-model="form.password" size="large"></a-input>
             </a-form-model-item>
           </a-col>
           <a-col :span="6">
             <a-form-model-item label="员工状态" prop="status">
-							<a-switch v-model="form.status" />
+              <a-switch :defaultChecked="form.status===1 ? true : false" @change="onChangeStatus" />
             </a-form-model-item>
           </a-col>
         </a-row>
       </a-form-model>
+
+      <a-modal centered v-model="visibleRole" title="选择角色">
+        <template slot="footer">
+          <a-button key="submit" type="primary" @click="handleOkRole">
+            确定
+          </a-button>
+        </template>
+        <a-checkbox-group @change="onChangeCkeckRole">
+          <a-row>
+            <a-col :span="12" v-for="item in rolesList" :key="item.code">
+              <a-checkbox style="margin-bottom:20px;" :value="item.code">
+                {{item.name}}
+              </a-checkbox>
+            </a-col>
+          </a-row>
+        </a-checkbox-group>
+      </a-modal>
     </div>
   </div>
 </template>
@@ -131,36 +150,63 @@ export default {
       sexList: [],
       options: [], // 省市级联
       choseAddr: [],
+      visibleRole: false,
+      rolesList: [
+        {
+          code: 1,
+          name: '管理员',
+        },
+        {
+          code: 2,
+          name: '医生',
+        },
+        {
+          code: 3,
+          name: '护士',
+        },
+        {
+          code: 4,
+          name: '专家',
+        },
+        {
+          code: 5,
+          name: '前台',
+        },
+        {
+          code: 6,
+          name: '财务',
+        },
+      ],
       form: {
-        no: '10010',
+        code: '10010',
         name: '',
         age: '',
         sex: undefined,
-        phone: '',
+        mobile: '',
         email: '',
-        idCard: '',
-        position: '',
+        certNo: '',
+        jobTitle: '',
         city: '',
         provinceCode: '',
         cityCode: '',
         address: '',
-        room: undefined,
-        role: [],
+        departmentCode: undefined,
+        roleCode: [],
         password: '',
-        status: true,
+        status: 1,
       },
       rules: {
         name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
         age: [{ required: true, message: '请输入年龄', trigger: 'blur' }],
-				sex: [{ required: true, message: '请选择性别', trigger: 'change' }],
-				room: [{ required: true, message: '请选择科室', trigger: 'change' }],
-				role: [{ required: true, message: '请选择角色', trigger: 'change' }],
+        sex: [{ required: true, message: '请选择性别', trigger: 'change' }],
+        departmentCode: [{ required: true, message: '请选择科室', trigger: 'change' }],
+        roleCode: [{ required: true, message: '请选择角色', trigger: 'change' }],
       },
     }
   },
   computed: {
     filteredOptions() {
-      return OPTIONS.filter((o) => !this.form.role.includes(o))
+      return OPTIONS.filter((o) => !this.form.roleCode.includes(o))
     },
   },
   created() {
@@ -247,8 +293,27 @@ export default {
         this.options = [...this.options]
       })
     },
+    clickRole(e) {
+      this.visibleRole = true
+    },
+    handleOkRole(e) {
+      this.visibleRole = false
+    },
+    onChangeCkeckRole(checkedValues) {
+      console.log('checked = ', checkedValues)
+      this.form.roleCode = checkedValues
+    },
     handleChangeRoles(selectedItems) {
-      this.form.role = selectedItems
+      this.form.roleCode = selectedItems
+    },
+    onChangeStatus(checked) {
+      if (checked) {
+        this.form.status = 1
+        this.$message.success('员工启用成功')
+      } else {
+        this.form.status = 0
+        this.$message.success('员工停用成功')
+      }
     },
     goBack() {
       this.$router.push({ name: 'StaffList' })
@@ -261,15 +326,8 @@ export default {
         this.save = '保存'
         this.$refs.ruleForm.validate((valid) => {
           if (valid) {
-            this.$refs.recordRuleForm.validate((valid) => {
-              if (valid) {
-                this.$message.success('保存成功！')
-                this.$router.push({ name: 'StaffList' })
-              } else {
-                this.$message.warning('请填写信息后再保存')
-                return false
-              }
-            })
+            this.$message.success('保存成功！')
+            this.$router.push({ name: 'StaffList' })
           } else {
             this.$message.warning('请填写信息后再保存')
             return false
@@ -368,11 +426,20 @@ export default {
   border: 1px solid #656ee8;
 }
 
-.ant-switch-checked{
-	background-color: rgb(69,213,133);
+.ant-switch-checked {
+  background-color: rgb(69, 213, 133);
 }
 
-.staffManageInfoContent{
-	margin-top: 30px;
+.staffManageInfoContent {
+  margin-top: 30px;
+}
+.ant-switch {
+  margin: 8px 0;
+}
+.seleteRole {
+  pointer-events: none;
+}
+.clickRoleBox {
+  cursor: pointer;
 }
 </style>

@@ -8,7 +8,7 @@
         return `每页10条，共 ${total} 条`;
       }) }" :rowKey="(record, index) => {return index;}">
         <span slot="status" slot-scope="text, record">
-          <a-switch :checked="record.status==1 ? true : false" @change="onChangeStatus" />
+          <a-switch :defaultChecked="record.status==1 ? true : false" @change="onChangeStatus" />
         </span>
         <span class="editBtn" slot="action" slot-scope="text, record">
           <a @click="toEdit">编辑</a>
@@ -102,8 +102,10 @@ export default {
     onChangeStatus(checked) {
       console.log(`a-switch to ${checked}`)
       if (checked) {
+        this.tableData.status = 1
         this.$message.success('科室启用成功')
       } else {
+        this.tableData.status = 0
         this.$message.success('科室停用成功')
       }
     },

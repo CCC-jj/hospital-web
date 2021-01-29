@@ -16,7 +16,7 @@
         return `每页10条，共 ${total} 条`;
       }) }" :rowKey="(record, index) => {return index;}">
 				<span slot="status" slot-scope="text, record">
-					<a-switch v-model="record.status" @change="onChangeStatus" />
+					<a-switch :defaultChecked="record.status===1 ? true : false" @change="onChangeStatus" />
 				</span>
         <span class="editBtn" slot="action" slot-scope="text, record">
           <a @click="toEdit">编辑</a>
@@ -40,7 +40,7 @@ const columns = [
   {
     title: '工号',
     align: 'center',
-    dataIndex: 'orderNum',
+    dataIndex: 'code',
   },
   {
     title: '员工姓名',
@@ -59,7 +59,7 @@ const columns = [
   },
   {
     title: '手机号码',
-    dataIndex: 'phone',
+    dataIndex: 'mobile',
     align: 'center',
   },
   {
@@ -69,22 +69,22 @@ const columns = [
 	},
 	{
     title: '所属科室',
-    dataIndex: 'room',
+    dataIndex: 'deptName',
     align: 'center',
 	},
 	{
     title: '角色',
-    dataIndex: 'roles',
+    dataIndex: 'roleName',
     align: 'center',
 	},
 	{
     title: '创建时间',
-    dataIndex: 'creatTime',
+    dataIndex: 'createTime',
     align: 'center',
 	},
 	{
     title: '创建人员',
-    dataIndex: 'doPeople',
+    dataIndex: 'creator',
     align: 'center',
 	},
 	{
@@ -106,17 +106,17 @@ for (let i = 0; i < 14; i++) {
   tableData.push(
     {
       key: i,
-      orderNum: 1030,
+      code: 1030,
       name: '李四',
 			sex: '男',
 			age: '25',
-			phone: 17754138769,
+			mobile: 17754138769,
 			clinic: '支所1',
-			room: '全科',
-			roles: '医生',
-      creatTime: '2019-11-12 12:08:12',
-			doPeople: '林鹤',
-			status: true,
+			deptName: '全科',
+			roleName: '医生',
+      createTime: '2019-11-12 12:08:12',
+			creator: '林鹤',
+			status: 1,
     }
   )
 }
@@ -142,8 +142,10 @@ export default {
 		onChangeStatus(checked) {
 			console.log(`a-switch to ${checked}`)
 			if (checked) {
+        this.tableData.status = 1
         this.$message.success('员工启用成功')
       } else {
+        this.tableData.status = 0
         this.$message.success('员工停用成功')
       }
 		},
