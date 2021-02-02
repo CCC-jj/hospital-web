@@ -2,7 +2,7 @@
   <div class="staffManageInfo">
     <div class="staffManageInfoTop">
       <div>
-        新增科室信息
+        新增角色信息
       </div>
       <div class="fixedBtnBox">
         <div class="fixedBtn">
@@ -138,23 +138,13 @@ export default {
       this.selectedRowKeys = selectedRowKeys
     },
     onSelectRow(record, selected, selectedRows, nativeEvent) {
-      if (selected) {
-        record.features = record.features.map((item) => {
-          return {
-            id: item.id,
-            name: item.name,
-            checked: true,
-          }
-        })
-      } else {
-        record.features = record.features.map((item) => {
-          return {
-            id: item.id,
-            name: item.name,
-            checked: false,
-          }
-        })
-      }
+      record.features = record.features.map((item) => {
+        return {
+          id: item.id,
+          name: item.name,
+          checked: selected ? true : false,
+        }
+      })
     },
     onSelectAllRow(selected, selectedRows, changeRows) {
       changeRows.forEach((item) => {
@@ -293,5 +283,10 @@ export default {
 }
 .ant-switch {
   margin: 8px 0;
+}
+.rolesTitle {
+  color: #8087e7;
+  font-size: 20px;
+  font-weight: bold;
 }
 </style>
