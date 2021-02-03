@@ -7,9 +7,9 @@
       <a-table :columns="columns" :data-source="tableData" :pagination="{ showQuickJumper: true, pageSize: 10, total: 20, showTotal: ((total) => {
         return `每页10条，共 ${total} 条`;
       }) }" :rowKey="(record, index) => {return index;}">
-				<span slot="status" slot-scope="text, record">
-					<a-switch :defaultChecked="record.status===1 ? true : false" @change="onChangeStatus" />
-				</span>
+        <span slot="status" slot-scope="text, record">
+          <a-switch :defaultChecked="record.status===1 ? true : false" @change="onChangeStatus" />
+        </span>
         <span class="editBtn" slot="action" slot-scope="text, record">
           <a @click="toEdit">编辑</a>
           <a-divider type="vertical" />
@@ -23,6 +23,7 @@
 </template>
 
 <script>
+import { getRoleList } from '@/api/setting'
 const columns = [
   {
     title: '序号',
@@ -44,22 +45,22 @@ const columns = [
     dataIndex: 'intro',
     align: 'center',
   },
-	{
+  {
     title: '创建时间',
     dataIndex: 'createTime',
     align: 'center',
-	},
-	{
+  },
+  {
     title: '创建人员',
     dataIndex: 'creator',
     align: 'center',
-	},
-	{
+  },
+  {
     title: '角色状态',
-		dataIndex: 'status',
-		scopedSlots: { customRender: 'status' },
+    dataIndex: 'status',
+    scopedSlots: { customRender: 'status' },
     align: 'center',
-	},
+  },
   {
     title: '操作',
     dataIndex: 'action',
@@ -70,17 +71,15 @@ const columns = [
 
 const tableData = []
 for (let i = 0; i < 4; i++) {
-  tableData.push(
-    {
-      key: i,
-      code: '04',
-      name: '超级管理',
-			intro: '通用',
-      createTime: '2019-11-12 12:08:12',
-			creator: '王冕',
-			status: 1,
-    }
-  )
+  tableData.push({
+    key: i,
+    code: '04',
+    name: '超级管理',
+    intro: '通用',
+    createTime: '2019-11-12 12:08:12',
+    creator: '王冕',
+    status: 1,
+  })
 }
 
 export default {
@@ -89,9 +88,28 @@ export default {
     return {
       columns,
       tableData,
+      queryInfo: {
+        limit: 10,
+        orderFiled: '',
+        orderType: 'asc',
+        page: 1,
+        searchWord: '',
+      },
     }
   },
+  created() {
+    this.getInfoList()
+  },
   methods: {
+    getInfoList() {
+      getRoleList(this.queryInfo)
+        .then((res) => {
+          console.log(res)
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    },
     handleChange(value) {
       console.log(`selected ${value}`)
     },
@@ -100,17 +118,17 @@ export default {
     },
     onChangeSearch(e) {
       // console.log(e.target.value)
-		},
-		onChangeStatus(checked) {
-			console.log(`a-switch to ${checked}`)
-			if (checked) {
+    },
+    onChangeStatus(checked) {
+      console.log(`a-switch to ${checked}`)
+      if (checked) {
         this.tableData.status = 1
         this.$message.success('角色启用成功')
       } else {
         this.tableData.status = 0
         this.$message.success('角色停用成功')
       }
-		},
+    },
     toEdit() {
       // const page = this.$route.name
       // this.$router.push({
@@ -138,7 +156,7 @@ export default {
 .editBtn a {
   color: #656ee8;
 }
-.ant-switch-checked{
-	background-color: rgb(69,213,133);
+.ant-switch-checked {
+  background-color: rgb(69, 213, 133);
 }
 </style>

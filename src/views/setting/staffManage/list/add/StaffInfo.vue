@@ -72,7 +72,6 @@
           <a-col :span="18">
             <a-form-model-item label="地址" prop="address">
               <a-input-group compact size="large">
-                <!-- <a-cascader :options="options" placeholder="请选择" @change="onChangeAddr" v-model="choseAddr" style="width: 25%" /> -->
                 <a-cascader :options="options" :load-data="loadData" placeholder="请选择" change-on-select @change="onChangeAddr" v-model="choseAddr" style="width: 33%" />
                 <a-input v-model="form.address" style="width: 67%" placeholder="请输入详细地址" />
               </a-input-group>
@@ -204,11 +203,11 @@ export default {
       },
     }
   },
-  computed: {
-    filteredOptions() {
-      return OPTIONS.filter((o) => !this.form.roleCode.includes(o))
-    },
-  },
+  // computed: {
+  //   filteredOptions() {
+  //     return OPTIONS.filter((o) => !this.form.roleCode.includes(o))
+  //   },
+  // },
   created() {
     // 获取性别编码
     getSexList().then((res) => {

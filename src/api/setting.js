@@ -337,3 +337,32 @@ export function deleteTreatmentList(id) {
     }
   });
 }
+
+// 员工管理
+
+// 搜索查询员工列表
+export function getEmployDoctorList(params) {
+  return request({
+    url: "setting/employ/doctor/list",
+    method: "post",
+    data: params
+  });
+}
+
+// 搜索查询科室列表
+export function getDepartmentList(params) {
+  return request({
+    url: "setting/employ/doctor/department",
+    method: "post",
+    data: params
+  });
+}
+
+// 搜索查询角色列表
+export function getRoleList(params) {
+  return request({
+    url: "setting/employ/role/list",
+    method: "post",
+    data: params
+  });
+}

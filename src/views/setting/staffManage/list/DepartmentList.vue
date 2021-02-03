@@ -23,6 +23,7 @@
 </template>
 
 <script>
+import { getDepartmentList } from '@/api/setting'
 const columns = [
   {
     title: '序号',
@@ -87,9 +88,28 @@ export default {
     return {
       columns,
       tableData,
+      queryInfo: {
+        limit: 10,
+        orderFiled: '',
+        orderType: 'asc',
+        page: 1,
+        searchWord: '',
+      },
     }
   },
+  created() {
+    this.getInfoList()
+  },
   methods: {
+    getInfoList() {
+      getDepartmentList(this.queryInfo)
+        .then((result) => {
+          console.log(result)
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    },
     handleChange(value) {
       console.log(`selected ${value}`)
     },
