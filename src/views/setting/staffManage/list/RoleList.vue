@@ -4,14 +4,12 @@
       <a-input-search placeholder="角色名称" enter-button @search="onSearch" @change="onChangeSearch" style="width: 30%" />
     </div>
     <div class="manageDown">
-      <a-table :columns="columns" :data-source="tableData" :pagination="{ showQuickJumper: true, pageSize: 10, total: 20, showTotal: ((total) => {
-        return `每页10条，共 ${total} 条`;
-      }) }" :rowKey="(record, index) => {return index;}">
+      <a-table :loading="tableLoading" :columns="columns" :data-source="tableData" @change="changeTable" :pagination="{ showQuickJumper: true, pageSize: 10, total: total, current: queryInfo.page, showTotal: ((total) => {return `每页10条，共 ${total} 条`}) }" :rowKey="(record, index) => {return index}">
         <span slot="status" slot-scope="text, record">
-          <a-switch :defaultChecked="record.status===1 ? true : false" @change="onChangeStatus" />
+          <a-switch :checked="record.status===1 ? true : false" @change="(checked)=>onChangeStatus(checked,record)" />
         </span>
         <span class="editBtn" slot="action" slot-scope="text, record">
-          <a @click="toEdit">编辑</a>
+          <a @click="toEdit(record)">编辑</a>
           <a-divider type="vertical" />
           <a-popconfirm v-if="tableData.length" title="角色正在使用，确定要删除此角色吗？" @confirm="() => onDelete(record.key)">
             <a href="javascript:;"> 删除 </a>
@@ -23,7 +21,7 @@
 </template>
 
 <script>
-import { getRoleList } from '@/api/setting'
+import { getRoleList, getRoleStatus, deleteRole } from '@/api/setting'
 const columns = [
   {
     title: '序号',
@@ -88,6 +86,8 @@ export default {
     return {
       columns,
       tableData,
+      tableLoading: false,
+      total: 0,
       queryInfo: {
         limit: 10,
         orderFiled: '',
@@ -102,45 +102,66 @@ export default {
   },
   methods: {
     getInfoList() {
+      this.tableLoading = true
       getRoleList(this.queryInfo)
         .then((res) => {
-          console.log(res)
+          this.tableLoading = false
+          // this.tableData = res.data
+          // this.total = res.count
         })
         .catch((err) => {
           console.log(err)
         })
     },
-    handleChange(value) {
-      console.log(`selected ${value}`)
-    },
     onSearch(value) {
-      // console.log(value)
+      this.queryInfo.page = 1
+      this.queryInfo.searchWord = value
+      this.getInfoList()
     },
     onChangeSearch(e) {
-      // console.log(e.target.value)
+      this.queryInfo.page = 1
+      this.queryInfo.searchWord = e.target.value
+      this.getInfoList()
     },
-    onChangeStatus(checked) {
-      console.log(`a-switch to ${checked}`)
-      if (checked) {
-        this.tableData.status = 1
-        this.$message.success('角色启用成功')
-      } else {
-        this.tableData.status = 0
-        this.$message.success('角色停用成功')
-      }
+    onChangeStatus(checked, record) {
+      const status = checked ? 1 : 0
+      getRoleStatus({ code: record.code, status: status })
+        .then((res) => {
+          if (res.success) {
+            if (checked) {
+              record.status = 1
+              this.$message.success('角色启用成功')
+            } else {
+              record.status = 0
+              this.$message.success('角色停用成功')
+            }
+          } else {
+            this.$message.error(res.message)
+          }
+        })
+        .catch((err) => {})
     },
-    toEdit() {
-      // const page = this.$route.name
-      // this.$router.push({
-      //   name: 'Western',
-      //   params: {
-      //     page: page,
-      //   },
-      // })
+    toEdit(record) {
+      this.$router.push({ name: 'RoleInfo', query: { info: record } })
     },
     onDelete(key) {
-      const data = [...this.tableData]
-      this.tableData = data.filter((item) => item.key !== key)
+      deleteRole(key)
+        .then((res) => {
+          if (res.success) {
+            const data = [...this.tableData]
+            this.tableData = data.filter((item) => item.code !== key)
+            this.$message.success('删除成功！')
+          } else {
+            this.$message.error(res.message)
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    },
+    changeTable(pagination, filters, sorter) {
+      this.queryInfo.page = pagination.current
+      this.getInfoList()
     },
   },
 }

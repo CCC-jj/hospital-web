@@ -2,7 +2,7 @@
   <div class="staffManageInfo">
     <div class="staffManageInfoTop">
       <div>
-        新增角色信息
+        {{type}}角色信息
       </div>
       <div class="fixedBtnBox">
         <div class="fixedBtn">
@@ -17,7 +17,7 @@
         <a-row :gutter="30">
           <a-col :span="6">
             <a-form-model-item label="科室编号" prop="code">
-              <a-input v-model="form.code" disabled size="large" />
+              <a-input v-model="form.code" size="large" />
             </a-form-model-item>
           </a-col>
           <a-col :span="6">
@@ -30,7 +30,6 @@
               <a-switch :defaultChecked="form.status===1 ? true : false" @change="onChangeStatus" />
             </a-form-model-item>
           </a-col>
-
         </a-row>
 
         <a-row :gutter="30">
@@ -59,6 +58,7 @@
 </template>
 
 <script>
+import { createRole, modifyRole } from '@/api/setting'
 const columns = [
   // {
   //   title: '序号',
@@ -116,10 +116,11 @@ export default {
   name: 'RoleInfo',
   data() {
     return {
+      type: '新增',
       save: '保存',
       iconLoading: false,
       form: {
-        code: '10010',
+        code: '',
         name: '',
         intro: '',
         status: 1,
@@ -130,6 +131,12 @@ export default {
       columns,
       tableData,
       selectedRowKeys: [],
+    }
+  },
+  created() {
+    if (this.$route.query.info) {
+      this.type = '修改'
+      this.form = this.$route.query.info
     }
   },
   methods: {
@@ -154,10 +161,10 @@ export default {
     onChangeStatus(checked) {
       if (checked) {
         this.form.status = 1
-        this.$message.success('角色启用成功')
+        this.$message.success('角色启用')
       } else {
         this.form.status = 0
-        this.$message.success('角色停用成功')
+        this.$message.success('角色停用')
       }
     },
     onChangeCheck(e) {
@@ -167,21 +174,42 @@ export default {
       this.$router.push({ name: 'RoleList' })
     },
     toSave() {
-      this.iconLoading = true
-      this.save = '保存中'
-      setTimeout(() => {
-        this.iconLoading = false
-        this.save = '保存'
-        this.$refs.ruleForm.validate((valid) => {
-          if (valid) {
-            this.$message.success('保存成功！')
-            this.$router.push({ name: 'RoleList' })
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          this.iconLoading = true
+          this.save = '保存中'
+          if (this.type === '新增') {
+            createRole(this.form)
+              .then((res) => {
+                this.iconLoading = false
+                this.save = '保存'
+                if (res.success) {
+                  this.$message.success('保存成功！')
+                  this.$router.push({ name: 'RoleList' })
+                } else {
+                  this.$message.warning(res.message)
+                }
+              })
+              .catch((err) => {})
           } else {
-            this.$message.warning('请填写信息后再保存')
-            return false
+            modifyRole(this.form)
+              .then((res) => {
+                this.iconLoading = false
+                this.save = '保存'
+                if (res.success) {
+                  this.$message.success('保存成功！')
+                  this.$router.push({ name: 'RoleList' })
+                } else {
+                  this.$message.warning(res.message)
+                }
+              })
+              .catch((err) => {})
           }
-        })
-      }, 1000)
+        } else {
+          this.$message.warning('请填写信息后再保存')
+          return false
+        }
+      })
     },
   },
 }

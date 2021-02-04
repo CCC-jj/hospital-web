@@ -2,7 +2,7 @@
   <div class="staffManageInfo">
     <div class="staffManageInfoTop">
       <div>
-        新增科室信息
+        {{type}}科室信息
       </div>
       <div class="fixedBtnBox">
         <div class="fixedBtn">
@@ -17,7 +17,7 @@
         <a-row :gutter="30">
           <a-col :span="6">
             <a-form-model-item label="科室编号" prop="code">
-              <a-input v-model="form.code" disabled size="large" />
+              <a-input v-model="form.code" size="large" />
             </a-form-model-item>
           </a-col>
           <a-col :span="6">
@@ -27,7 +27,7 @@
           </a-col>
           <a-col :span="6">
             <a-form-model-item label="科室状态" prop="status">
-              <a-switch :defaultChecked="form.status===1 ? true : false" @change="onChangeStatus" />
+              <a-switch :checked="form.status===1 ? true : false" @change="onChangeStatus" />
             </a-form-model-item>
           </a-col>
 
@@ -59,53 +59,86 @@
 </template>
 
 <script>
+import moment from 'moment'
+import { createDepartment, modifyDepartment } from '@/api/setting'
 export default {
   name: 'DepartmentInfo',
   data() {
     return {
+      type: '新增',
       save: '保存',
       iconLoading: false,
       form: {
-        code: '10010',
+        code: '',
         name: '',
         status: 1,
-        creator: '李明',
-        createTime: '2021-01-30 15:12:55',
+        creator: '',
+        createTime: '',
       },
       rules: {
         name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
       },
     }
   },
+  created() {
+    if (this.$route.query.info) {
+      this.type = '修改'
+      this.form = this.$route.query.info
+    } else {
+      this.form.creator = localStorage.getItem('userName')
+      this.form.createTime = moment().format('YYYY-MM-DD HH:mm:ss')
+    }
+  },
   methods: {
     onChangeStatus(checked) {
       if (checked) {
         this.form.status = 1
-        this.$message.success('科室启用成功')
+        this.$message.success('科室启用')
       } else {
         this.form.status = 0
-        this.$message.success('科室停用成功')
+        this.$message.success('科室停用')
       }
     },
     goBack() {
       this.$router.push({ name: 'DepartmentList' })
     },
     toSave() {
-      this.iconLoading = true
-      this.save = '保存中'
-      setTimeout(() => {
-        this.iconLoading = false
-        this.save = '保存'
-        this.$refs.ruleForm.validate((valid) => {
-          if (valid) {
-            this.$message.success('保存成功！')
-            this.$router.push({ name: 'DepartmentList' })
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          this.iconLoading = true
+          this.save = '保存中'
+          if (this.type === '新增') {
+            createDepartment(this.form)
+              .then((res) => {
+                this.iconLoading = false
+                this.save = '保存'
+                if (res.success) {
+                  this.$message.success('保存成功！')
+                  this.$router.push({ name: 'DepartmentList' })
+                } else {
+                  this.$message.warning(res.message)
+                }
+              })
+              .catch((err) => {})
           } else {
-            this.$message.warning('请填写信息后再保存')
-            return false
+            modifyDepartment(this.form)
+              .then((res) => {
+                this.iconLoading = false
+                this.save = '保存'
+                if (res.success) {
+                  this.$message.success('保存成功！')
+                  this.$router.push({ name: 'DepartmentList' })
+                } else {
+                  this.$message.warning(res.message)
+                }
+              })
+              .catch((err) => {})
           }
-        })
-      }, 1000)
+        } else {
+          this.$message.warning('请填写信息后再保存')
+          return false
+        }
+      })
     },
   },
 }

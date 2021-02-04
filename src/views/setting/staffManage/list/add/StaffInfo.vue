@@ -2,7 +2,7 @@
   <div class="staffManageInfo">
     <div class="staffManageInfoTop">
       <div>
-        新增员工信息
+        {{type}}员工信息
       </div>
       <div class="fixedBtnBox">
         <div class="fixedBtn">
@@ -17,7 +17,7 @@
         <a-row :gutter="30">
           <a-col :span="6">
             <a-form-model-item label="员工编号" prop="code">
-              <a-input v-model="form.code" disabled size="large" />
+              <a-input v-model="form.code" size="large" />
             </a-form-model-item>
           </a-col>
           <a-col :span="6">
@@ -25,7 +25,7 @@
               <a-input placeholder="请输入姓名" v-model="form.name" size="large" />
             </a-form-model-item>
           </a-col>
-          <a-col :span="6">
+          <!-- <a-col :span="6">
             <a-form-model-item label="年龄" prop="age">
               <a-input v-model="form.age" placeholder="请输入数字" type="number" size="large">
                 <a-select slot="addonAfter" v-model="defaultValue" style="width: 60px;color:rgba(0, 0, 0, 0.65);">
@@ -35,7 +35,7 @@
                 </a-select>
               </a-input>
             </a-form-model-item>
-          </a-col>
+          </a-col> -->
           <a-col :span="6">
             <a-form-model-item label="性别" prop="sex">
               <a-select v-model="form.sex" placeholder="请选择性别" size="large">
@@ -56,19 +56,21 @@
               <a-input placeholder="请输入电子邮箱" v-model="form.email" size="large" />
             </a-form-model-item>
           </a-col>
-          <a-col :span="6">
+          <!-- <a-col :span="6">
             <a-form-model-item label="证件号码" prop="certNo">
               <a-input placeholder="请输入身份证号码" v-model="form.certNo" size="large" />
             </a-form-model-item>
-          </a-col>
+          </a-col> -->
           <a-col :span="6">
-            <a-form-model-item label="职位" prop="jobTitle">
-              <a-input placeholder="请输入职位名称" v-model="form.jobTitle" size="large" />
+            <a-form-model-item label="职位" prop="jobCode">
+              <a-select v-model="form.jobCode" placeholder="请选择职位" size="large" @change="changeTitle">
+                <a-select-option v-for="item in titleList" :key="item.code" :title="item.name">{{item.name}}</a-select-option>
+              </a-select>
             </a-form-model-item>
           </a-col>
         </a-row>
 
-        <a-row :gutter="30">
+        <!-- <a-row :gutter="30">
           <a-col :span="18">
             <a-form-model-item label="地址" prop="address">
               <a-input-group compact size="large">
@@ -77,22 +79,20 @@
               </a-input-group>
             </a-form-model-item>
           </a-col>
-        </a-row>
+        </a-row> -->
 
         <a-row :gutter="30">
           <a-col :span="6">
             <a-form-model-item label="所属科室" prop="departmentCode">
-              <a-select v-model="form.departmentCode" placeholder="请选择" size="large">
-                <a-select-option key="全科">全科</a-select-option>
-                <a-select-option key="儿科">儿科</a-select-option>
-                <a-select-option key="骨科">骨科</a-select-option>
+              <a-select show-search :filter-option="false" v-model="form.departmentCode" placeholder="请选择" size="large" @search="searchDepartment">
+                <a-select-option v-for="item in departmentList" :key="item.code">{{item.name}}</a-select-option>
               </a-select>
             </a-form-model-item>
           </a-col>
           <a-col :span="6">
             <a-form-model-item label="角色" prop="roleCode">
               <div class="clickRoleBox" @click="clickRole">
-                <a-select class="seleteRole" mode="multiple" placeholder="选择角色" v-model="form.roleCode" style="width: 100%" @change="handleChangeRoles" size="large">
+                <a-select class="seleteRole" option-filter-prop="children" mode="multiple" placeholder="选择角色" v-model="form.roleCode" style="width: 100%" @change="handleChangeRoles" size="large">
                   <a-select-option v-for="item in rolesList" :key="item.code">
                     {{ item.name }}
                   </a-select-option>
@@ -122,7 +122,7 @@
             确定
           </a-button>
         </template>
-        <a-checkbox-group @change="onChangeCkeckRole">
+        <a-checkbox-group style="width:100%;" @change="onChangeCkeckRole">
           <a-row>
             <a-col :span="12" v-for="item in rolesList" :key="item.code">
               <a-checkbox style="margin-bottom:20px;" :value="item.code">
@@ -138,11 +138,19 @@
 
 <script>
 import { getSexList, getProvinceList, getCityList } from '@/api/common'
+import {
+  getDoctorDepartmentList,
+  getDoctorRoleList,
+  getDoctorTitleList,
+  createDoctor,
+  modifyDoctor,
+} from '@/api/setting'
 const OPTIONS = ['管理员', '医生', '护士', '专家', '前台', '财务']
 export default {
   name: 'StaffInfo',
   data() {
     return {
+      type: '新增',
       save: '保存',
       iconLoading: false,
       defaultValue: 'year',
@@ -150,6 +158,13 @@ export default {
       options: [], // 省市级联
       choseAddr: [],
       visibleRole: false,
+      queryRoles: {
+        limit: 10,
+        orderFiled: '',
+        orderType: 'asc',
+        page: 1,
+        searchWord: '',
+      },
       rolesList: [
         {
           code: 1,
@@ -176,19 +191,29 @@ export default {
           name: '财务',
         },
       ],
+      queryDepartment: {
+        limit: 10,
+        orderFiled: '',
+        orderType: 'asc',
+        page: 1,
+        searchWord: '',
+      },
+      departmentList: [],
+      titleList: [],
       form: {
-        code: '10010',
+        code: '',
         name: '',
-        age: '',
+        // age: '',
         sex: undefined,
         mobile: '',
         email: '',
-        certNo: '',
+        // certNo: '',
+        jobCode: undefined,
         jobTitle: '',
-        city: '',
-        provinceCode: '',
-        cityCode: '',
-        address: '',
+        // city: '',
+        // provinceCode: '',
+        // cityCode: '',
+        // address: '',
         departmentCode: undefined,
         roleCode: [],
         password: '',
@@ -213,84 +238,93 @@ export default {
     getSexList().then((res) => {
       this.sexList = res.data
     })
+    // 获取职位列表
+    this.getDoctorTitleList()
+    // 获取科室列表
+    this.getDoctorDepartmentList()
+    // 过去角色列表
+    this.getDoctorRoleList()
+    if (this.$route.query.info) {
+      this.type = '修改'
+      this.form = this.$route.query.info
+    }
     // 获取省市列表
-    getProvinceList().then((res) => {
-      if (res.success) {
-        const list = res.data
-        const option =
-          list &&
-          list.map((item) =>
-            item.areaCode
-              ? {
-                  value: item.areaCode,
-                  label: item.areaName,
-                  isLeaf: false,
-                }
-              : ''
-          )
-        this.options = option
-
-        // 获取省市列表之后再获取患者信息
-        if (
-          this.$route.params.patientId &&
-          this.$route.params.regOrderNo &&
-          this.$route.params.outpatientNo
-        ) {
-          this.patientId = this.$route.params.patientId
-          this.regOrderNo = this.$route.params.regOrderNo
-          this.outNo = this.$route.params.outpatientNo
-          // 从接诊工作台接诊
-          this.getWorkbenchReceive()
-        } else if (this.$route.params.patientId) {
-          this.patientId = this.$route.params.patientId
-          getPatientReceive(this.patientId).then((res) => {
-            if (res.success) {
-              let data = res.data
-              this.form = data
-              // 搜索患者
-              this.searchPatient()
-              if (data.provinceCode) {
-                const list = this.options.filter((item) => item.value == data.provinceCode)
-                this.loadData(list)
-                this.choseAddr.push(data.provinceCode, data.cityCode)
-              }
-            }
-          })
-        }
-      }
-    })
+    // getProvinceList().then((res) => {
+    //   if (res.success) {
+    //     const list = res.data
+    //     const option =
+    //       list &&
+    //       list.map((item) =>
+    //         item.areaCode
+    //           ? {
+    //               value: item.areaCode,
+    //               label: item.areaName,
+    //               isLeaf: false,
+    //             }
+    //           : ''
+    //       )
+    //     this.options = option
+    //   }
+    // })
   },
   methods: {
-    onChangeAddr(dates, dateStrings) {
-      if (dateStrings) {
-        // this.choseAddrStr = dateStrings.map((item) => item.label).toString()
-        this.form.provinceCode = dateStrings[0].value
-        if (dateStrings.length > 1) {
-          this.form.cityCode = dateStrings[1].value
-        }
-      }
-    },
-    loadData(selectedOptions) {
-      const targetOption = selectedOptions[selectedOptions.length - 1]
-      targetOption.loading = true
+    // onChangeAddr(dates, dateStrings) {
+    //   if (dateStrings) {
+    //     // this.choseAddrStr = dateStrings.map((item) => item.label).toString()
+    //     this.form.provinceCode = dateStrings[0].value
+    //     if (dateStrings.length > 1) {
+    //       this.form.cityCode = dateStrings[1].value
+    //     }
+    //   }
+    // },
+    // loadData(selectedOptions) {
+    //   const targetOption = selectedOptions[selectedOptions.length - 1]
+    //   targetOption.loading = true
 
-      // load options lazily
-      getCityList(selectedOptions[0].value).then((res) => {
-        targetOption.loading = false
-        const list = res.data
-        targetOption.children =
-          list &&
-          list.map((item) =>
-            item.areaCode
-              ? {
-                  value: item.areaCode,
-                  label: item.areaName,
-                  isLeaf: true,
-                }
-              : ''
-          )
-        this.options = [...this.options]
+    //   // load options lazily
+    //   getCityList(selectedOptions[0].value).then((res) => {
+    //     targetOption.loading = false
+    //     const list = res.data
+    //     targetOption.children =
+    //       list &&
+    //       list.map((item) =>
+    //         item.areaCode
+    //           ? {
+    //               value: item.areaCode,
+    //               label: item.areaName,
+    //               isLeaf: true,
+    //             }
+    //           : ''
+    //       )
+    //     this.options = [...this.options]
+    //   })
+    // },
+    getDoctorTitleList() {
+      getDoctorTitleList()
+        .then((res) => {
+          this.titleList = res.data
+        })
+        .catch((err) => {})
+    },
+    changeTitle(value, option) {
+      this.form.jobTitle = option.componentOptions.propsData.title
+      console.log(this.form)
+    },
+    getDoctorDepartmentList() {
+      getDoctorDepartmentList(this.queryDepartment).then((res) => {
+        this.departmentList = res.data
       })
+    },
+    searchDepartment(value) {
+      this.queryDepartment.searchWord = value
+      this.getDoctorDepartmentList()
+    },
+    getDoctorRoleList() {
+      getDoctorRoleList(this.queryRoles)
+        .then((res) => {
+          this.rolesList = res.data
+        })
+        .catch((err) => {})
     },
     clickRole(e) {
       this.visibleRole = true
@@ -308,31 +342,52 @@ export default {
     onChangeStatus(checked) {
       if (checked) {
         this.form.status = 1
-        this.$message.success('员工启用成功')
+        this.$message.success('员工启用')
       } else {
         this.form.status = 0
-        this.$message.success('员工停用成功')
+        this.$message.success('员工停用')
       }
     },
     goBack() {
       this.$router.push({ name: 'StaffList' })
     },
     toSave() {
-      this.iconLoading = true
-      this.save = '保存中'
-      setTimeout(() => {
-        this.iconLoading = false
-        this.save = '保存'
-        this.$refs.ruleForm.validate((valid) => {
-          if (valid) {
-            this.$message.success('保存成功！')
-            this.$router.push({ name: 'StaffList' })
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          this.iconLoading = true
+          this.save = '保存中'
+          if (this.type === '新增') {
+            createDoctor(this.form)
+              .then((res) => {
+                this.iconLoading = false
+                this.save = '保存'
+                if (res.success) {
+                  this.$message.success('保存成功！')
+                  this.$router.push({ name: 'StaffList' })
+                } else {
+                  this.$message.warning(res.message)
+                }
+              })
+              .catch((err) => {})
           } else {
-            this.$message.warning('请填写信息后再保存')
-            return false
+            modifyDoctor(this.form)
+              .then((res) => {
+                this.iconLoading = false
+                this.save = '保存'
+                if (res.success) {
+                  this.$message.success('保存成功！')
+                  this.$router.push({ name: 'StaffList' })
+                } else {
+                  this.$message.warning(res.message)
+                }
+              })
+              .catch((err) => {})
           }
-        })
-      }, 1000)
+        } else {
+          this.$message.warning('请填写信息后再保存')
+          return false
+        }
+      })
     },
   },
 }
