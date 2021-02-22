@@ -34,7 +34,20 @@ import "viewerjs/dist/viewer.css";
 
 Vue.use(Viewer, {
   defaultOptions: {
-    zIndex: 9999
+    zIndex: 9999,
+    inline: false,
+    button: true,
+    navbar: false,
+    title: false,
+    toolbar: true,
+    tooltip: false,
+    movable: true,
+    zoomable: true,
+    rotatable: true,
+    scalable: false,
+    transition: false,
+    fullscreen: false,
+    keyboard: false
   }
 });
 

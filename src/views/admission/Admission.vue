@@ -19,8 +19,9 @@
         </a-button>
         <a-button-group>
           <a-button disabled class="picBtn" @click="showModal">图文资料</a-button>
-          <a-button disabled class="picBtn" @click="showModal">视频对话</a-button>
+          <a-button class="picBtn" @click="showModal">视频对话</a-button>
         </a-button-group>
+        <conversation ref="conversationChild"></conversation>
       </div>
 
       <a-modal v-model="visible" title="图文资料" @ok="handleOk">
@@ -352,6 +353,8 @@
 <script>
 // import options from '@/dist/data.js'
 import moment from 'moment'
+import conversation from '@/components/conversation'
+import { getUserSig } from '@/api/chat'
 import {
   getReceiveDiagnosis,
   getReceiveAdvice,
@@ -492,6 +495,9 @@ for (let i = 0; i < 3; ++i) {
 export default {
   name: 'Admission',
   inject: ['reloadCard'],
+  components: {
+    conversation,
+  },
   props: {
     collapsed: Boolean,
   },
@@ -1063,7 +1069,10 @@ export default {
       }, 500)
     },
     showModal() {
-      this.visible = true
+      // this.visible = true
+      getUserSig('202102221048261001291605050809').then((res) => {
+        this.$refs.conversationChild.showDrawer(res.data.fromAccount, res.data.userSig, res.data.toAccount)
+      })
     },
     showModalPr() {
       if (this.prtransfer == '处方调用') {
