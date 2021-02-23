@@ -21,7 +21,7 @@
           <a-button disabled class="picBtn" @click="showModal">图文资料</a-button>
           <a-button class="picBtn" @click="showModal">视频对话</a-button>
         </a-button-group>
-        <conversation ref="conversationChild"></conversation>
+
       </div>
 
       <a-modal v-model="visible" title="图文资料" @ok="handleOk">
@@ -47,124 +47,129 @@
 
     <!--新开就诊表单-->
     <div class="admissionForm">
-      <a-form-model ref="ruleForm" :model="form" :rules="rules" layout="vertical">
-        <a-row class="form-row" :gutter="16">
-          <a-col :span="6">
-            <a-form-model-item label="患者姓名" prop="patientName">
-              <!--<a-auto-complete v-model="form.name" :data-source="dataSource" style="width: 100%" placeholder="请输入患者姓名" :filter-option="filterOption" size="large" />-->
-              <a-auto-complete v-model="form.patientName" size="large" style="width: 100%" placeholder="患者姓名/手机号码/证件号码/卡号" option-label-prop="value" @change="searchPatientChange" @select="selectPatient">
-                <template slot="dataSource">
-                  <a-select-option v-for="item in dataSource" :key="item.patientId" :title="item.patientName">
-                    <span>{{item.patientName}} </span>
-                    <span v-if="item.patientSex==0">保密 </span>
-                    <span v-else-if="item.patientSex==1">男 </span>
-                    <span v-else-if="item.patientSex==2">女 </span>
-                    <span v-else>未说明 </span>
-                    <span>{{item.patientAge}}岁 </span>
-                    <span>{{item.patientMobile}}</span>
-                  </a-select-option>
-                </template>
-              </a-auto-complete>
-            </a-form-model-item>
-          </a-col>
-          <a-col :span="6">
-            <a-form-model-item label="身份证号码" required prop="patientCertNo">
-              <a-input v-model="form.patientCertNo" placeholder="请输入身份证号码" size="large"></a-input>
-            </a-form-model-item>
-          </a-col>
-          <a-col :span="6">
-            <a-form-model-item label="患者年龄" prop="patientAge">
-              <a-input disabled v-model="form.patientAge" placeholder="请输入数字" type="number" size="large">
-                <a-select disabled slot="addonAfter" v-model="defaultValue" style="width: 60px;color:rgba(0, 0, 0, 0.65);">
-                  <a-select-option value="year">岁</a-select-option>
-                  <a-select-option value="month">月</a-select-option>
-                  <a-select-option value="day">天</a-select-option>
+      <div :class="['formFlex',{formContent: openChat}]">
+        <a-form-model ref="ruleForm" :model="form" :rules="rules" layout="vertical">
+          <a-row class="form-row" :gutter="16">
+            <a-col :span="6">
+              <a-form-model-item label="患者姓名" prop="patientName">
+                <!--<a-auto-complete v-model="form.name" :data-source="dataSource" style="width: 100%" placeholder="请输入患者姓名" :filter-option="filterOption" size="large" />-->
+                <a-auto-complete v-model="form.patientName" size="large" style="width: 100%" placeholder="患者姓名/手机号码/证件号码/卡号" option-label-prop="value" @change="searchPatientChange" @select="selectPatient">
+                  <template slot="dataSource">
+                    <a-select-option v-for="item in dataSource" :key="item.patientId" :title="item.patientName">
+                      <span>{{item.patientName}} </span>
+                      <span v-if="item.patientSex==0">保密 </span>
+                      <span v-else-if="item.patientSex==1">男 </span>
+                      <span v-else-if="item.patientSex==2">女 </span>
+                      <span v-else>未说明 </span>
+                      <span>{{item.patientAge}}岁 </span>
+                      <span>{{item.patientMobile}}</span>
+                    </a-select-option>
+                  </template>
+                </a-auto-complete>
+              </a-form-model-item>
+            </a-col>
+            <a-col :span="6">
+              <a-form-model-item label="身份证号码" required prop="patientCertNo">
+                <a-input v-model="form.patientCertNo" placeholder="请输入身份证号码" size="large"></a-input>
+              </a-form-model-item>
+            </a-col>
+            <a-col :span="6">
+              <a-form-model-item label="患者年龄" prop="patientAge">
+                <a-input disabled v-model="form.patientAge" placeholder="请输入数字" type="number" size="large">
+                  <a-select disabled slot="addonAfter" v-model="defaultValue" style="width: 60px;color:rgba(0, 0, 0, 0.65);">
+                    <a-select-option value="year">岁</a-select-option>
+                    <a-select-option value="month">月</a-select-option>
+                    <a-select-option value="day">天</a-select-option>
+                  </a-select>
+                </a-input>
+              </a-form-model-item>
+            </a-col>
+            <a-col :span="6">
+              <a-form-model-item label="出生日期" prop="patientBirth">
+                <a-date-picker valueFormat="value" v-model="form.patientBirth" :disabled-date="disabledDate" type="date" style="width: 100%" size="large" @change="changeDate" />
+              </a-form-model-item>
+            </a-col>
+          </a-row>
+          <a-row class="form-row" :gutter="16">
+            <a-col :span="6">
+              <a-form-model-item label="性别" prop="patientSex">
+                <a-select v-model="form.patientSex" placeholder="请选择患者性别" size="large">
+                  <a-select-option v-for="item in sexList" :key="item.value">{{item.desc}}</a-select-option>
                 </a-select>
-              </a-input>
-            </a-form-model-item>
-          </a-col>
-          <a-col :span="6">
-            <a-form-model-item label="出生日期" prop="patientBirth">
-              <a-date-picker valueFormat="value" v-model="form.patientBirth" :disabled-date="disabledDate" type="date" style="width: 100%" size="large" @change="changeDate" />
-            </a-form-model-item>
-          </a-col>
-        </a-row>
-        <a-row class="form-row" :gutter="16">
-          <a-col :span="6">
-            <a-form-model-item label="性别" prop="patientSex">
-              <a-select v-model="form.patientSex" placeholder="请选择患者性别" size="large">
-                <a-select-option v-for="item in sexList" :key="item.value">{{item.desc}}</a-select-option>
-              </a-select>
-            </a-form-model-item>
-          </a-col>
-          <a-col :span="6">
-            <a-form-model-item label="手机号码" prop="patientMobile">
-              <a-input v-model="form.patientMobile" placeholder="请输入手机号码" size="large"></a-input>
-            </a-form-model-item>
-          </a-col>
-          <a-col :span="6">
-            <a-form-model-item label="患者卡号" prop="patientCardNo">
-              <a-input v-model="form.patientCardNo" placeholder="请输入患者卡号" size="large"></a-input>
-            </a-form-model-item>
-          </a-col>
-          <a-col :span="6">
-            <a-form-model-item label="接诊类型" prop="receiveTypeId">
-              <a-select v-model="form.receiveTypeId" placeholder="请选择" size="large" @change="handleChangeType">
-                <a-select-option v-for="item in typesList" :key="item.typeCode"> {{item.typeName}} </a-select-option>
-              </a-select>
-            </a-form-model-item>
-          </a-col>
-        </a-row>
-        <a-row class="form-row" :gutter="16">
-          <a-col :span="12">
-            <a-form-model-item label="地址" prop="patientAddr">
-              <a-input-group compact size="large">
-                <!-- <a-cascader :options="options" placeholder="请选择" @change="onChangeAddr" v-model="choseAddr" style="width: 25%" /> -->
-                <a-cascader :options="options" :load-data="loadData" placeholder="请选择" change-on-select @change="onChangeAddr" v-model="choseAddr" style="width: 33%" />
-                <a-input @input="onInputAddr" v-model="form.patientAddr" style="width: 67%" placeholder="请输入详细地址" />
-              </a-input-group>
-            </a-form-model-item>
-          </a-col>
-          <a-col :span="6">
-            <a-form-model-item label="初复诊" prop="visitType">
-              <a-radio-group button-style="solid" v-model="form.visitType" style="width:100%;" size="large">
-                <a-radio-button style="width:50%;" value="0">
-                  初诊
-                </a-radio-button>
-                <a-radio-button style="width:50%;" value="1">
-                  复诊
-                </a-radio-button>
-              </a-radio-group>
-            </a-form-model-item>
-          </a-col>
-          <a-col :span="6">
-            <a-form-model-item label="确定接诊" required>
-              <a-button class="confirmBtn" :loading="iconLoadingConfirmInfo" @click="clickConfirmInfo" style="width:100%;" size="large">接诊</a-button>
-            </a-form-model-item>
-          </a-col>
-        </a-row>
+              </a-form-model-item>
+            </a-col>
+            <a-col :span="6">
+              <a-form-model-item label="手机号码" prop="patientMobile">
+                <a-input v-model="form.patientMobile" placeholder="请输入手机号码" size="large"></a-input>
+              </a-form-model-item>
+            </a-col>
+            <a-col :span="6">
+              <a-form-model-item label="患者卡号" prop="patientCardNo">
+                <a-input v-model="form.patientCardNo" placeholder="请输入患者卡号" size="large"></a-input>
+              </a-form-model-item>
+            </a-col>
+            <a-col :span="6">
+              <a-form-model-item label="接诊类型" prop="receiveTypeId">
+                <a-select v-model="form.receiveTypeId" placeholder="请选择" size="large" @change="handleChangeType">
+                  <a-select-option v-for="item in typesList" :key="item.typeCode"> {{item.typeName}} </a-select-option>
+                </a-select>
+              </a-form-model-item>
+            </a-col>
+          </a-row>
+          <a-row class="form-row" :gutter="16">
+            <a-col :span="12">
+              <a-form-model-item label="地址" prop="patientAddr">
+                <a-input-group compact size="large">
+                  <!-- <a-cascader :options="options" placeholder="请选择" @change="onChangeAddr" v-model="choseAddr" style="width: 25%" /> -->
+                  <a-cascader :options="options" :load-data="loadData" placeholder="请选择" change-on-select @change="onChangeAddr" v-model="choseAddr" style="width: 33%" />
+                  <a-input @input="onInputAddr" v-model="form.patientAddr" style="width: 67%" placeholder="请输入详细地址" />
+                </a-input-group>
+              </a-form-model-item>
+            </a-col>
+            <a-col :span="6">
+              <a-form-model-item label="初复诊" prop="visitType">
+                <a-radio-group button-style="solid" v-model="form.visitType" style="width:100%;" size="large">
+                  <a-radio-button style="width:50%;" value="0">
+                    初诊
+                  </a-radio-button>
+                  <a-radio-button style="width:50%;" value="1">
+                    复诊
+                  </a-radio-button>
+                </a-radio-group>
+              </a-form-model-item>
+            </a-col>
+            <a-col :span="6">
+              <a-form-model-item label="确定接诊" required>
+                <a-button class="confirmBtn" :loading="iconLoadingConfirmInfo" @click="clickConfirmInfo" style="width:100%;" size="large">接诊</a-button>
+              </a-form-model-item>
+            </a-col>
+          </a-row>
 
-        <a-form-model-item :wrapper-col="{ span: 14, offset: 4 }"></a-form-model-item>
-      </a-form-model>
+          <a-form-model-item :wrapper-col="{ span: 14, offset: 4 }"></a-form-model-item>
+        </a-form-model>
 
-      <a-form-model ref="ruleForm2" :model="form2" :rules="rules2" layout="vertical">
-        <a-row class="form-row" :gutter="16">
-          <a-col :span="12">
-            <a-form-model-item label="诊断" prop="diagnosis">
-              <a-select :disabled="disabledBtn" v-model="form2.diagnosis" mode="tags" style="width: 100%" :token-separators="[',','，']" @change="handleChange" size="large">
-                <a-select-option v-for="item in diagnosisList" :key="item">{{ item }}</a-select-option>
-              </a-select>
-            </a-form-model-item>
-          </a-col>
-          <a-col :span="12">
-            <a-form-model-item label="医嘱" prop="doctorAdvice">
-              <a-select :disabled="disabledBtn" v-model="form2.doctorAdvice" mode="tags" style="width: 100%" :token-separators="[',','，']" @change="handleChange" size="large">
-                <a-select-option v-for="item in adviceList" :key="item">{{ item }}</a-select-option>
-              </a-select>
-            </a-form-model-item>
-          </a-col>
-        </a-row>
-      </a-form-model>
+        <a-form-model ref="ruleForm2" :model="form2" :rules="rules2" layout="vertical">
+          <a-row class="form-row" :gutter="16">
+            <a-col :span="12">
+              <a-form-model-item label="诊断" prop="diagnosis">
+                <a-select :disabled="disabledBtn" v-model="form2.diagnosis" mode="tags" style="width: 100%" :token-separators="[',','，']" @change="handleChange" size="large">
+                  <a-select-option v-for="item in diagnosisList" :key="item">{{ item }}</a-select-option>
+                </a-select>
+              </a-form-model-item>
+            </a-col>
+            <a-col :span="12">
+              <a-form-model-item label="医嘱" prop="doctorAdvice">
+                <a-select :disabled="disabledBtn" v-model="form2.doctorAdvice" mode="tags" style="width: 100%" :token-separators="[',','，']" @change="handleChange" size="large">
+                  <a-select-option v-for="item in adviceList" :key="item">{{ item }}</a-select-option>
+                </a-select>
+              </a-form-model-item>
+            </a-col>
+          </a-row>
+        </a-form-model>
+      </div>
+      <div :class="['chatFlex',{chatContent: openChat}]">
+        <conversation ref="conversationChild"></conversation>
+      </div>
     </div>
 
     <!--底部浮动编辑-->
@@ -514,6 +519,7 @@ export default {
       }
     }
     return {
+      openChat: false,
       spinning: false,
       page: '',
       orderNo: '',
@@ -1069,9 +1075,13 @@ export default {
       }, 500)
     },
     showModal() {
-      // this.visible = true
+      this.openChat = !this.openChat
       getUserSig('202102221048261001291605050809').then((res) => {
-        this.$refs.conversationChild.showDrawer(res.data.fromAccount, res.data.userSig, res.data.toAccount)
+        this.$refs.conversationChild.showDrawer(
+          res.data.fromAccount,
+          res.data.userSig,
+          res.data.toAccount
+        )
       })
     },
     showModalPr() {
@@ -1242,6 +1252,7 @@ export default {
   border: 1px solid #656ee8;
 }
 .admissionForm {
+  display: flex;
   margin-top: 25px;
 }
 .ant-form-item {
@@ -1371,4 +1382,17 @@ a {
   left: 50%;
   transform: translate(-50%, -50%);
 }
+.formFlex{
+  flex: 1;
+}
+.chatFlex{
+  flex: 0;
+}
+.formContent{
+  flex: 3;
+}
+.chatContent{
+  flex: 1;
+}
+
 </style>

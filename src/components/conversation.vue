@@ -1,8 +1,8 @@
 <template>
   <div>
     <!-- <a-button type="primary" @click="showDrawer"> <a-icon type="plus" /> New account </a-button> -->
-    <a-drawer title="与 xxx 患者对话中" :width="720" :visible="visible" :body-style="{ paddingBottom: '80px' }" @close="onClose">
-      <div class="chat-content">
+    <div v-if="openChat" class="chatBox">
+      <div class="chat-content" id="chatRecord">
         <!-- recordContent 聊天记录数组-->
         <div v-for="(item,index) in messageList" :key="index">
           <!-- 对方 -->
@@ -14,7 +14,7 @@
                 <span v-if="item.payload.text">{{item.payload.text}}</span>
                 <!-- <img style="max-width:300px;" v-else :src="item.payload.imageInfoArray[1].imageUrl" alt=""> -->
                 <viewer v-else class="prPic">
-                  <img style="max-width:300px;" :src="item.payload.imageInfoArray[0].imageUrl" />
+                  <img style="max-width:100px;" :src="item.payload.imageInfoArray[0].imageUrl" />
                 </viewer>
               </div>
             </div>
@@ -27,7 +27,7 @@
                 <span v-if="item.payload.text">{{item.payload.text}}</span>
                 <!-- <img style="max-width:300px;"  :src="item.payload.imageInfoArray[1].imageUrl" alt=""> -->
                 <viewer v-else class="prPic">
-                  <img style="max-width:300px;" :src="item.payload.imageInfoArray[0].imageUrl" />
+                  <img style="max-width:100px;" :src="item.payload.imageInfoArray[0].imageUrl" />
                 </viewer>
               </div>
             </div>
@@ -37,16 +37,16 @@
       </div>
       <hr />
       <div style="display:flex;">
-        <a-input style="width:90%;" v-model="content" @keyup.enter="sendMessage"></a-input>
-        <a-button style="width:10%;" @click="sendMessage">发送</a-button>
+        <a-input style="width:80%;" v-model="content" @keyup.enter="sendMessage"></a-input>
+        <a-button style="width:20%;" @click="sendMessage">发送</a-button>
       </div>
       <!-- <a-button @click="sendImg">发送图片</a-button> -->
-      <a-upload :file-list="fileList" :remove="handleRemove" :before-upload="beforeUpload">
+      <a-upload accept="image/png, image/jpeg" :file-list="fileList" :remove="handleRemove" :before-upload="beforeUpload">
         <a-button>
           <a-icon type="upload" /> 发送图片
         </a-button>
       </a-upload>
-      <div :style="{
+      <!-- <div :style="{
           position: 'absolute',
           right: 0,
           bottom: 0,
@@ -63,8 +63,8 @@
         <a-button type="primary" @click="onClose">
           Submit
         </a-button>
-      </div>
-    </a-drawer>
+      </div> -->
+    </div>
   </div>
 </template>
 <script>
@@ -80,16 +80,27 @@ let tim = TIM.create(options) // SDK 实例通常用 tim 表示
 export default {
   data() {
     return {
+      openChat: false,
       visible: false,
       userID: '',
       toUser: '',
       content: '',
       messageList: [],
+      nextReqMessageID: '',
       fileList: [],
       file: {},
     }
   },
+  updated() {
+    // 聊天定位到底部
+    if (this.openChat) {
+      let ele = document.getElementById('chatRecord')
+      ele.scrollTop = ele.scrollHeight
+    }
+  },
   mounted() {
+    window.addEventListener('mousewheel',this.handleScroll)
+
     tim.setLogLevel(1) // 普通级别，日志量较多，接入时建议使用
     // tim.setLogLevel(1); // release 级别，SDK 输出关键信息，生产环境时建议使用
     // 注册腾讯云即时通信 IM 上传插件
@@ -103,29 +114,34 @@ export default {
   },
   methods: {
     moment,
+    handleScroll(){
+      let offsetTop = document.getElementById('chatRecord').offsetTop;
+      console.log(document.getElementById('chatRecord'));
+    },
     doctorName() {
       return localStorage.getItem('userName')
     },
     showDrawer(userID, userSig, toUser) {
-      let promise = tim.login({ userID: userID, userSig: userSig })
-      promise
-        .then((imResponse) => {
-          this.userID = userID
-          this.toUser = toUser
-          // console.log(imResponse.data) // 登录成功
-          if (imResponse.data.repeatLogin === true) {
-            // 标识账号已登录，本次登录操作为重复登录。v2.5.1 起支持
-            // console.log(imResponse.data.errorInfo)
-          }
-          setTimeout(() => {
-            this.getMessageList()
-          }, 500)
-        })
-        .catch((imError) => {
-          console.warn('login error:', imError) // 登录失败的相关信息
-        })
-
-      this.visible = true
+      this.openChat = !this.openChat
+      if (this.openChat) {
+        let promise = tim.login({ userID: userID, userSig: userSig })
+        promise
+          .then((imResponse) => {
+            this.userID = userID
+            this.toUser = toUser
+            // console.log(imResponse.data) // 登录成功
+            if (imResponse.data.repeatLogin === true) {
+              // 标识账号已登录，本次登录操作为重复登录。v2.5.1 起支持
+              // console.log(imResponse.data.errorInfo)
+            }
+            setTimeout(() => {
+              this.getMessageList()
+            }, 500)
+          })
+          .catch((imError) => {
+            console.warn('login error:', imError) // 登录失败的相关信息
+          })
+      }
     },
     sendMessage() {
       if (this.content) {
@@ -156,15 +172,16 @@ export default {
           })
       }
     },
-    getMessageList() {
+    getMessageList(nextMsgID) {
       // 打开某个会话时，第一次拉取消息列表
-      let promise = tim.getMessageList({ conversationID: `C2C${this.toUser}`, count: 15 })
+      let promise = tim.getMessageList({ conversationID: `C2C${this.toUser}`, nextMsgID, count: 15 })
       promise.then((imResponse) => {
-        console.log(imResponse)
+        console.log(imResponse);
         const messageList = imResponse.data.messageList // 消息列表。
         const nextReqMessageID = imResponse.data.nextReqMessageID // 用于续拉，分页续拉时需传入该字段。
         const isCompleted = imResponse.data.isCompleted // 表示是否已经拉完所有消息。
         this.messageList = messageList
+        this.nextReqMessageID = nextReqMessageID
       })
     },
     handleRemove(file) {
@@ -175,9 +192,7 @@ export default {
     },
     beforeUpload(file) {
       this.fileList = [...this.fileList, file]
-      console.log(this.fileList)
       this.file = file
-      console.log(this.file)
       this.sendImg()
       return false
     },
@@ -220,11 +235,26 @@ export default {
 </script>
 
 <style scoped>
+.chatBox {
+  /* z-index: 9999;
+  position: fixed; */
+  /* top: 22%;
+  right: 5%; */
+  /* width: 500px; */
+  background: #e6e6e6;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0px 0px 5px #a2a2a2;
+  margin: 0 0 0 20px;
+}
 .chat-content {
   width: 100%;
-  height: 65vh;
+  height: 300px;
   overflow-y: auto;
-  padding: 20px;
+  padding: 10px;
+}
+.chat-content::-webkit-scrollbar {
+  display: none;
 }
 .chat-content .word {
   display: flex;
@@ -247,7 +277,8 @@ export default {
   margin-top: -5px;
 }
 .chat-content .word .info .info-content {
-  padding: 10px;
+  border-radius: 5px;
+  padding: 5px;
   font-size: 14px;
   float: left;
   background: rgb(194, 194, 194);
@@ -288,8 +319,9 @@ export default {
   margin-right: 10px;
 }
 .chat-content .word-my .info .info-content {
+  border-radius: 5px;
   max-width: 70%;
-  padding: 10px;
+  padding: 5px;
   font-size: 14px;
   float: right;
   margin-right: 10px;
