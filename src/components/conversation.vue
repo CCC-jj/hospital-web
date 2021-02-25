@@ -13,11 +13,19 @@
             <div class="info">
               <p class="time">病患 {{moment(item.time*1000).format('YYYY-MM-DD HH:mm:ss')}}</p>
               <div class="info-content">
-                <span v-if="item.payload.text">{{item.payload.text}}</span>
-                <!-- <img style="max-width:300px;" v-else :src="item.payload.imageInfoArray[1].imageUrl" alt=""> -->
-                <viewer v-else class="prPic">
+                <span v-if="item.type==='TIMTextElem'">{{item.payload.text}}</span>
+                <!-- <img style="max-width:300px;"  :src="item.payload.imageInfoArray[1].imageUrl" alt=""> -->
+                <viewer v-else-if="item.type==='TIMImageElem'" class="prPic">
                   <img style="max-width:100px;" :src="item.payload.imageInfoArray[0].imageUrl" />
                 </viewer>
+                <div v-else-if="item.type==='TIMCustomElem'" class="cardInfoBox">
+                  <div v-if="item.payload.data" class="cardInfo">
+                    <p>{{JSON.parse(item.payload.data).title}}</p>
+                    <p>诊断 <span>{{JSON.parse(item.payload.data).diagnosis}}</span></p>
+                    <p>药品 <span>{{JSON.parse(item.payload.data).drugs}}</span></p>
+                  </div>
+                </div>
+                <div v-else>{{item.payload}}</div>
               </div>
             </div>
           </div>
@@ -26,11 +34,19 @@
             <div class="info">
               <p class="time">{{doctorName()}} {{moment(item.time*1000).format('YYYY-MM-DD HH:mm:ss')}}</p>
               <div class="info-content">
-                <span v-if="item.payload.text">{{item.payload.text}}</span>
+                <span v-if="item.type==='TIMTextElem'">{{item.payload.text}}</span>
                 <!-- <img style="max-width:300px;"  :src="item.payload.imageInfoArray[1].imageUrl" alt=""> -->
-                <viewer v-else class="prPic">
+                <viewer v-else-if="item.type==='TIMImageElem'" class="prPic">
                   <img style="max-width:100px;" :src="item.payload.imageInfoArray[0].imageUrl" />
                 </viewer>
+                <div v-else-if="item.type==='TIMCustomElem'" class="cardInfoBox">
+                  <div v-if="item.payload.data" class="cardInfo">
+                    <p>{{JSON.parse(item.payload.data).title}}</p>
+                    <p>诊断 <span>{{JSON.parse(item.payload.data).diagnosis}}</span></p>
+                    <p>药品 <span>{{JSON.parse(item.payload.data).drugs}}</span></p>
+                  </div>
+                </div>
+                <div v-else>{{item.payload}}</div>
               </div>
             </div>
             <img class="avatar" src="../assets/p0.png">
@@ -118,11 +134,22 @@ export default {
         this.messageList.push(event.data[0])
         this.news = true
         // this.toBottom(100)
+        this.$nextTick(function () {
+          this.$notification.open({
+            message: '提示',
+            description: '你有一条新消息',
+          })
+        })
       }
     })
   },
   methods: {
     moment,
+    changeParse(i) {
+      if (i) {
+        return JSON.parse(i)
+      }
+    },
     getMoreMessage() {
       this.isBottom = true
       if (this.more) {
@@ -192,7 +219,6 @@ export default {
             // 发送成功
             console.log(imResponse)
             // this.getMessageList()
-
             this.messageList.push(message)
             this.toBottom(100)
           })
@@ -320,7 +346,7 @@ export default {
   margin-top: -5px;
 }
 .chat-content .word .info .info-content {
-  word-wrap:break-word;
+  word-wrap: break-word;
   max-width: 200px;
   border-radius: 5px;
   padding: 5px;
@@ -365,7 +391,7 @@ export default {
 }
 .chat-content .word-my .info .info-content {
   border-radius: 5px;
-  word-wrap:break-word;
+  word-wrap: break-word;
   max-width: 200px;
   padding: 5px;
   font-size: 14px;
@@ -401,5 +427,9 @@ export default {
   background: #fff;
   padding: 0 8px 0 8px;
   border-radius: 10px;
+}
+.cardInfo {
+  background: #fff;
+  padding: 5px;
 }
 </style>

@@ -617,7 +617,7 @@ export default {
           {
             required: true,
             validator: validateIdCard,
-            message: '请输入身份证号码',
+            message: '请输入正确身份证号码',
             trigger: 'change',
           },
         ],
