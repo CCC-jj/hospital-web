@@ -3,6 +3,8 @@
     <!-- <a-button type="primary" @click="showDrawer"> <a-icon type="plus" /> New account </a-button> -->
     <div v-if="openChat" class="chatBox">
       <div class="chat-content" id="chatRecord">
+        <div style="text-align: center; margin-bottom: 5px;"><span @click="getMoreMessage" :class="[{moreText: more}]">{{more?'查看更多':'没有更多了'}}</span></div>
+        <div class="toBottomText"><span @click="toBottom(100)">{{news?'有新消息！':'回到底部'}}</span></div>
         <!-- recordContent 聊天记录数组-->
         <div v-for="(item,index) in messageList" :key="index">
           <!-- 对方 -->
@@ -34,6 +36,7 @@
             <img class="avatar" src="../assets/p0.png">
           </div>
         </div>
+
       </div>
       <hr />
       <div style="display:flex;">
@@ -84,23 +87,25 @@ export default {
       visible: false,
       userID: '',
       toUser: '',
+      conversationID: '',
       content: '',
       messageList: [],
       nextReqMessageID: '',
       fileList: [],
       file: {},
+      more: true,
+      isBottom: false,
+      news: false,
     }
   },
   updated() {
     // 聊天定位到底部
-    if (this.openChat) {
+    if (this.openChat && !this.isBottom) {
       let ele = document.getElementById('chatRecord')
       ele.scrollTop = ele.scrollHeight
     }
   },
   mounted() {
-    window.addEventListener('mousewheel',this.handleScroll)
-
     tim.setLogLevel(1) // 普通级别，日志量较多，接入时建议使用
     // tim.setLogLevel(1); // release 级别，SDK 输出关键信息，生产环境时建议使用
     // 注册腾讯云即时通信 IM 上传插件
@@ -109,14 +114,36 @@ export default {
       // 收到推送的单聊、群聊、群提示、群系统通知的新消息，可通过遍历 event.data 获取消息列表数据并渲染到页面
       // event.name - TIM.EVENT.MESSAGE_RECEIVED
       // event.data - 存储 Message 对象的数组 - [Message]
-      this.getMessageList()
+      if (event.data[0].conversationID === this.conversationID) {
+        this.messageList.push(event.data[0])
+        this.news = true
+        // this.toBottom(100)
+      }
     })
   },
   methods: {
     moment,
-    handleScroll(){
-      let offsetTop = document.getElementById('chatRecord').offsetTop;
-      console.log(document.getElementById('chatRecord'));
+    getMoreMessage() {
+      this.isBottom = true
+      if (this.more) {
+        this.getMessageList(this.nextReqMessageID)
+      }
+    },
+    // 回到底部
+    toBottom(i) {
+      let ele = document.getElementById('chatRecord')
+      let clientHeight = ele.clientHeight || document.body.clientHeight
+      let scrollHeight = ele.scrollHeight
+      let rollheight = scrollHeight - clientHeight //超出窗口上界的值就是底部的scrolTop的值
+      ele.scrollTop += 200
+      if (ele.scrollTop + 1 <= rollheight) {
+        //之所以+1，可以打印这两个值的日志就知道了，下面+1也是同理
+        var c = setTimeout(() => this.toBottom(i), 10) //调用setTimeout是为了“回到底部”这过程不是一瞬间
+      } else {
+        clearTimeout(c)
+      }
+      this.isBottom = false
+      this.news = false
     },
     doctorName() {
       return localStorage.getItem('userName')
@@ -157,14 +184,17 @@ export default {
             text: this.content,
           },
         })
+        this.content = ''
         // 2. 发送消息
         let promise = tim.sendMessage(message)
         promise
           .then((imResponse) => {
             // 发送成功
             console.log(imResponse)
-            this.getMessageList()
-            this.content = ''
+            // this.getMessageList()
+
+            this.messageList.push(message)
+            this.toBottom(100)
           })
           .catch((imError) => {
             // 发送失败
@@ -172,15 +202,25 @@ export default {
           })
       }
     },
-    getMessageList(nextMsgID) {
+    getMessageList(nextReqMessageID) {
       // 打开某个会话时，第一次拉取消息列表
-      let promise = tim.getMessageList({ conversationID: `C2C${this.toUser}`, nextMsgID, count: 15 })
+      let conversationID = `C2C${this.toUser}`
+      this.conversationID = conversationID
+      let promise = tim.getMessageList({
+        conversationID: conversationID,
+        nextReqMessageID,
+        count: 15,
+      })
       promise.then((imResponse) => {
-        console.log(imResponse);
+        console.log(imResponse)
         const messageList = imResponse.data.messageList // 消息列表。
         const nextReqMessageID = imResponse.data.nextReqMessageID // 用于续拉，分页续拉时需传入该字段。
         const isCompleted = imResponse.data.isCompleted // 表示是否已经拉完所有消息。
-        this.messageList = messageList
+        if (isCompleted) {
+          this.more = false
+          return
+        }
+        this.messageList = messageList.concat(this.messageList)
         this.nextReqMessageID = nextReqMessageID
       })
     },
@@ -219,8 +259,10 @@ export default {
         .then((imResponse) => {
           // 发送成功
           console.log(imResponse)
-          this.getMessageList()
+          // this.getMessageList()
+          this.messageList.push(message)
           this.fileList = []
+          this.toBottom(100)
         })
         .catch((imError) => {
           // 发送失败
@@ -246,6 +288,7 @@ export default {
   overflow: hidden;
   box-shadow: 0px 0px 5px #a2a2a2;
   margin: 0 0 0 20px;
+  position: relative;
 }
 .chat-content {
   width: 100%;
@@ -277,6 +320,8 @@ export default {
   margin-top: -5px;
 }
 .chat-content .word .info .info-content {
+  word-wrap:break-word;
+  max-width: 200px;
   border-radius: 5px;
   padding: 5px;
   font-size: 14px;
@@ -320,7 +365,8 @@ export default {
 }
 .chat-content .word-my .info .info-content {
   border-radius: 5px;
-  max-width: 70%;
+  word-wrap:break-word;
+  max-width: 200px;
   padding: 5px;
   font-size: 14px;
   float: right;
@@ -338,5 +384,22 @@ export default {
   border-left: 10px solid #a3c3f6;
   border-top: 8px solid transparent;
   border-bottom: 8px solid transparent;
+}
+
+.moreText {
+  color: #656ee8;
+  cursor: pointer;
+}
+.toBottomText {
+  color: #656ee8;
+  position: absolute;
+  z-index: 99;
+  top: 280px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: pointer;
+  background: #fff;
+  padding: 0 8px 0 8px;
+  border-radius: 10px;
 }
 </style>
