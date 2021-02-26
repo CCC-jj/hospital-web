@@ -49,10 +49,10 @@
                 <span class="age">{{ item.age }}</span>
               </div>
               <div class="worktypes">
-                <span class="pictype" v-if="item.bizType=='图文问诊'">{{ item.bizType }}</span>
-                <span class="pictype" v-if="item.bizType=='窗口'">{{ item.bizType }}</span>
+                <span class="pictype">{{ item.bizType }}</span>
+                <!-- <span class="pictype" v-if="item.bizType=='窗口'">{{ item.bizType }}</span>
                 <span class="pictype" v-if="item.bizType=='视频问诊'" style="background-color:rgb(40,208,148)">{{ item.bizType }}</span>
-                <span class="pictype" v-if="item.bizType=='检查开单'" style="background-color:rgb(116,130,231)">{{ item.bizType }}</span>
+                <span class="pictype" v-if="item.bizType=='检查开单'" style="background-color:rgb(116,130,231)">{{ item.bizType }}</span> -->
                 <span class="workstatus" v-if="item.status=='待接诊'">{{ item.status }}</span>
                 <span class="workstatus" v-else-if="item.status=='接诊中'" style="background-color:rgb(40,208,148)">{{ item.status }}</span>
                 <span class="workstatus" v-else-if="item.status=='已完成'" style="background-color:rgb(204,204,204)">{{ item.status }}</span>
