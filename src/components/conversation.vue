@@ -9,7 +9,7 @@
         <div v-for="(item,index) in messageList" :key="index">
           <!-- 对方 -->
           <div class="word" v-if="item.flow !== 'out'">
-            <img class="avatar" src="../assets/p0.png">
+            <img class="avatar" src="../assets/p0.png" />
             <div class="info">
               <p class="time">病患 {{moment(item.time*1000).format('YYYY-MM-DD HH:mm:ss')}}</p>
               <div class="info-content">
@@ -78,7 +78,7 @@
                 <div v-else>{{item.payload}}</div>
               </div>
             </div>
-            <img class="avatar" src="../assets/p0.png">
+            <img class="avatar" src="../assets/p0.png" />
           </div>
         </div>
 

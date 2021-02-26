@@ -18,30 +18,32 @@
           返回
         </a-button>
         <a-button-group>
-          <a-button :disabled="graphicStatus" class="picBtn" @click="showModal">图文资料</a-button>
-          <a-button :disabled="!videoStatus" class="picBtn" @click="showModal">视频对话</a-button>
+          <a-button :disabled="this.form.receiveTypeId!==200" class="picBtn" @click="showModal">图文资料</a-button>
+          <a-button :disabled="this.form.receiveTypeId!==300" class="picBtn" @click="showModal">视频对话</a-button>
         </a-button-group>
 
       </div>
 
       <a-modal v-model="visible" title="图文资料" @ok="handleOk">
-        <div class="picTitle">病情描述</div>
-        <br />
-        <div class="picDescription">病情描述：头疼头晕 浑身乏力</div>
-        <br />
-        <div class="picDescription">患病时长：一周内</div>
-        <br />
-        <div class="picDescription">就诊情况：就诊过</div>
-        <br />
+        <div v-if="sickInfo">
+          <div class="picTitle">病情描述</div>
+          <br />
+          <div class="picDescription">病情描述：{{sickInfo.description}}</div>
+          <br />
+          <div class="picDescription">患病时长：{{sickInfo.sickTime}}</div>
+          <br />
+          <div class="picDescription">是否就诊：{{sickInfo.seeDoctor?'是':'否'}}</div>
+          <br />
 
-        <div class="picTitle">
-          检查报告或患处照片
-          <span>（点击放大）</span>
+          <div class="picTitle">
+            检查报告或患处照片
+            <span>（点击放大）</span>
+          </div>
+          <br />
+          <viewer class="prPic" :images="sickInfo.images">
+            <img v-for="(item,index) in sickInfo.images" :src="item" :key="index" :title="item" />
+          </viewer>
         </div>
-        <br />
-        <viewer class="prPic" :images="images">
-          <img v-for="(item,index) in images" :src="item" :key="index" :title="item" />
-        </viewer>
       </a-modal>
     </div>
 
@@ -555,8 +557,6 @@ export default {
       // searchWords: '',
       // loadAll: [],
       dataSource: [],
-      graphicStatus: false, //图文问诊状态
-      videoStatus: false, //视频问诊状态
       images: [
         'https://gw.alipayobjects.com/zos/rmsportal/WdGqmHpayyMjiEhcKoVE.png',
         'https://gw.alipayobjects.com/zos/rmsportal/WdGqmHpayyMjiEhcKoVE.png',
@@ -1117,6 +1117,7 @@ export default {
     },
     handleChangeType(value) {
       this.form.receiveTypeId = value
+      console.log(this.form.receiveTypeId, value)
     },
     onChangeAddr(dates, dateStrings) {
       if (dateStrings) {
@@ -1358,7 +1359,7 @@ export default {
   justify-content: space-between;
 }
 .prPic img {
-  width: 20%;
+  width: 10%;
 }
 .ant-divider {
   height: auto;
