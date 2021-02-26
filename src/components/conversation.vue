@@ -4,7 +4,7 @@
     <div v-if="openChat" class="chatBox">
       <div class="chat-content" id="chatRecord">
         <div style="text-align: center; margin-bottom: 5px;"><span @click="getMoreMessage" :class="[{moreText: more}]">{{more?'查看更多':'没有更多了'}}</span></div>
-        <div class="toBottomText"><span @click="toBottom(100)">{{news?'有新消息！':'回到底部'}}</span></div>
+        <div class="toBottomText" @click="toBottom(100)"><span>{{news?'有新消息！':'回到底部'}}</span></div>
         <!-- recordContent 聊天记录数组-->
         <div v-for="(item,index) in messageList" :key="index">
           <!-- 对方 -->
@@ -17,7 +17,7 @@
                 <span v-if="item.type==='TIMTextElem'">{{item.payload.text}}</span>
 
                 <viewer v-else-if="item.type==='TIMImageElem'" class="prPic">
-                  <img style="max-width:125px;" :src="item.payload.imageInfoArray[0].imageUrl" />
+                  <img style="max-width:150px;" :src="item.payload.imageInfoArray[0].imageUrl" />
                 </viewer>
 
                 <div v-else-if="item.type==='TIMCustomElem'" class="cardInfoBox">
@@ -33,8 +33,8 @@
                     <p>{{JSON.parse(item.payload.data).descriptionTitle}} <span style="color:#656ee8;">{{JSON.parse(item.payload.data).descriptionValue}}</span></p>
                     <p>{{JSON.parse(item.payload.data).sickTimeTitle}} <span style="color:#656ee8;">{{JSON.parse(item.payload.data).sickTimeValue}}</span></p>
                     <p>{{JSON.parse(item.payload.data).statementTitle}} <span style="color:#656ee8;">{{JSON.parse(item.payload.data).statementValue}}</span></p>
-                    <viewer v-if="JSON.parse(item.payload.data).imageUrl">
-                      <img style="max-width:125px;" :src="JSON.parse(item.payload.data).imageUrl" />
+                    <viewer v-for="(itemImg,indexImge) in JSON.parse(item.payload.data).imageUrl" :key="indexImge">
+                      <img style="max-width:33%;" :src="itemImg" />
                     </viewer>
                   </div>
 
@@ -53,7 +53,7 @@
                 <span v-if="item.type==='TIMTextElem'">{{item.payload.text}}</span>
 
                 <viewer v-else-if="item.type==='TIMImageElem'" class="prPic">
-                  <img style="max-width:125px;" :src="item.payload.imageInfoArray[0].imageUrl" />
+                  <img style="max-width:150px;" :src="item.payload.imageInfoArray[0].imageUrl" />
                 </viewer>
 
                 <div v-else-if="item.type==='TIMCustomElem'" class="cardInfoBox">
@@ -69,8 +69,8 @@
                     <p>{{JSON.parse(item.payload.data).descriptionTitle}} <span style="color:#656ee8;">{{JSON.parse(item.payload.data).descriptionValue}}</span></p>
                     <p>{{JSON.parse(item.payload.data).sickTimeTitle}} <span style="color:#656ee8;">{{JSON.parse(item.payload.data).sickTimeValue}}</span></p>
                     <p>{{JSON.parse(item.payload.data).statementTitle}} <span style="color:#656ee8;">{{JSON.parse(item.payload.data).statementValue}}</span></p>
-                    <viewer v-if="JSON.parse(item.payload.data).imageUrl">
-                      <img style="max-width:125px;" :src="JSON.parse(item.payload.data).imageUrl" />
+                    <viewer class="imgBox">
+                      <img v-for="(itemImg,indexImge) in JSON.parse(item.payload.data).imageUrl" :key="indexImge" :src="itemImg" />
                     </viewer>
                   </div>
                 </div>
@@ -205,7 +205,7 @@ export default {
       return localStorage.getItem('userName')
     },
     showDrawer(userID, userSig, toUser) {
-      this.openChat = !this.openChat
+      this.openChat = true
       if (this.openChat) {
         let promise = tim.login({ userID: userID, userSig: userSig })
         promise
@@ -460,5 +460,15 @@ export default {
 .cardInfo {
   background: #fff;
   padding: 5px;
+}
+.imgBox {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  flex-wrap: wrap;
+}
+.imgBox > img {
+  width: 32%;
+  margin-bottom: 4px;
 }
 </style>

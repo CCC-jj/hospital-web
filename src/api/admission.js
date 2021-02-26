@@ -23,6 +23,18 @@ export function getWorkbenchReceive(outpatientNo, patientId, regOrderNo) {
   });
 }
 
+// 就诊信息
+export function getReceiveSickInfo(orderNo) {
+  return request({
+    url: "treat/receive/sick/info",
+    method: "get",
+    headers: { "Content-Type": "x-www-form-urlencoded" },
+    params: {
+      orderNo: orderNo
+    }
+  });
+}
+
 // 获取诊断
 export function getReceiveDiagnosis() {
   return request({

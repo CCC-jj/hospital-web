@@ -18,8 +18,8 @@
           返回
         </a-button>
         <a-button-group>
-          <a-button disabled class="picBtn" @click="showModal">图文资料</a-button>
-          <a-button class="picBtn" @click="showModal">视频对话</a-button>
+          <a-button :disabled="graphicStatus" class="picBtn" @click="showModal">图文资料</a-button>
+          <a-button :disabled="!videoStatus" class="picBtn" @click="showModal">视频对话</a-button>
         </a-button-group>
 
       </div>
@@ -40,7 +40,7 @@
         </div>
         <br />
         <viewer class="prPic" :images="images">
-          <img v-for="src in images" :src="src" :key="src" :title="src" />
+          <img v-for="(item,index) in images" :src="item" :key="index" :title="item" />
         </viewer>
       </a-modal>
     </div>
@@ -110,7 +110,7 @@
             </a-col>
             <a-col :span="6">
               <a-form-model-item label="接诊类型" prop="receiveTypeId">
-                <a-select v-model="form.receiveTypeId" placeholder="请选择" size="large" @change="handleChangeType">
+                <a-select :disabled="!receiveTypeFlag" v-model="form.receiveTypeId" placeholder="请选择" size="large" @change="handleChangeType">
                   <a-select-option v-for="item in typesList" :key="item.typeCode"> {{item.typeName}} </a-select-option>
                 </a-select>
               </a-form-model-item>
@@ -372,6 +372,7 @@ import {
   getReceivePatientInfo,
   saveReceivePrescription,
   getRecipeInfo,
+  getReceiveSickInfo,
 } from '@/api/admission'
 import { getSexList, getTreatTypes, getProvinceList, getCityList } from '@/api/common'
 import { getPatientReceive } from '@/api/patient'
@@ -554,12 +555,15 @@ export default {
       // searchWords: '',
       // loadAll: [],
       dataSource: [],
+      graphicStatus: false, //图文问诊状态
+      videoStatus: false, //视频问诊状态
       images: [
         'https://gw.alipayobjects.com/zos/rmsportal/WdGqmHpayyMjiEhcKoVE.png',
         'https://gw.alipayobjects.com/zos/rmsportal/WdGqmHpayyMjiEhcKoVE.png',
         'https://gw.alipayobjects.com/zos/rmsportal/WdGqmHpayyMjiEhcKoVE.png',
         'https://gw.alipayobjects.com/zos/rmsportal/WdGqmHpayyMjiEhcKoVE.png',
       ],
+      sickInfo: {}, //就诊信息
       choseAddr: [],
       // choseAddrStr: '',
       // inputAddr: '',
@@ -569,6 +573,7 @@ export default {
       // cityListt: [],
       diagnosisList: [],
       adviceList: [],
+      receiveTypeFlag: true,
       form: {
         patientId: '',
         patientName: '',
@@ -767,6 +772,7 @@ export default {
         if (res.success) {
           let data = res.data.patient
           this.form = data
+          this.receiveTypeFlag = res.data.patient.receiveTypeFlag
           // 搜索患者
           this.searchPatient()
           if (data.provinceCode) {
@@ -841,6 +847,7 @@ export default {
     //     }
     //   })
     // },
+    // 确定接诊
     clickConfirmInfo() {
       this.regOrderNo = ''
       // this.disabledBtn = false
@@ -857,6 +864,18 @@ export default {
               this.$message.success('提交成功！')
               getRecipeInfo(this.outpatientNo, this.patientId, this.regOrderNo).then((res) => {
                 if (res.success && res.data) {
+                  getUserSig('202102221048261001291605050809').then((res) => {
+                    if (res.success) {
+                      this.openChat = true
+                      this.$refs.conversationChild.showDrawer(
+                        res.data.fromAccount,
+                        res.data.userSig,
+                        res.data.toAccount
+                      )
+                    } else {
+                      this.$message.warning(res.message)
+                    }
+                  })
                   if (!res.data.diagnosis) {
                     this.form2.diagnosis = undefined
                   } else {
@@ -1075,19 +1094,13 @@ export default {
       }, 500)
     },
     showModal() {
-      getUserSig('202102221048261001291605050809').then((res) => {
-        if (res.success) {
-          this.openChat = !this.openChat
-          this.$refs.conversationChild.showDrawer(
-            res.data.fromAccount,
-            res.data.userSig,
-            res.data.toAccount
-          )
-        } else {
-          this.$message.warning(res.message)
-        }
+      this.visible = true
+      getReceiveSickInfo(this.regOrderNo).then((res) => {
+        console.log(res)
+        this.sickInfo = res.data
       })
     },
+    showTalkModal() {},
     showModalPr() {
       if (this.prtransfer == '处方调用') {
         this.prVisible = true
