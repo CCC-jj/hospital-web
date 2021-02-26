@@ -1117,7 +1117,6 @@ export default {
     },
     handleChangeType(value) {
       this.form.receiveTypeId = value
-      console.log(this.form.receiveTypeId, value)
     },
     onChangeAddr(dates, dateStrings) {
       if (dateStrings) {
