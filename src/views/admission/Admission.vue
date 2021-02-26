@@ -1075,13 +1075,17 @@ export default {
       }, 500)
     },
     showModal() {
-      this.openChat = !this.openChat
       getUserSig('202102221048261001291605050809').then((res) => {
-        this.$refs.conversationChild.showDrawer(
-          res.data.fromAccount,
-          res.data.userSig,
-          res.data.toAccount
-        )
+        if (res.success) {
+          this.openChat = !this.openChat
+          this.$refs.conversationChild.showDrawer(
+            res.data.fromAccount,
+            res.data.userSig,
+            res.data.toAccount
+          )
+        } else {
+          this.$message.warning(res.message)
+        }
       })
     },
     showModalPr() {
@@ -1382,17 +1386,16 @@ a {
   left: 50%;
   transform: translate(-50%, -50%);
 }
-.formFlex{
+.formFlex {
   flex: 1;
 }
-.chatFlex{
+.chatFlex {
   flex: 0;
 }
-.formContent{
+.formContent {
   flex: 3;
 }
-.chatContent{
+.chatContent {
   flex: 1;
 }
-
 </style>

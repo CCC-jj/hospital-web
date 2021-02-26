@@ -13,18 +13,33 @@
             <div class="info">
               <p class="time">病患 {{moment(item.time*1000).format('YYYY-MM-DD HH:mm:ss')}}</p>
               <div class="info-content">
+
                 <span v-if="item.type==='TIMTextElem'">{{item.payload.text}}</span>
-                <!-- <img style="max-width:300px;"  :src="item.payload.imageInfoArray[1].imageUrl" alt=""> -->
+
                 <viewer v-else-if="item.type==='TIMImageElem'" class="prPic">
-                  <img style="max-width:100px;" :src="item.payload.imageInfoArray[0].imageUrl" />
+                  <img style="max-width:125px;" :src="item.payload.imageInfoArray[0].imageUrl" />
                 </viewer>
+
                 <div v-else-if="item.type==='TIMCustomElem'" class="cardInfoBox">
-                  <div v-if="item.payload.data" class="cardInfo">
-                    <p>{{JSON.parse(item.payload.data).title}}</p>
-                    <p>诊断 <span>{{JSON.parse(item.payload.data).diagnosis}}</span></p>
-                    <p>药品 <span>{{JSON.parse(item.payload.data).drugs}}</span></p>
+
+                  <div v-if="JSON.parse(item.payload.data).type==='001'" class="cardInfo">
+                    <p style="text-align:center;">{{JSON.parse(item.payload.data).title}}</p>
+                    <p>诊断 <span style="color:#656ee8;">{{JSON.parse(item.payload.data).diagnosis}}</span></p>
+                    <p>药品 <span style="color:#656ee8;">{{JSON.parse(item.payload.data).drugs}}</span></p>
                   </div>
+
+                  <div v-if="JSON.parse(item.payload.data).type==='002'" class="cardInfo">
+                    <p style="text-align:center;">{{JSON.parse(item.payload.data).title}}</p>
+                    <p>{{JSON.parse(item.payload.data).descriptionTitle}} <span style="color:#656ee8;">{{JSON.parse(item.payload.data).descriptionValue}}</span></p>
+                    <p>{{JSON.parse(item.payload.data).sickTimeTitle}} <span style="color:#656ee8;">{{JSON.parse(item.payload.data).sickTimeValue}}</span></p>
+                    <p>{{JSON.parse(item.payload.data).statementTitle}} <span style="color:#656ee8;">{{JSON.parse(item.payload.data).statementValue}}</span></p>
+                    <viewer v-if="JSON.parse(item.payload.data).imageUrl">
+                      <img style="max-width:125px;" :src="JSON.parse(item.payload.data).imageUrl" />
+                    </viewer>
+                  </div>
+
                 </div>
+
                 <div v-else>{{item.payload}}</div>
               </div>
             </div>
@@ -34,18 +49,32 @@
             <div class="info">
               <p class="time">{{doctorName()}} {{moment(item.time*1000).format('YYYY-MM-DD HH:mm:ss')}}</p>
               <div class="info-content">
+
                 <span v-if="item.type==='TIMTextElem'">{{item.payload.text}}</span>
-                <!-- <img style="max-width:300px;"  :src="item.payload.imageInfoArray[1].imageUrl" alt=""> -->
+
                 <viewer v-else-if="item.type==='TIMImageElem'" class="prPic">
-                  <img style="max-width:100px;" :src="item.payload.imageInfoArray[0].imageUrl" />
+                  <img style="max-width:125px;" :src="item.payload.imageInfoArray[0].imageUrl" />
                 </viewer>
+
                 <div v-else-if="item.type==='TIMCustomElem'" class="cardInfoBox">
-                  <div v-if="item.payload.data" class="cardInfo">
-                    <p>{{JSON.parse(item.payload.data).title}}</p>
-                    <p>诊断 <span>{{JSON.parse(item.payload.data).diagnosis}}</span></p>
-                    <p>药品 <span>{{JSON.parse(item.payload.data).drugs}}</span></p>
+
+                  <div v-if="JSON.parse(item.payload.data).type==='001'" class="cardInfo">
+                    <p style="text-align:center;">{{JSON.parse(item.payload.data).title}}</p>
+                    <p>诊断 <span style="color:#656ee8;">{{JSON.parse(item.payload.data).diagnosis}}</span></p>
+                    <p>药品 <span style="color:#656ee8;">{{JSON.parse(item.payload.data).drugs}}</span></p>
+                  </div>
+
+                  <div v-if="JSON.parse(item.payload.data).type==='002'" class="cardInfo">
+                    <p style="text-align:center;">{{JSON.parse(item.payload.data).title}}</p>
+                    <p>{{JSON.parse(item.payload.data).descriptionTitle}} <span style="color:#656ee8;">{{JSON.parse(item.payload.data).descriptionValue}}</span></p>
+                    <p>{{JSON.parse(item.payload.data).sickTimeTitle}} <span style="color:#656ee8;">{{JSON.parse(item.payload.data).sickTimeValue}}</span></p>
+                    <p>{{JSON.parse(item.payload.data).statementTitle}} <span style="color:#656ee8;">{{JSON.parse(item.payload.data).statementValue}}</span></p>
+                    <viewer v-if="JSON.parse(item.payload.data).imageUrl">
+                      <img style="max-width:125px;" :src="JSON.parse(item.payload.data).imageUrl" />
+                    </viewer>
                   </div>
                 </div>
+
                 <div v-else>{{item.payload}}</div>
               </div>
             </div>
