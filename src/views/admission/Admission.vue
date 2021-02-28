@@ -849,7 +849,7 @@ export default {
     // },
     // 确定接诊
     clickConfirmInfo() {
-      this.regOrderNo = ''
+      // this.regOrderNo = ''
       // this.disabledBtn = false
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
