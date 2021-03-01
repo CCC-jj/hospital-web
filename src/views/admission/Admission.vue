@@ -113,7 +113,7 @@
             <a-col :span="6">
               <a-form-model-item label="接诊类型" prop="receiveTypeId">
                 <a-select :disabled="!receiveTypeFlag" v-model="form.receiveTypeId" placeholder="请选择" size="large" @change="handleChangeType">
-                  <a-select-option v-for="item in typesList" :key="item.typeCode"> {{item.typeName}} </a-select-option>
+                  <a-select-option v-for="item in typesList" :key="item.typeCode" :disabled="item.typeCode===200 || item.typeCode===300"> {{item.typeName}} </a-select-option>
                 </a-select>
               </a-form-model-item>
             </a-col>
@@ -722,12 +722,13 @@ export default {
         // 获取省市列表之后再获取患者信息
         if (
           this.$route.params.patientId &&
-          this.$route.params.regOrderNo &&
-          this.$route.params.outpatientNo
+          this.$route.params.regOrderNo
         ) {
           this.patientId = this.$route.params.patientId
           this.regOrderNo = this.$route.params.regOrderNo
-          this.outNo = this.$route.params.outpatientNo
+          if (this.$route.params.outpatientNo) {
+            this.outNo = this.$route.params.outpatientNo
+          }
           // 从接诊工作台接诊
           this.getWorkbenchReceive()
         } else if (this.$route.params.patientId) {
