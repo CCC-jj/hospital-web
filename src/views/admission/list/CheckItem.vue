@@ -310,8 +310,8 @@ export default {
     this.recipe.doctorName = this.allPrInfo.doctorName
     if (this.prInfo && this.prInfo.recipeType == 4) {
       this.recipe = this.prInfo
-      this.form.deptName = this.prInfo.deptName
-      this.form.doctorName = this.prInfo.doctorName
+      // this.form.deptName = this.prInfo.deptName
+      // this.form.doctorName = this.prInfo.doctorName
       this.prPrice = this.prInfo.recipeAmount
       if (this.prInfo.examine) {
         // this.prInfo.examine.map((item) => {
