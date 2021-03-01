@@ -720,10 +720,7 @@ export default {
         this.options = option
 
         // 获取省市列表之后再获取患者信息
-        if (
-          this.$route.params.patientId &&
-          this.$route.params.regOrderNo
-        ) {
+        if (this.$route.params.patientId && this.$route.params.regOrderNo) {
           this.patientId = this.$route.params.patientId
           this.regOrderNo = this.$route.params.regOrderNo
           if (this.$route.params.outpatientNo) {
@@ -889,6 +886,8 @@ export default {
                   } else {
                     this.form2.doctorAdvice = res.data.doctorAdvice
                   }
+                } else {
+                  this.$message.warning('处方信息获取失败！')
                 }
                 this.spinning = false
               })
@@ -1358,10 +1357,15 @@ export default {
 }
 .prPic {
   display: flex;
-  justify-content: space-between;
+  /* justify-content: space-between; */
+  flex-direction: row;
+  flex-wrap: wrap;
 }
 .prPic img {
-  width: 10%;
+  max-width: 10%;
+  /* height: ; */
+  margin-right: 1%;
+  margin-bottom: 10px;
 }
 .ant-divider {
   height: auto;

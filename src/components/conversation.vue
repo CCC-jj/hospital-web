@@ -271,11 +271,11 @@ export default {
         const messageList = imResponse.data.messageList // 消息列表。
         const nextReqMessageID = imResponse.data.nextReqMessageID // 用于续拉，分页续拉时需传入该字段。
         const isCompleted = imResponse.data.isCompleted // 表示是否已经拉完所有消息。
+        this.messageList = messageList.concat(this.messageList)
         if (isCompleted) {
           this.more = false
           return
         }
-        this.messageList = messageList.concat(this.messageList)
         this.nextReqMessageID = nextReqMessageID
       })
     },
