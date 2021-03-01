@@ -864,18 +864,20 @@ export default {
               this.$message.success('提交成功！')
               getRecipeInfo(this.outpatientNo, this.patientId, this.regOrderNo).then((res) => {
                 if (res.success && res.data) {
-                  getUserSig('202102221048261001291605050809').then((res) => {
-                    if (res.success) {
-                      this.openChat = true
-                      this.$refs.conversationChild.showDrawer(
-                        res.data.fromAccount,
-                        res.data.userSig,
-                        res.data.toAccount
-                      )
-                    } else {
-                      this.$message.warning(res.message)
-                    }
-                  })
+                  if (this.form.receiveTypeId === 200 || this.form.receiveTypeId === 300) {
+                    getUserSig(this.regOrderNo).then((res) => {
+                      if (res.success) {
+                        this.openChat = true
+                        this.$refs.conversationChild.showDrawer(
+                          res.data.fromAccount,
+                          res.data.userSig,
+                          res.data.toAccount
+                        )
+                      } else {
+                        this.$message.warning(res.message)
+                      }
+                    })
+                  }
                   if (!res.data.diagnosis) {
                     this.form2.diagnosis = undefined
                   } else {
