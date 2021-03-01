@@ -4,7 +4,7 @@
     <div v-if="openChat" class="chatBox">
       <div class="chat-content" id="chatRecord">
         <div style="text-align: center; margin-bottom: 5px;"><span @click="getMoreMessage" :class="[{moreText: more}]">{{more?'查看更多':'没有更多了'}}</span></div>
-        <div class="toBottomText" @click="toBottom(100)"><span>{{news?'有新消息！':'回到底部'}}</span></div>
+        <div class="toBottomText" @click="toBottom(100)"><span>{{news?'您有新消息！':'回到底部'}}</span></div>
         <!-- recordContent 聊天记录数组-->
         <div v-for="(item,index) in messageList" :key="index">
           <!-- 对方 -->
@@ -33,8 +33,8 @@
                     <p>{{JSON.parse(item.payload.data).descriptionTitle}} <span style="color:#656ee8;">{{JSON.parse(item.payload.data).descriptionValue}}</span></p>
                     <p>{{JSON.parse(item.payload.data).sickTimeTitle}} <span style="color:#656ee8;">{{JSON.parse(item.payload.data).sickTimeValue}}</span></p>
                     <p>{{JSON.parse(item.payload.data).statementTitle}} <span style="color:#656ee8;">{{JSON.parse(item.payload.data).statementValue}}</span></p>
-                    <viewer v-for="(itemImg,indexImge) in JSON.parse(item.payload.data).imageUrl" :key="indexImge">
-                      <img style="max-width:33%;" :src="itemImg" />
+                    <viewer class="imgBox">
+                      <img v-for="(itemImg,indexImge) in JSON.parse(item.payload.data).imageUrl" :key="indexImge" :src="itemImg" />
                     </viewer>
                   </div>
 
@@ -161,16 +161,28 @@ export default {
       // event.data - 存储 Message 对象的数组 - [Message]
       if (event.data[0].conversationID === this.conversationID) {
         this.messageList.push(event.data[0])
-        this.news = true
+        if (event.data[0].flow === 'in') {
+          this.news = true
+        }
         // this.toBottom(100)
-        this.$nextTick(function () {
-          this.$notification.open({
-            message: '提示',
-            description: '你有一条新消息',
-          })
-        })
+        // this.$nextTick(() => {
+        //   this.$notification.open({
+        //     message: '提示',
+        //     description: '你有一条新消息',
+        //   })
+        // })
       }
     })
+  },
+  destroyed: function () {
+    let promise = tim.logout()
+    promise
+      .then((imResponse) => {
+        console.log(imResponse.data) // 登出成功
+      })
+      .catch((imError) => {
+        console.warn('logout error:', imError)
+      })
   },
   methods: {
     moment,
@@ -217,6 +229,7 @@ export default {
               // 标识账号已登录，本次登录操作为重复登录。v2.5.1 起支持
               // console.log(imResponse.data.errorInfo)
             }
+            this.messageList = []
             setTimeout(() => {
               this.getMessageList()
             }, 500)
@@ -448,7 +461,7 @@ export default {
 .toBottomText {
   color: #656ee8;
   position: absolute;
-  z-index: 99;
+  z-index: 8;
   top: 280px;
   left: 50%;
   transform: translateX(-50%);
@@ -463,12 +476,13 @@ export default {
 }
 .imgBox {
   display: flex;
-  justify-content: space-between;
+  /* justify-content: space-between; */
   width: 100%;
   flex-wrap: wrap;
 }
 .imgBox > img {
   width: 32%;
+  margin-right: 1%;
   margin-bottom: 4px;
 }
 </style>

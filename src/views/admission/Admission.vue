@@ -778,6 +778,8 @@ export default {
             this.loadData(list)
             this.choseAddr.push(data.provinceCode, data.cityCode)
           }
+        } else {
+          this.$message.warning(res.message)
         }
       })
     },
@@ -1098,7 +1100,6 @@ export default {
     showModal() {
       this.visible = true
       getReceiveSickInfo(this.regOrderNo).then((res) => {
-        console.log(res)
         this.sickInfo = res.data
       })
     },
