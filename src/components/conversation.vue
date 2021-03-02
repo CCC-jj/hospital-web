@@ -8,7 +8,7 @@
         <!-- recordContent 聊天记录数组-->
         <div v-for="(item,index) in messageList" :key="index">
           <!-- 对方 -->
-          <div class="word" v-if="item.flow !== 'out'">
+          <div class="word" v-if="item.flow === 'in'">
             <img class="avatar" src="../assets/p0.png" />
             <div class="info">
               <p class="time">病患 {{moment(item.time*1000).format('YYYY-MM-DD HH:mm:ss')}}</p>
@@ -45,7 +45,7 @@
             </div>
           </div>
           <!-- 我的 -->
-          <div class="word-my" v-else>
+          <div class="word-my" v-else-if="typeElse(item)">
             <div class="info">
               <p class="time">{{doctorName()}} {{moment(item.time*1000).format('YYYY-MM-DD HH:mm:ss')}}</p>
               <div class="info-content">
@@ -165,12 +165,12 @@ export default {
           this.news = true
         }
         // this.toBottom(100)
-        // this.$nextTick(() => {
-        //   this.$notification.open({
-        //     message: '提示',
-        //     description: '你有一条新消息',
-        //   })
-        // })
+        this.$nextTick(() => {
+          this.$notification.open({
+            message: '提示',
+            description: '你有一条新消息',
+          })
+        })
       }
     })
   },
@@ -215,6 +215,13 @@ export default {
     },
     doctorName() {
       return localStorage.getItem('userName')
+    },
+    typeElse(item) {
+      if (item.payload.data) {
+        return JSON.parse(item.payload.data).type !== '003'
+      } else {
+        return item.flow === 'out'
+      }
     },
     showDrawer(userID, userSig, toUser) {
       this.openChat = true
@@ -350,7 +357,7 @@ export default {
   position: fixed; */
   /* top: 22%;
   right: 5%; */
-  /* width: 500px; */
+  width: 100%;
   background: #e6e6e6;
   border-radius: 10px;
   overflow: hidden;
@@ -389,7 +396,7 @@ export default {
 }
 .chat-content .word .info .info-content {
   word-wrap: break-word;
-  max-width: 200px;
+  max-width: 80%;
   border-radius: 5px;
   padding: 5px;
   font-size: 14px;
@@ -434,7 +441,7 @@ export default {
 .chat-content .word-my .info .info-content {
   border-radius: 5px;
   word-wrap: break-word;
-  max-width: 200px;
+  max-width: 80%;
   padding: 5px;
   font-size: 14px;
   float: right;

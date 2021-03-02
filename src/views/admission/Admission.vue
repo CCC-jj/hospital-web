@@ -1080,6 +1080,7 @@ export default {
         this.$confirm({
           title: '结束确认',
           content: '确定要结束此次就诊吗？',
+          centered: true,
           onOk: () => {
             getReceiveFinish(this.regOrderNo).then((res) => {
               if (res.success) {
@@ -1101,6 +1102,9 @@ export default {
       this.visible = true
       getReceiveSickInfo(this.regOrderNo).then((res) => {
         this.sickInfo = res.data
+        if (!res.success) {
+          this.$message.warning(res.message)
+        }
       })
     },
     showTalkModal() {},
@@ -1414,9 +1418,11 @@ a {
   flex: 0;
 }
 .formContent {
-  flex: 3;
+  width: 60%;
+  flex: 6;
 }
 .chatContent {
-  flex: 1;
+  width: 40%;
+  flex: 4;
 }
 </style>
