@@ -69,10 +69,9 @@ export default {
         labelCol: { span: 4 },
         wrapperCol: { span: 14 },
       },
-      oldPwd: '',
-      newPwd: '',
-      confirmPwd: '',
-      visible: false,
+      // oldPwd: '',
+      // newPwd: '',
+      // confirmPwd: '',
       confirmLoading: false,
     }
   },

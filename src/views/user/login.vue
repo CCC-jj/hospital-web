@@ -119,6 +119,8 @@ export default {
       if (this.ruleForm.checked) {
         // 加密密码后在存入cookie
         if (!this.getCookie('password') || this.ruleForm.password != this.getCookie('password')) {
+          this.setCookie('account', '', -1)
+          this.setCookie('password', '', -1)
           const account = this.ruleForm.mobile
           const passWord = md5(this.ruleForm.password)
           this.setCookie('account', account, 30)
