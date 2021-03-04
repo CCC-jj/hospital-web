@@ -70,6 +70,7 @@ import RoleList from '@/views/setting/staffManage/list/RoleList'
 import StaffInfo from '@/views/setting/staffManage/list/add/StaffInfo'
 import DepartmentInfo from '@/views/setting/staffManage/list/add/DepartmentInfo'
 import RoleInfo from '@/views/setting/staffManage/list/add/RoleInfo'
+import OutPatient from '@/views/setting/outPatient/index'
 
 
 Vue.use(Router);
@@ -476,6 +477,12 @@ export default new Router({
           component: RoleInfo,
           meta: { title: "员工管理", key: "18", path: "StaffManage" },
         },
+        {
+          path: "/home/setting/outPatient",
+          name: "OutPatient",
+          component: OutPatient,
+          meta: { title: "出诊设置", key: "19", path: "OutPatient" },
+        }
       ]
     }
   ]
