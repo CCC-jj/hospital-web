@@ -99,7 +99,7 @@ export default {
               localStorage.removeItem('token')
               this.setCookie('account', '', -1)
               this.setCookie('password', '', -1)
-              this.$router.push('/')
+              this.$router.push('/user/login')
             } else {
               this.$message.warning(res.message)
             }

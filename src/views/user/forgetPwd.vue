@@ -43,7 +43,7 @@
         </a-button>
       </a-form-model-item>
       <div class="hastoLogin">
-        <router-link to="/">已有账号，去登录</router-link>
+        <router-link to="/user/login">已有账号，去登录</router-link>
       </div>
     </a-form-model>
   </div>
@@ -157,7 +157,7 @@ export default {
               this.setCookie('account', '', -1)
               this.setCookie('password', '', -1)
               this.$message.success('密码修改成功')
-              this.$router.push({ path: '/' })
+              this.$router.push({ path: '/user/login' })
             } else if (res.code == 'ILLEGAL_ARGUMENT') {
               this.$message.warning('请重新获取验证码')
             } else {

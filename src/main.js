@@ -52,7 +52,7 @@ Vue.use(Viewer, {
 });
 
 router.beforeEach((to, from, next) => {
-  if (to.path == "/login" || to.path == "/forgetpwd") {
+  if (to.path == "/user/login" || to.path == "/user/forgetpwd") {
     next();
   } else {
     let getToken = localStorage.getItem("token");
@@ -61,7 +61,7 @@ router.beforeEach((to, from, next) => {
       next();
       window.document.title = getName;
     } else {
-      next("/login");
+      next("/user/login");
       window.document.title = "医生工作站";
     }
   }

@@ -3,75 +3,11 @@ import Router from "vue-router";
 
 import User from "@/views/user/index";
 import Login from "@/views/user/login";
-import ForgetPwd from "@/views/user/forgetPwd";
 import Home from "@/views/home/index";
-import ChangePwd from "@/views/account/changePwd";
-import Notification from "@/views/account/Notification";
-import OperationLog from "@/views/account/OperationLog";
 import WorkPlace from "@/views/workplace/index";
-import ManagePatient from "@/views/manage/managePatient";
-import Business from "@/views/business/index";
-import Admission from "@/views/admission/Admission";
-import Prescription from "@/views/admission/Prescription";
-import CaseHistory from "@/views/admission/CaseHistory";
-
-import CheckWorkplace from "@/views/workplace/checkWorkplace";
-import ReportReview from "@/views/workplace/list/ReportReview";
 // import Western from "@/views/admission/list/Western";
 // import Traditional from "@/views/admission/list/Traditional";
 // import CheckItem from "@/views/admission/list/CheckItem";
-
-import ManageCharge from "@/views/manage/manageCharge";
-import ToCharge from "@/views/manage/charge/ToCharge";
-import Charged from "@/views/manage/charge/Charged";
-import Refunded from "@/views/manage/charge/Refunded";
-import Patient from "@/views/manage/Patient/index";
-import PatientInfo from "@/views/manage/Patient/PatientInfo";
-import PatientRecord from "@/views/manage/Patient/PatientRecord";
-import Charge from "@/views/manage/charge/index";
-import ChargedDetails from "@/views/manage/charge/details/ChargedDetails";
-import RefundDetails from "@/views/manage/charge/details/RefundDetails";
-import RefundedDetails from "@/views/manage/charge/details/RefundedDetails";
-
-import DosingBeforeCheck from "@/views/workplace/list/DosingBeforeCheck";
-import DiagnoseReport from "@/views/workplace/list/DiagnoseReport";
-
-import DrugInfoSet from "@/views/manage/projectDrugs/DrugInfoSet";
-import ProjectSet from "@/views/manage/projectDrugs/ProjectSet";
-
-import StatisticalReport from "@/views/StatisticalReport/index";
-import DoctorPerformance from "@/views/StatisticalReport/DoctorPerformance";
-
-import Maintain from "@/views/setting/maintain/index";
-import Advice from "@/views/setting/maintain/advice";
-import AuxiliaryCheck from "@/views/setting/maintain/auxiliaryCheck";
-import Complaint from "@/views/setting/maintain/complaint";
-import Diagnosis from "@/views/setting/maintain/diagnosis";
-import HistoryAllergy from "@/views/setting/maintain/historyAllergy";
-import HistoryIllness from "@/views/setting/maintain/historyIllness";
-import HistoryPerson from "@/views/setting/maintain/historyPerson";
-import PersonOpinion from "@/views/setting/maintain/personOpinion";
-import PresentIllness from "@/views/setting/maintain/presentIllness";
-
-import Template from "@/views/setting/template/index";
-import MedicalList from "@/views/setting/template/list/Medical";
-import PrescriptionList from "@/views/setting/template/list/Prescription";
-import ReportList from "@/views/setting/template/list/Report";
-import NewMedicalRecordTemplate from "@/views/setting/template/list/newTemplate/medicalRecord/index";
-import NewWesternTemplate from "@/views/setting/template/list/newTemplate/prescription/Western";
-import NewChineseTemplate from "@/views/setting/template/list/newTemplate/prescription/Chinese";
-import NewCheckItemTemplate from "@/views/setting/template/list/newTemplate/prescription/CheckItem";
-import NewReportTemplate from "@/views/setting/template/list/newTemplate/report/index";
-
-import StaffManage from '@/views/setting/staffManage/index'
-import StaffList from '@/views/setting/staffManage/list/StaffList'
-import DepartmentList from '@/views/setting/staffManage/list/DepartmentList'
-import RoleList from '@/views/setting/staffManage/list/RoleList'
-import StaffInfo from '@/views/setting/staffManage/list/add/StaffInfo'
-import DepartmentInfo from '@/views/setting/staffManage/list/add/DepartmentInfo'
-import RoleInfo from '@/views/setting/staffManage/list/add/RoleInfo'
-import OutPatient from '@/views/setting/outPatient/index'
-
 
 Vue.use(Router);
 
@@ -84,25 +20,25 @@ export default new Router({
   mode: "history",
   routes: [
     {
-      path: "/",
+      path: "/user",
       // name: 'User',
       component: User,
-      redirect: "/login",
+      redirect: "/user/login",
       children: [
         {
-          path: "/login",
+          path: "/user/login",
           name: "Login",
           component: Login
         },
         {
-          path: "/forgetpwd",
+          path: "/user/forgetpwd",
           name: "ForgetPwd",
-          component: ForgetPwd
+          component: () => import("../views/user/forgetPwd")
         }
       ]
     },
     {
-      path: "/home",
+      path: "/",
       // name: 'Home',
       component: Home,
       redirect: "/home/workPlace",
@@ -110,19 +46,19 @@ export default new Router({
         {
           path: "/home/changePwd",
           name: "ChangePwd",
-          component: ChangePwd,
+          component: () => import("../views/account/changePwd"),
           meta: { title: "修改密码", key: "15", path: "ChangePwd" }
         },
         {
           path: "/home/notification",
           name: "Notification",
-          component: Notification,
+          component: () => import("../views/account/Notification"),
           meta: { title: "消息通知", key: "16", path: "Notification" }
         },
         {
           path: "/home/operationLog",
           name: "OperationLog",
-          component: OperationLog,
+          component: () => import("../views/account/OperationLog"),
           meta: { title: "操作日志", key: "17", path: "OperationLog" }
         },
         // {
@@ -140,26 +76,26 @@ export default new Router({
         {
           path: "/home/manageCharge",
           name: "ManageCharge",
-          component: ManageCharge,
+          component: () => import("../views/manage/manageCharge"),
           redirect: "/home/manageCharge/toCharge",
           meta: { title: "收费管理", key: "4", path: "ManageCharge" },
           children: [
             {
               path: "/home/manageCharge/toCharge",
               name: "ToCharge",
-              component: ToCharge,
+              component: () => import("../views/manage/charge/ToCharge"),
               meta: { title: "收费管理", key: "4", path: "ManageCharge" }
             },
             {
               path: "/home/manageCharge/charged",
               name: "Charged",
-              component: Charged,
+              component: () => import("../views/manage/charge/Charged"),
               meta: { title: "收费管理", key: "4", path: "ManageCharge" }
             },
             {
               path: "/home/manageCharge/refunded",
               name: "Refunded",
-              component: Refunded,
+              component: () => import("../views/manage/charge/Refunded"),
               meta: { title: "收费管理", key: "4", path: "ManageCharge" }
             }
           ]
@@ -167,50 +103,53 @@ export default new Router({
         {
           path: "/home/manageCharge/charge",
           name: "Charge",
-          component: Charge,
+          component: () => import("../views/manage/charge/index"),
           meta: { title: "收费管理", key: "4", path: "ManageCharge" }
         },
         {
           path: "/home/manageCharge/chargedDetails",
           name: "ChargedDetails",
-          component: ChargedDetails,
+          component: () =>
+            import("../views/manage/charge/details/ChargedDetails"),
           meta: { title: "收费管理", key: "4", path: "ManageCharge" }
         },
         {
           path: "/home/manageCharge/refundDetails",
           name: "RefundDetails",
-          component: RefundDetails,
+          component: () =>
+            import("../views/manage/charge/details/RefundDetails"),
           meta: { title: "收费管理", key: "4", path: "ManageCharge" }
         },
         {
           path: "/home/manageCharge/refundedDetails",
           name: "RefundedDetails",
-          component: RefundedDetails,
+          component: () =>
+            import("../views/manage/charge/details/RefundedDetails"),
           meta: { title: "收费管理", key: "4", path: "ManageCharge" }
         },
         {
           path: "/home/managePatient",
           name: "ManagePatient",
-          component: ManagePatient,
+          component: () => import("../views/manage/managePatient"),
           meta: { title: "患者管理", key: "6", path: "ManagePatient" }
         },
         {
           path: "/home/patient",
           name: "Patient",
-          component: Patient,
+          component: () => import("../views/manage/Patient/index"),
           redirect: "/home/patient/patientInfo",
           meta: { title: "患者管理", key: "6", path: "ManagePatient" },
           children: [
             {
               path: "/home/patient/patientInfo",
               name: "PatientInfo",
-              component: PatientInfo,
+              component: () => import("../views/manage/Patient/PatientInfo"),
               meta: { title: "患者管理", key: "6", path: "ManagePatient" }
             },
             {
               path: "/home/patient/patientRecord",
               name: "PatientRecord",
-              component: PatientRecord,
+              component: () => import("../views/manage/Patient/PatientRecord"),
               meta: { title: "患者管理", key: "6", path: "ManagePatient" }
             }
           ]
@@ -218,38 +157,38 @@ export default new Router({
         {
           path: "/home/checkWorkplace",
           name: "CheckWorkplace",
-          component: CheckWorkplace,
+          component: () => import("../views/workplace/checkWorkplace"),
           meta: { title: "检查工作台", key: "5", path: "CheckWorkplace" }
         },
         {
           path: "/home/checkWorkplace/dosingBeforeCheck",
           name: "DosingBeforeCheck",
-          component: DosingBeforeCheck,
+          component: () => import("../views/workplace/list/DosingBeforeCheck"),
           meta: { title: "检查工作台", key: "5", path: "CheckWorkplace" }
         },
         {
           path: "/home/checkWorkplace/diagnoseReport",
           name: "DiagnoseReport",
-          component: DiagnoseReport,
+          component: () => import("../views/workplace/list/DiagnoseReport"),
           meta: { title: "检查工作台", key: "5", path: "CheckWorkplace" }
         },
         {
           path: "/home/checkWorkplace/reportReview",
           name: "ReportReview",
-          component: ReportReview,
+          component: () => import("../views/workplace/list/ReportReview"),
           meta: { title: "检查工作台", key: "5", path: "CheckWorkplace" }
         },
         {
           path: "/home/admission",
           name: "Admission",
-          component: Admission,
+          component: () => import("../views/admission/Admission"),
           redirect: "/home/admission/prescription",
           meta: { title: "新开就诊", key: "3", path: "Admission" },
           children: [
             {
               path: "/home/admission/prescription",
               name: "Prescription",
-              component: Prescription,
+              component: () => import("../views/admission/Prescription"),
               // redirect: "/home/admission/prescription",
               meta: { title: "新开就诊", key: "3", path: "Admission" }
               // children: [
@@ -276,7 +215,7 @@ export default new Router({
             {
               path: "/home/admission/caseHistory",
               name: "CaseHistory",
-              component: CaseHistory,
+              component: () => import("../views/admission/CaseHistory"),
               meta: { title: "新开就诊", key: "3", path: "Admission" }
             }
           ]
@@ -284,26 +223,27 @@ export default new Router({
         {
           path: "/home/drugInfoSet",
           name: "DrugInfoSet",
-          component: DrugInfoSet,
+          component: () => import("../views/manage/projectDrugs/DrugInfoSet"),
           meta: { title: "药品信息设置", key: "8", path: "DrugInfoSet" }
         },
         {
           path: "/home/projectSet",
           name: "ProjectSet",
-          component: ProjectSet,
+          component: () => import("../views/manage/projectDrugs/ProjectSet"),
           meta: { title: "检查项目设置", key: "9", path: "ProjectSet" }
         },
         {
           path: "/home/statisticalReport",
           name: "StatisticalReport",
-          component: StatisticalReport,
+          component: () => import("../views/StatisticalReport/index"),
           meta: { title: "医生业绩统计", key: "11", path: "StatisticalReport" },
           redirect: "/home/doctorPerformance",
           children: [
             {
               path: "/home/doctorPerformance",
               name: "DoctorPerformance",
-              component: DoctorPerformance,
+              component: () =>
+                import("../views/StatisticalReport/DoctorPerformance"),
               meta: {
                 title: "医生业绩统计",
                 key: "11",
@@ -315,62 +255,68 @@ export default new Router({
         {
           path: "/home/maintain",
           name: "Maintain",
-          component: Maintain,
+          component: () => import("../views/setting/maintain/index"),
           meta: { title: "病历信息维护", key: "13", path: "Maintain" },
           redirect: "/home/maintain/diagnosis",
           children: [
             {
               path: "/home/maintain/advice",
               name: "Advice",
-              component: Advice,
+              component: () => import("../views/setting/maintain/advice"),
               meta: { title: "病历信息维护", key: "13", path: "Maintain" }
             },
             {
               path: "/home/maintain/auxiliaryCheck",
               name: "AuxiliaryCheck",
-              component: AuxiliaryCheck,
+              component: () =>
+                import("../views/setting/maintain/auxiliaryCheck"),
               meta: { title: "病历信息维护", key: "13", path: "Maintain" }
             },
             {
               path: "/home/maintain/complaint",
               name: "Complaint",
-              component: Complaint,
+              component: () => import("../views/setting/maintain/complaint"),
               meta: { title: "病历信息维护", key: "13", path: "Maintain" }
             },
             {
               path: "/home/maintain/diagnosis",
               name: "Diagnosis",
-              component: Diagnosis,
+              component: () => import("../views/setting/maintain/diagnosis"),
               meta: { title: "病历信息维护", key: "13", path: "Maintain" }
             },
             {
               path: "/home/maintain/historyAllergy",
               name: "HistoryAllergy",
-              component: HistoryAllergy,
+              component: () =>
+                import("../views/setting/maintain/historyAllergy"),
               meta: { title: "病历信息维护", key: "13", path: "Maintain" }
             },
             {
               path: "/home/maintain/historyIllness",
               name: "HistoryIllness",
-              component: HistoryIllness,
+              component: () =>
+                import("../views/setting/maintain/historyIllness"),
               meta: { title: "病历信息维护", key: "13", path: "Maintain" }
             },
             {
               path: "/home/maintain/historyPerson",
               name: "HistoryPerson",
-              component: HistoryPerson,
+              component: () =>
+                import("../views/setting/maintain/historyPerson"),
               meta: { title: "病历信息维护", key: "13", path: "Maintain" }
             },
             {
               path: "/home/maintain/personOpinion",
               name: "PersonOpinion",
-              component: PersonOpinion,
+              component: () =>
+                import("../views/setting/maintain/personOpinion"),
               meta: { title: "病历信息维护", key: "13", path: "Maintain" }
             },
             {
               path: "/home/maintain/presentIllness",
               name: "PresentIllness",
-              component: PresentIllness,
+              component: () =>
+                import("../views/setting/maintain/presentIllness"),
               meta: { title: "病历信息维护", key: "13", path: "Maintain" }
             }
           ]
@@ -378,26 +324,27 @@ export default new Router({
         {
           path: "/home/template",
           name: "Template",
-          component: Template,
+          component: () => import("../views/setting/template/index"),
           meta: { title: "模板维护", key: "14", path: "Template" },
           redirect: "/home/template/medicalList",
           children: [
             {
               path: "/home/template/medicalList",
               name: "MedicalList",
-              component: MedicalList,
+              component: () => import("../views/setting/template/list/Medical"),
               meta: { title: "模板维护", key: "14", path: "Template" }
             },
             {
               path: "/home/template/prescriptionList",
               name: "PrescriptionList",
-              component: PrescriptionList,
+              component: () =>
+                import("../views/setting/template/list/Prescription"),
               meta: { title: "模板维护", key: "14", path: "Template" }
             },
             {
               path: "/home/template/reportList",
               name: "ReportList",
-              component: ReportList,
+              component: () => import("../views/setting/template/list/Report"),
               meta: { title: "模板维护", key: "14", path: "Template" }
             }
           ]
@@ -405,56 +352,72 @@ export default new Router({
         {
           path: "/home/template/newMedicalRecordTemplate",
           name: "NewMedicalRecordTemplate",
-          component: NewMedicalRecordTemplate,
+          component: () =>
+            import(
+              "../views/setting/template/list/newTemplate/medicalRecord/index"
+            ),
           meta: { title: "模板维护", key: "14", path: "Template" }
         },
         {
           path: "/home/template/newWesternTemplate",
           name: "NewWesternTemplate",
-          component: NewWesternTemplate,
+          component: () =>
+            import(
+              "../views/setting/template/list/newTemplate/prescription/Western"
+            ),
           meta: { title: "模板维护", key: "14", path: "Template" }
         },
         {
           path: "/home/template/newChineseTemplate",
           name: "NewChineseTemplate",
-          component: NewChineseTemplate,
+          component: () =>
+            import(
+              "../views/setting/template/list/newTemplate/prescription/Chinese"
+            ),
           meta: { title: "模板维护", key: "14", path: "Template" }
         },
         {
           path: "/home/template/newCheckItemTemplate",
           name: "NewCheckItemTemplate",
-          component: NewCheckItemTemplate,
+          component: () =>
+            import(
+              "../views/setting/template/list/newTemplate/prescription/CheckItem"
+            ),
           meta: { title: "模板维护", key: "14", path: "Template" }
         },
         {
           path: "/home/template/newReportTemplate",
           name: "NewReportTemplate",
-          component: NewReportTemplate,
+          component: () =>
+            import("../views/setting/template/list/newTemplate/report/index"),
           meta: { title: "模板维护", key: "14", path: "Template" }
         },
         {
           path: "/home/staffManage",
           name: "StaffManage",
-          component: StaffManage,
+          component: () => import("../views/setting/staffManage/index"),
           meta: { title: "员工管理", key: "18", path: "StaffManage" },
           redirect: "/home/staffManage/staffList",
           children: [
             {
               path: "/home/staffManage/staffList",
               name: "StaffList",
-              component: StaffList,
+              component: () =>
+                import("../views/setting/staffManage/list/StaffList"),
               meta: { title: "员工管理", key: "18", path: "StaffManage" }
             },
             {
               path: "/home/staffManage/departmentList",
               name: "DepartmentList",
-              component: DepartmentList,
+              component: () =>
+                import("../views/setting/staffManage/list/DepartmentList"),
               meta: { title: "员工管理", key: "18", path: "StaffManage" }
             },
             {
               path: "/home/staffManage/roleList",
               name: "RoleList",
-              component: RoleList,
+              component: () =>
+                import("../views/setting/staffManage/list/RoleList"),
               meta: { title: "员工管理", key: "18", path: "StaffManage" }
             }
           ]
@@ -462,26 +425,35 @@ export default new Router({
         {
           path: "/home/staffManage/staffInfo",
           name: "StaffInfo",
-          component: StaffInfo,
-          meta: { title: "员工管理", key: "18", path: "StaffManage" },
+          component: () =>
+            import("../views/setting/staffManage/list/add/StaffInfo"),
+          meta: { title: "员工管理", key: "18", path: "StaffManage" }
         },
         {
           path: "/home/staffManage/departmentInfo",
           name: "DepartmentInfo",
-          component: DepartmentInfo,
-          meta: { title: "员工管理", key: "18", path: "StaffManage" },
+          component: () =>
+            import("../views/setting/staffManage/list/add/DepartmentInfo"),
+          meta: { title: "员工管理", key: "18", path: "StaffManage" }
         },
         {
           path: "/home/staffManage/roleInfo",
           name: "RoleInfo",
-          component: RoleInfo,
-          meta: { title: "员工管理", key: "18", path: "StaffManage" },
+          component: () =>
+            import("../views/setting/staffManage/list/add/RoleInfo"),
+          meta: { title: "员工管理", key: "18", path: "StaffManage" }
         },
         {
           path: "/home/setting/outPatient",
           name: "OutPatient",
-          component: OutPatient,
-          meta: { title: "出诊设置", key: "19", path: "OutPatient" },
+          component: () => import("../views/setting/outPatient/index"),
+          meta: { title: "出诊设置", key: "19", path: "OutPatient" }
+        },
+        {
+          path: "/home/setting/outPatient/deploy",
+          name: "Deploy",
+          component: () => import("../views/setting/outPatient/Deploy.vue"),
+          meta: { title: "出诊设置", key: "19", path: "OutPatient" }
         }
       ]
     }

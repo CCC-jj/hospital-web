@@ -68,14 +68,12 @@
       </a-layout-sider>
       <a-layout>
         <a-layout-header :style="{
-          position: 'fixed',
           zIndex: 10,
-          width: '100%',
           background: '#fff',
           padding: 0,
         }">
           <a-icon class="trigger" :type="collapsed ? 'menu-unfold' : 'menu-fold'" @click="() => (collapsed = !collapsed)" />
-          <a-dropdown :class="['headerUser',{collapsed: collapsed}]">
+          <a-dropdown class="headerUser">
             <span class="ant-dropdown-link" @click="(e) => e.preventDefault()">
               <div>
                 <a-divider type="vertical" />
@@ -295,7 +293,6 @@ export default {
       this.selectedKey = [activeKey]
     },
     changeTabto(key) {
-      console.log(this.panes, this.$route)
       const panes = this.panes.filter((pane) => pane.key == key)
       this.selectedKey = [key]
       if (this.selectedKey == '3') {
@@ -306,7 +303,7 @@ export default {
       this.$router.push({ name: panes[0].name })
     },
     toHome() {
-      this.$router.push({ path: '/home' })
+      this.$router.push({ path: '/' })
       this.activeKey = '2'
       this.selectedKey = ['2']
     },
@@ -321,7 +318,7 @@ export default {
               localStorage.removeItem('token')
               localStorage.removeItem('orgName')
               window.document.title = '医生端'
-              this.$router.push({ path: '/' })
+              this.$router.push({ path: '/user/login' })
             } else {
               this.$message.error(res.message)
             }
@@ -375,14 +372,11 @@ export default {
 }
 
 .headerUser {
-  margin-right: 15%;
+  margin-left: auto;
+  margin-right: 20px;
   float: right;
-  padding-right: 2%;
   font-weight: bold;
-}
-.collapsed {
-  transform: translateX(50%);
-  /* margin-right: 10% !important; */
+  /* overflow: hidden; */
 }
 .headerUser img {
   margin-right: 10px;
@@ -402,7 +396,7 @@ export default {
   text-align: center;
 }
 .content {
-  margin-top: 80px;
+  margin-top: 15px;
 }
 .cardBox {
   color: #000000;

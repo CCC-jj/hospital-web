@@ -29,7 +29,7 @@ service.interceptors.response.use(response => {
     if (response.data.code == "TokenExpired") {
       localStorage.removeItem("token")
       Vue.prototype.$message.info('token过期，请退出并重新登录！')
-      router.push('/login')
+      router.push('/user/login')
       window.document.title = "医生端";
     }
   return response.data;

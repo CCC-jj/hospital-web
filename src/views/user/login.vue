@@ -25,7 +25,7 @@
 
         <div class="forget">
           <a-checkbox v-model="ruleForm.checked" @change="onChange"> 1个月内免登陆 </a-checkbox>
-          <router-link to="/forgetpwd">忘记密码</router-link>
+          <router-link to="/user/forgetpwd">忘记密码</router-link>
         </div>
 
         <a-form-model-item :wrapper-col="{ span: 24, offset: 0 }">
@@ -176,7 +176,7 @@ export default {
               localStorage.setItem('orgName', res.data.orgName)
               localStorage.setItem('orgUrl', res.data.orgUrl)
               this.setUserInfo()
-              this.$router.push('/home')
+              this.$router.push('/')
               this.$message.success('登录成功')
             } else {
               this.$message.warning(res.message)
