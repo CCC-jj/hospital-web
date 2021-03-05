@@ -113,7 +113,7 @@ export default {
   },
   methods: {
     // 储存表单信息
-    setUserInfo: function () {
+    setUserInfo() {
       // 判断用户是否勾选记住密码，如果勾选，向cookie中储存登录信息，
       // 如果没有勾选，储存的信息为空
       if (this.ruleForm.checked) {
@@ -132,7 +132,7 @@ export default {
       }
     },
     // 获取cookie
-    getCookie: function (key) {
+    getCookie(key) {
       if (document.cookie.length > 0) {
         var start = document.cookie.indexOf(key + '=')
         if (start !== -1) {
@@ -145,7 +145,7 @@ export default {
       return ''
     },
     // 保存cookie
-    setCookie: function (cName, value, expiredays) {
+    setCookie(cName, value, expiredays) {
       var exdate = new Date()
       exdate.setDate(exdate.getDate() + expiredays)
       document.cookie =

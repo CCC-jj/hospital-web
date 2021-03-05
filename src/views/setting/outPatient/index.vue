@@ -155,6 +155,9 @@ export default {
 p {
   margin-bottom: 0 !important;
 }
+a {
+  color: #656ee8;
+}
 .outPatientBox {
   background-color: rgb(248, 248, 254);
   padding: 10px;
