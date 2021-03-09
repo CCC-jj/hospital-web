@@ -417,7 +417,6 @@ export function deleteDoctor(code) {
   });
 }
 
-
 // 搜索查询科室列表
 export function getDepartmentList(params) {
   return request({
@@ -511,5 +510,48 @@ export function deleteRole(code) {
     params: {
       code: code
     }
+  });
+}
+
+// 获取问诊服务设置信息
+export function getOutAbility() {
+  return request({
+    url: "setting/out-call/get/ability",
+    method: "get",
+    headers: { "Content-Type": "x-www-form-urlencoded" }
+  });
+}
+
+// 问诊状态设置
+export function getOutEnable(consStatus, consType) {
+  return request({
+    url: "setting/out-call/enable",
+    method: "get",
+    headers: { "Content-Type": "x-www-form-urlencoded" },
+    params: {
+      consStatus: consStatus,
+      consType: consType
+    }
+  });
+}
+
+// 获取问诊详细配置信息
+export function getOutConfiguration(consType) {
+  return request({
+    url: "setting/out-call/get/configuration",
+    method: "get",
+    headers: { "Content-Type": "x-www-form-urlencoded" },
+    params: {
+      consType: consType
+    }
+  });
+}
+
+// 设置问诊详细配置信息
+export function setOutAbility(params) {
+  return request({
+    url: "setting/out-call/set/ability",
+    method: "post",
+    data: params
   });
 }

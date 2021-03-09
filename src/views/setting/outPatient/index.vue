@@ -3,60 +3,24 @@
     <a-button class="settingBtn"> 出诊设置 </a-button>
     <hr class="settingLine" />
     <div class="settingBox">
-      <div class="outPatientBox">
+      <div class="outPatientBox" v-for="(item, index) in data" :key="index">
         <a-row type="flex" justify="start" align="middle">
           <a-col :span="21">
             <div style="float:left;padding:15px;">
-              <img src="../../../assets/u15327.png" alt="" srcset="" style="width:35px;">
+              <img v-if="item.consType===1" src="../../../assets/u15327.png" alt="" srcset="" style="width:35px;">
+              <img v-else-if="item.consType===2" src="../../../assets/u15297.png" alt="" srcset="" style="width:35px;">
+              <img v-else src="../../../assets/u15314.png" alt="" srcset="" style="width:35px;">
             </div>
             <div style="line-height:30px;padding:5px;">
-              <p style="font-size:18px;font-weight:bold;">图文问诊</p>
-              <p>这是一段支付方式介绍这是一段支付方式介绍这是一段支付方式介绍</p>
+              <p style="font-size:18px;font-weight:bold;">{{item.consName}}</p>
+              <p>{{item.consDesc}}</p>
             </div>
           </a-col>
           <a-col :span="2" @click="handleClick">
-            <a-switch :checked="picChecked" @change="(checked, event)=>changeSwitch(checked, event, '1', 'picRuleForm')" />
+            <a-switch :checked="item.consStatus===1?true:false" @change="(checked, event)=>changeSwitch(checked, event, item)" />
           </a-col>
           <a-col :span="1">
-            <a @click="toDeploy()">配置</a>
-          </a-col>
-        </a-row>
-      </div>
-      <div class="outPatientBox">
-        <a-row type="flex" justify="start" align="middle">
-          <a-col :span="21">
-            <div style="float:left;padding:15px;">
-              <img src="../../../assets/u15297.png" alt="" srcset="" style="width:35px;">
-            </div>
-            <div style="line-height:30px;padding:5px;">
-              <p style="font-size:18px;font-weight:bold;">视频问诊</p>
-              <p>这是一段支付方式介绍这是一段支付方式介绍这是一段支付方式介绍</p>
-            </div>
-          </a-col>
-          <a-col :span="2" @click="handleClick">
-            <a-switch :checked="videoChecked" @change="(checked, event)=>changeSwitch(checked, event, '2', 'videoRuleForm')" />
-          </a-col>
-          <a-col :span="1">
-            <a @click="toDeploy()">配置</a>
-          </a-col>
-        </a-row>
-      </div>
-      <div class="outPatientBox">
-        <a-row type="flex" justify="start" align="middle">
-          <a-col :span="21">
-            <div style="float:left;padding:15px;">
-              <img src="../../../assets/u15314.png" alt="" srcset="" style="width:35px;">
-            </div>
-            <div style="line-height:30px;padding:5px;">
-              <p style="font-size:18px;font-weight:bold;">视频问诊</p>
-              <p>这是一段支付方式介绍这是一段支付方式介绍这是一段支付方式介绍</p>
-            </div>
-          </a-col>
-          <a-col :span="2" @click="handleClick">
-            <a-switch :checked="videoChecked" @change="(checked, event)=>changeSwitch(checked, event, '2', 'videoRuleForm')" />
-          </a-col>
-          <a-col :span="1">
-            <a @click="toDeploy()">配置</a>
+            <a @click="toDeploy(item)">配置</a>
           </a-col>
         </a-row>
       </div>
@@ -67,18 +31,30 @@
 
 <script>
 import moment from 'moment'
-
+import { getOutAbility, getOutEnable } from '@/api/setting'
 export default {
   name: 'outPatient',
   data() {
     return {
-      picChecked: false,
-      videoChecked: false,
+      data: [],
     }
   },
-  created() {},
+  created() {
+    this.getSettingList()
+  },
   methods: {
     moment,
+    getSettingList() {
+      getOutAbility()
+        .then((res) => {
+          if (res.success) {
+            this.data = res.data
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    },
     changeCollapse(key) {
       this.activeKey = key
       console.log(key, this.activeKey)
@@ -90,32 +66,23 @@ export default {
       // If you don't want click extra trigger collapse, you can prevent this:
       event.stopPropagation()
     },
-    changeSwitch(checked, event, key, ruleForm) {
-      // console.log(checkedStatus);
-      if (checked) {
-        switch (key) {
-          case '1':
-            this.picChecked = true
-            break
-          case '2':
-            this.videoChecked = true
-            break
-        }
-        this.$message.success('启用成功！')
-      } else {
-        switch (key) {
-          case '1':
-            this.picChecked = false
-            break
-          case '2':
-            this.videoChecked = false
-            break
-        }
-        this.$message.success('停用成功！')
-      }
+    changeSwitch(checked, event, item) {
+      item.consStatus = checked ? 1 : 2
+      getOutEnable(item.consStatus, item.consType)
+        .then((res) => {
+          if (res.success) {
+            this.$message.success(checked ? '启用成功！' : '停用成功！')
+          } else {
+            item.consStatus = checked ? 2 : 1
+            this.$message.warning(res.message)
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
     },
-    toDeploy() {
-      this.$router.push({ name: 'Deploy' })
+    toDeploy(item) {
+      this.$router.push({ name: 'Deploy', query: { consType: item.consType } })
     },
   },
 }
@@ -162,5 +129,8 @@ a {
   background-color: rgb(248, 248, 254);
   padding: 10px;
   margin-bottom: 20px;
+}
+.ant-switch-checked {
+  background-color: rgb(69, 213, 133);
 }
 </style>
