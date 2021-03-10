@@ -180,7 +180,7 @@ export default {
         .then((res) => {
           console.log(res)
           if (res.data) {
-            // this.form = res.data
+            this.form = res.data
           }
         })
         .catch((err) => {
