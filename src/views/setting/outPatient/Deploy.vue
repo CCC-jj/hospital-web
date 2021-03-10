@@ -140,7 +140,29 @@ export default {
         isSchedule: 0,
         beginDate: '',
         endDate: '',
-        schedule: [],
+        schedule: [
+          { status: 2, weekDay: 1, dayNoon: 1, startTime: '08:00', finishTime: '12:00' },
+          { status: 2, weekDay: 1, dayNoon: 2, startTime: '13:00', finishTime: '18:00' },
+          { status: 2, weekDay: 1, dayNoon: 3, startTime: '18:00', finishTime: '20:00' },
+          { status: 2, weekDay: 2, dayNoon: 1, startTime: '08:00', finishTime: '12:00' },
+          { status: 2, weekDay: 2, dayNoon: 2, startTime: '13:00', finishTime: '18:00' },
+          { status: 2, weekDay: 2, dayNoon: 3, startTime: '18:00', finishTime: '20:00' },
+          { status: 2, weekDay: 3, dayNoon: 1, startTime: '08:00', finishTime: '12:00' },
+          { status: 2, weekDay: 3, dayNoon: 2, startTime: '13:00', finishTime: '18:00' },
+          { status: 2, weekDay: 3, dayNoon: 3, startTime: '18:00', finishTime: '20:00' },
+          { status: 2, weekDay: 4, dayNoon: 1, startTime: '08:00', finishTime: '12:00' },
+          { status: 2, weekDay: 4, dayNoon: 2, startTime: '13:00', finishTime: '18:00' },
+          { status: 2, weekDay: 4, dayNoon: 3, startTime: '18:00', finishTime: '20:00' },
+          { status: 2, weekDay: 5, dayNoon: 1, startTime: '08:00', finishTime: '12:00' },
+          { status: 2, weekDay: 5, dayNoon: 2, startTime: '13:00', finishTime: '18:00' },
+          { status: 2, weekDay: 5, dayNoon: 3, startTime: '18:00', finishTime: '20:00' },
+          { status: 2, weekDay: 6, dayNoon: 1, startTime: '08:00', finishTime: '12:00' },
+          { status: 2, weekDay: 6, dayNoon: 2, startTime: '13:00', finishTime: '18:00' },
+          { status: 2, weekDay: 6, dayNoon: 3, startTime: '18:00', finishTime: '20:00' },
+          { status: 2, weekDay: 7, dayNoon: 1, startTime: '08:00', finishTime: '12:00' },
+          { status: 2, weekDay: 7, dayNoon: 2, startTime: '13:00', finishTime: '18:00' },
+          { status: 2, weekDay: 7, dayNoon: 3, startTime: '18:00', finishTime: '20:00' },
+        ],
       },
     }
   },
@@ -157,7 +179,9 @@ export default {
       getOutConfiguration(consType)
         .then((res) => {
           console.log(res)
-          this.form = res.data
+          if (res.data) {
+            // this.form = res.data
+          }
         })
         .catch((err) => {
           console.log(err)
