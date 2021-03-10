@@ -17,6 +17,11 @@
     <div class="deployBottom">
       <div v-show="value==='roster'">
         <a-row type="flex" justify="space-around" align="middle" style="width:70%;margin:0 auto;">
+          <a-col :span="8">
+            <a-checkbox @change="changeCheckBoxAll">全选</a-checkbox>
+          </a-col>
+          <a-col :span="8"></a-col>
+          <a-col :span="8"></a-col>
           <a-col v-for="(item,index) in this.form.schedule" :key="index" :span="8">
             <a-checkbox :checked="item.status===1?true:false" :value="`${item.weekDay}${item.dayNoon}`" @change="changeScheule">
               周{{item.weekDay}} &nbsp; {{item.startTime}}-{{item.finishTime}}
@@ -87,7 +92,7 @@
           </a-radio-button>
         </a-radio-group>
         <div class="title">自定义</div>
-        <a-input-number v-model="form.consLimitMax" :min="0" placeholder="请输入人数" style="width:30%;" size="large"></a-input-number>
+        <a-input-number :min="0" v-model="form.consLimitMax" placeholder="请输入人数" style="width:30%;" size="large"></a-input-number>
       </div>
       <div v-show="value==='price'">
         <div class="title"> 选择咨询价格（元）</div>
@@ -118,7 +123,7 @@
           </a-radio-button>
         </a-radio-group>
         <div class="title">自定义价格（元）</div>
-        <a-input type="number" v-model="form.price" placeholder="建议价格在0-200元" style="width:30%;" size="large"></a-input>
+        <a-input type="number" min="0" v-model="form.price" placeholder="建议价格在0-200元" style="width:30%;" size="large"></a-input>
       </div>
     </div>
   </div>
@@ -175,10 +180,13 @@ export default {
   },
   methods: {
     moment,
+    // 更换tab标签
+    rdChange(e) {
+      this.value = e.target.value
+    },
     getOutConfigurationInfo(consType) {
       getOutConfiguration(consType)
         .then((res) => {
-          console.log(res)
           if (res.data) {
             this.form = res.data
           }
@@ -187,6 +195,7 @@ export default {
           console.log(err)
         })
     },
+    // 选择开始时间
     onChangeStartTime(time, timeString, key) {
       this.form.schedule.forEach((item) => {
         if (item.dayNoon === key) {
@@ -194,6 +203,7 @@ export default {
         }
       })
     },
+    // 选择结束时间
     onChangeFinishTime(time, timeString, key) {
       this.form.schedule.forEach((item) => {
         if (item.dayNoon === key) {
@@ -201,15 +211,14 @@ export default {
         }
       })
     },
+    // 选择排班日期
     onChange(dates, dateStrings) {
       this.form.beginDate = dateStrings[0]
       this.form.endDate = dateStrings[1]
     },
+    // 循环排班
     changeSchedule(checked, event) {
       this.form.isSchedule = checked ? 1 : 0
-    },
-    rdChange(e) {
-      this.value = e.target.value
     },
     saveOutpatient() {
       this.iconLoading = true
@@ -227,33 +236,24 @@ export default {
           console.log(err)
         })
     },
+    // 全选
+    changeCheckBoxAll(e) {
+      let checked = e.target.checked
+      this.form.schedule.forEach((item) => {
+        item.status = checked ? 1 : 2
+      })
+    },
+    // 勾选排班设置
     changeScheule(e) {
-      console.log(e)
       let checked = e.target.checked
       let value = e.target.value
       let firstValue = Number(value.substring(0, 1))
       let lastValue = Number(value.substring(1, 2))
-      let startTime
-      let finishTime
-      switch (lastValue) {
-        case 1:
-          startTime = '08:00'
-          finishTime = '12:00'
-          break
-        case 2:
-          startTime = '08:00'
-          finishTime = '12:00'
-          break
-        case 3:
-          startTime = '08:00'
-          finishTime = '12:00'
-      }
       this.form.schedule.forEach((item) => {
         if (item.weekDay === firstValue && item.dayNoon === lastValue) {
           item.status = checked ? 1 : 2
         }
       })
-      console.log(this.form.schedule)
     },
   },
 }
