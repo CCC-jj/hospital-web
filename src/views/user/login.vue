@@ -16,12 +16,6 @@
             <img slot="prefix" src="../../assets/u175.png" />
           </a-input>
         </a-form-model-item>
-        <a-form-model-item has-feedback label="" prop="hospital">
-          <a-select class="changebgSelect" placeholder="请选择医院" v-model="ruleForm.hospital" size="large" @change="handleChange">
-            <!-- <img slot="prefix" slot-scope="menu" src="../../assets/account_balance_u169.png" /> -->
-            <a-select-option v-for="item in hospitalList" :key="item.orgCode"> {{item.orgName}} </a-select-option>
-          </a-select>
-        </a-form-model-item>
 
         <div class="forget">
           <a-checkbox v-model="ruleForm.checked" @change="onChange"> 1个月内免登陆 </a-checkbox>
@@ -35,11 +29,16 @@
         </a-form-model-item>
       </a-form-model>
     </div>
+
+    <a-modal class="orgModal" centered v-model="visible" title="进入机构" :footer="null" :keyboard="false" :maskClosable="false" :closable="false">
+      <p class="subtitle">请选择您的机构</p>
+      <div class="orgBox" v-for="item in orgInfoList" :key="item.orgCode" @click="chooseOrg(item)">{{item.orgName}}<a-icon style="float:right;line-height:60px;color:#888;" type="right" /></div>
+    </a-modal>
   </div>
 </template>
 
 <script>
-import { loginByMobile, getHospitalList } from '@/api/login'
+import { login, loginHospital } from '@/api/login'
 import md5 from 'md5'
 export default {
   data() {
@@ -56,11 +55,10 @@ export default {
       callback()
     }
     return {
+      visible: false,
       ruleForm: {
         mobile: '',
         password: '',
-        hospital: undefined,
-        proCode: '',
         checked: false,
       },
       rules: {
@@ -76,13 +74,6 @@ export default {
             trigger: 'change',
           },
         ],
-        hospital: [
-          {
-            required: true,
-            message: '请选择医院',
-            trigger: 'change',
-          },
-        ],
       },
       layout: {
         labelCol: {
@@ -92,15 +83,10 @@ export default {
           span: 24,
         },
       },
-      hospitalList: [],
+      orgInfoList: [],
     }
   },
   created() {
-    getHospitalList().then((res) => {
-      this.hospitalList = res.data
-      this.ruleForm.hospital = res.data[0].orgCode
-      this.ruleForm.proCode = res.data[0].proCode
-    })
     // 在页面加载时从cookie获取登录信息
     let account = this.getCookie('account')
     let password = this.getCookie('password')
@@ -161,23 +147,24 @@ export default {
           if (this.getCookie('password') && this.ruleForm.password == this.getCookie('password')) {
             password = this.getCookie('password')
           }
-          loginByMobile(
-            this.ruleForm.mobile,
-            password,
-            this.ruleForm.hospital,
-            this.ruleForm.proCode
-          ).then((res) => {
+          login(this.ruleForm.mobile, password).then((res) => {
             // this.$store.dispatch('userInfo',res.data)
             if (res.success) {
-              localStorage.setItem('token', res.data.token)
+              this.orgInfoList = res.data.orgInfo
+              localStorage.setItem('token', res.data.tokenInfo.token)
               localStorage.setItem('photoUrl', res.data.photoUrl)
               localStorage.setItem('userName', res.data.userName)
               localStorage.setItem('userSex', res.data.userSex)
-              localStorage.setItem('orgName', res.data.orgName)
-              localStorage.setItem('orgUrl', res.data.orgUrl)
+              localStorage.setItem('orgName', res.data.orgInfo.orgName)
+              // localStorage.setItem('orgUrl', res.data.orgUrl)
               this.setUserInfo()
-              this.$router.push('/')
-              this.$message.success('登录成功')
+              if (res.data.tokenInfo.status === 1) {
+                this.$router.push('/')
+                this.$message.success('登录成功')
+              } else {
+                this.visible = true
+                this.$message.info('请选择机构')
+              }
             } else {
               this.$message.warning(res.message)
               return false
@@ -188,11 +175,18 @@ export default {
         }
       })
     },
-    handleChange(value) {
-      // console.log(`selected ${value}`)
-      // let org = this.hospital
-      const org = this.hospitalList.filter((item) => item.orgCode == value)
-      this.ruleForm.proCode = org[0].proCode
+    chooseOrg(item) {
+      loginHospital(item.orgCode)
+        .then((res) => {
+          if (res.success) {
+            localStorage.setItem('token', res.data.token)
+            this.$router.push('/')
+            this.$message.success('登录成功')
+          } else {
+            this.$message.warning(res.message)
+          }
+        })
+        .catch((err) => {})
     },
     onChange(e) {
       // console.log(`checked = ${e.target.checked}`)
@@ -217,7 +211,7 @@ export default {
   position: absolute;
   width: 280px;
   height: 300px;
-  top: 80px;
+  top: 110px;
   right: 60px;
 }
 
@@ -262,5 +256,23 @@ export default {
 }
 .loginBtn:focus {
   background-color: #656ee8;
+}
+.orgModal /deep/ .ant-modal-title {
+  font-size: 22px;
+  font-weight: bold;
+}
+.subtitle {
+  font-size: 18px;
+}
+.orgBox {
+  cursor: pointer;
+  height: 60px;
+  line-height: 60px;
+  font-size: 16px;
+  border-top: 1px solid #eee;
+  padding: 0 20px;
+}
+.orgBox:hover{
+background: #eee;
 }
 </style>

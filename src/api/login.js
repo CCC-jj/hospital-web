@@ -1,7 +1,7 @@
 import request from "@/utils/request";
 
 // 用户登录
-export function loginByMobile(mobile, password, orgCode, proCode) {
+export function login(mobile, password, orgCode, proCode) {
   return request({
     url: "login/index",
     method: "post",
@@ -15,11 +15,14 @@ export function loginByMobile(mobile, password, orgCode, proCode) {
 }
 
 // 项目医院列表
-export function getHospitalList() {
+export function loginHospital(orgCode) {
   return request({
     url: "login/hospital",
-    method: "get"
-    // headers: { "Content-Type": "x-www-form-urlencoded" },
+    method: "get",
+    headers: { "Content-Type": "x-www-form-urlencoded" },
+    params: {
+      orgCode: orgCode
+    }
   });
 }
 

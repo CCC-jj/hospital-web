@@ -38,6 +38,11 @@ export default new Router({
       ]
     },
     {
+      path: "/user/orgList",
+      name: "OrgList",
+      component: () => import("../views/user/OrgList")
+    },
+    {
       path: "/",
       // name: 'Home',
       component: Home,
