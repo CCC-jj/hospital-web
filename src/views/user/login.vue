@@ -32,13 +32,16 @@
 
     <a-modal class="orgModal" centered v-model="visible" title="进入机构" :footer="null" :keyboard="false" :maskClosable="false" :closable="false">
       <p class="subtitle">请选择您的机构</p>
-      <div class="orgBox" v-for="item in orgInfoList" :key="item.orgCode" @click="chooseOrg(item)">{{item.orgName}}<a-icon style="float:right;line-height:60px;color:#888;" type="right" /></div>
+      <div class="orgBox" v-for="item in orgInfoList" :key="item.orgCode" @click="chooseOrg(item)">{{item.orgName}}
+        <a-icon style="float:right;line-height:60px;color:#888;" type="right" />
+      </div>
     </a-modal>
   </div>
 </template>
 
 <script>
 import { login, loginHospital } from '@/api/login'
+import { getCommonTitle } from '@/api/common'
 import md5 from 'md5'
 export default {
   data() {
@@ -87,6 +90,13 @@ export default {
     }
   },
   created() {
+    getCommonTitle()
+      .then((res) => {
+        window.document.title = res.data
+      })
+      .catch((err) => {
+        console.log(err)
+      })
     // 在页面加载时从cookie获取登录信息
     let account = this.getCookie('account')
     let password = this.getCookie('password')
@@ -155,10 +165,11 @@ export default {
               localStorage.setItem('photoUrl', res.data.photoUrl)
               localStorage.setItem('userName', res.data.userName)
               localStorage.setItem('userSex', res.data.userSex)
-              localStorage.setItem('orgName', res.data.orgInfo.orgName)
+              localStorage.setItem('orgInfoList', JSON.stringify(res.data.orgInfo))
               // localStorage.setItem('orgUrl', res.data.orgUrl)
               this.setUserInfo()
               if (res.data.tokenInfo.status === 1) {
+                localStorage.setItem('orgInfo', JSON.stringify(res.data.orgInfo[0]))
                 this.$router.push('/')
                 this.$message.success('登录成功')
               } else {
@@ -180,6 +191,7 @@ export default {
         .then((res) => {
           if (res.success) {
             localStorage.setItem('token', res.data.token)
+            localStorage.setItem('orgInfo', JSON.stringify(item))
             this.$router.push('/')
             this.$message.success('登录成功')
           } else {
@@ -272,7 +284,7 @@ export default {
   border-top: 1px solid #eee;
   padding: 0 20px;
 }
-.orgBox:hover{
-background: #eee;
+.orgBox:hover {
+  background: #eee;
 }
 </style>

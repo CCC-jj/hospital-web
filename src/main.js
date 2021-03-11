@@ -56,13 +56,11 @@ router.beforeEach((to, from, next) => {
     next();
   } else {
     let getToken = localStorage.getItem("token");
-    let getName = localStorage.getItem("orgName");
     if (getToken) {
       next();
-      window.document.title = getName;
     } else {
       next("/user/login");
-      window.document.title = "医生工作站";
+      Vue.prototype.$message.info('请先登录')
     }
   }
 });

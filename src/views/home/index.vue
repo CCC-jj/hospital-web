@@ -73,32 +73,47 @@
           padding: 0,
         }">
           <a-icon class="trigger" :type="collapsed ? 'menu-unfold' : 'menu-fold'" @click="() => (collapsed = !collapsed)" />
-          <a-dropdown class="headerUser">
-            <span class="ant-dropdown-link" @click="(e) => e.preventDefault()">
-              <div>
-                <a-divider type="vertical" />
-                <div v-if="userInfo.photoUrl=='null'">
-                  <img v-if="userInfo.userSex==2" style="width: 40px; height: 40px; border-radius: 50%" src="../../assets/p1.png" />
-                  <img v-else style="width: 40px; height: 40px; border-radius: 50%" src="../../assets/p0.png" />
+          <div class="headerUser">
+            <div>{{orgInfo.orgName}}</div>
+            <a-dropdown :trigger="['click']">
+              <a style="width:100px;color:rgba(0, 0, 0, 0.65);text-align:center;" class="ant-dropdown-link" @click="e => e.preventDefault()">
+                切换
+                <a-icon type="down" />
+              </a>
+              <a-menu slot="overlay">
+                <a-menu-item v-for="item in orgInfoList" :key="item.orgCode">
+                  <a @click="changeOrg(item)">{{item.orgName}}</a>
+                </a-menu-item>
+                <a-divider />
+              </a-menu>
+            </a-dropdown>
+            <a-dropdown>
+              <span class="ant-dropdown-link" @click="(e) => e.preventDefault()">
+                <div>
+                  <a-divider type="vertical" />
+                  <div v-if="userInfo.photoUrl=='null'">
+                    <img v-if="userInfo.userSex==2" style="width: 40px; height: 40px; border-radius: 50%" src="../../assets/p1.png" />
+                    <img v-else style="width: 40px; height: 40px; border-radius: 50%" src="../../assets/p0.png" />
+                  </div>
+                  <div v-else>
+                    <img style="width: 40px; height: 40px; border-radius: 50%" :src="userInfo.photoUrl" />
+                  </div>
+                  <span>{{userInfo.userName}}</span>
                 </div>
-                <div v-else>
-                  <img style="width: 40px; height: 40px; border-radius: 50%" :src="userInfo.photoUrl" />
-                </div>
-                <span>{{userInfo.userName}}</span>
-              </div>
-            </span>
-            <a-menu slot="overlay" @click="selected">
-              <a-menu-item class="itemLink" key="15" title="修改密码" value="ChangePwd">
-                <a>修改密码</a>
-              </a-menu-item>
-              <a-menu-item class="itemLink" key="16" title="消息通知" value="Notification">
-                <a>消息通知</a>
-              </a-menu-item>
-              <a-menu-item class="itemLink">
-                <a @click="loginOut">退出系统</a>
-              </a-menu-item>
-            </a-menu>
-          </a-dropdown>
+              </span>
+              <a-menu slot="overlay" @click="selected">
+                <a-menu-item class="itemLink" key="15" title="修改密码" value="ChangePwd">
+                  <a>修改密码</a>
+                </a-menu-item>
+                <a-menu-item class="itemLink" key="16" title="消息通知" value="Notification">
+                  <a>消息通知</a>
+                </a-menu-item>
+                <a-menu-item class="itemLink">
+                  <a @click="loginOut">退出系统</a>
+                </a-menu-item>
+              </a-menu>
+            </a-dropdown>
+          </div>
         </a-layout-header>
         <a-layout-content>
           <div class="content">
@@ -123,7 +138,7 @@
 
 <script>
 import ContextMenu from '@/components/ContextMenu'
-import { logout } from '@/api/login'
+import { loginHospital, logout } from '@/api/login'
 const panes = [
   {
     title: '接诊工作台',
@@ -158,9 +173,13 @@ export default {
       collapsed: false,
       opensubKey: [],
       orgUrl: '',
+      orgInfo: {},
+      orgInfoList: [],
     }
   },
   created() {
+    this.orgInfo = JSON.parse(localStorage.getItem('orgInfo'))
+    this.orgInfoList = JSON.parse(localStorage.getItem('orgInfoList'))
     this.orgUrl = localStorage.getItem('orgUrl')
     this.userInfo = {
       userName: localStorage.getItem('userName'),
@@ -307,6 +326,28 @@ export default {
       this.activeKey = '2'
       this.selectedKey = ['2']
     },
+    changeOrg(item) {
+      this.$confirm({
+        title: '操作确认',
+        centered: true,
+        content: '确定要切换机构吗？',
+        onOk: () => {
+          loginHospital(item.orgCode)
+            .then((res) => {
+              if (res.success) {
+                localStorage.setItem('token', res.data.token)
+                localStorage.setItem('orgInfo', JSON.stringify(item))
+                this.reload()
+                this.$message.success('切换成功')
+              } else {
+                this.$message.warning(res.message)
+              }
+            })
+            .catch((err) => {})
+        },
+        onCancel() {},
+      })
+    },
     loginOut() {
       this.$confirm({
         title: '退出确认',
@@ -316,7 +357,6 @@ export default {
           logout().then((res) => {
             if (res.success) {
               localStorage.removeItem('token')
-              localStorage.removeItem('orgName')
               window.document.title = '医生端'
               this.$router.push({ path: '/user/login' })
             } else {
@@ -372,6 +412,7 @@ export default {
 }
 
 .headerUser {
+  display: flex;
   margin-left: auto;
   margin-right: 20px;
   float: right;
@@ -385,6 +426,9 @@ export default {
 /* .ant-dropdown-link .ant-divider {
   height: 65px;
 } */
+.ant-divider {
+  margin: 0;
+}
 .ant-dropdown-link {
   width: 200px;
 }

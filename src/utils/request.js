@@ -26,12 +26,11 @@ service.interceptors.request.use(
 // axios响应拦截,后端返回响应后拦截
 service.interceptors.response.use(response => {
   // console.log(response);
-    if (response.data.code == "TokenExpired") {
-      localStorage.removeItem("token")
-      Vue.prototype.$message.info('请重新登录！')
-      router.push('/user/login')
-      window.document.title = "医生端";
-    }
+  if (response.data.code == "TokenExpired") {
+    localStorage.removeItem("token");
+    Vue.prototype.$message.info("请重新登录！");
+    router.push("/user/login");
+  }
   return response.data;
 });
 
