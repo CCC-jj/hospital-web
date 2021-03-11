@@ -190,7 +190,6 @@ export default {
         .then((res) => {
           if (res.data) {
             this.form = res.data
-            this.form.consType = this.$route.query.consType
           }
         })
         .catch((err) => {
@@ -224,6 +223,7 @@ export default {
     },
     saveOutpatient() {
       this.iconLoading = true
+      this.form.consType = this.$route.query.consType
       setOutAbility(this.form)
         .then((res) => {
           if (res.success) {
