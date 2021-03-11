@@ -84,7 +84,6 @@
                 <a-menu-item v-for="item in orgInfoList" :key="item.orgCode">
                   <a @click="changeOrg(item)">{{item.orgName}}</a>
                 </a-menu-item>
-                <a-divider />
               </a-menu>
             </a-dropdown>
             <a-dropdown>
@@ -426,9 +425,6 @@ export default {
 /* .ant-dropdown-link .ant-divider {
   height: 65px;
 } */
-.ant-divider {
-  margin: 0;
-}
 .ant-dropdown-link {
   width: 200px;
 }
