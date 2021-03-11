@@ -141,6 +141,7 @@ export default {
       scheduleCheck: [],
       form: {
         consLimitMax: 0,
+        consType: 0,
         price: '',
         isSchedule: 0,
         beginDate: '',
@@ -189,6 +190,7 @@ export default {
         .then((res) => {
           if (res.data) {
             this.form = res.data
+            this.form.consType = this.$route.query.consType
           }
         })
         .catch((err) => {
