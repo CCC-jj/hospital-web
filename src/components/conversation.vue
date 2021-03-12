@@ -385,6 +385,7 @@ export default {
 }
 .chat-content .word .info {
   margin-left: 10px;
+  width: 90%;
 }
 .chat-content .word .info .time {
   font-size: 12px;
@@ -404,6 +405,7 @@ export default {
   background: rgb(194, 194, 194);
   position: relative;
   margin-top: 8px;
+  text-align: left;
 }
 .chat-content .word .info .info-content::before {
   position: absolute;

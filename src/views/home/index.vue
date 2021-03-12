@@ -3,7 +3,7 @@
     <a-layout id="components-layout-demo-custom-trigger">
       <a-layout-sider v-model="collapsed" :trigger="null" collapsible>
         <div class="logo" @click="toHome">
-          <img v-if="orgUrl" src="../../assets/u56.png" alt="" srcset="">
+          <img v-if="orgUrl" src="@/assets/u56.png" alt="" srcset="">
           <img v-else :src="orgUrl" alt="" srcset="">
         </div>
         <a-menu theme="dark" mode="inline" :default-selected-keys="selectedKey" :selectedKeys="selectedKey" @click="selected" :default-open-keys="['sub1']">
@@ -172,7 +172,11 @@ export default {
       collapsed: false,
       opensubKey: [],
       orgUrl: '',
-      orgInfo: {},
+      orgInfo: {
+        orgCode: '',
+        orgName: '',
+        proCode: '',
+      },
       orgInfoList: [],
     }
   },
@@ -439,6 +443,9 @@ export default {
   margin-top: 15px;
 }
 .cardBox {
+  min-height: 95vh;
+  background: #fff;
+  border-radius: 5px;
   color: #000000;
   width: 98%;
   margin: 0 auto !important;
