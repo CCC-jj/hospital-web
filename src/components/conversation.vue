@@ -163,14 +163,14 @@ export default {
         this.messageList.push(event.data[0])
         if (event.data[0].flow === 'in') {
           this.news = true
+          this.$nextTick(() => {
+            this.$notification.open({
+              message: '提示',
+              description: '你有一条新消息',
+            })
+          })
         }
         // this.toBottom(100)
-        this.$nextTick(() => {
-          this.$notification.open({
-            message: '提示',
-            description: '你有一条新消息',
-          })
-        })
       }
     })
   },
