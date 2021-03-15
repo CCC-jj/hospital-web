@@ -125,6 +125,10 @@ let options = {
 // 创建 SDK 实例，`TIM.create()`方法对于同一个 `SDKAppID` 只会返回同一份实例
 let tim = TIM.create(options) // SDK 实例通常用 tim 表示
 // 设置 SDK 日志输出级别，详细分级请参见 <a href="https://imsdk-1252463788.file.myqcloud.com/IM_DOC/Web/SDK.html#setLogLevel">setLogLevel 接口的说明</a>
+tim.setLogLevel(1) // 普通级别，日志量较多，接入时建议使用
+// tim.setLogLevel(1); // release 级别，SDK 输出关键信息，生产环境时建议使用
+// 注册腾讯云即时通信 IM 上传插件
+tim.registerPlugin({ 'tim-upload-plugin': TIMUploadPlugin })
 export default {
   data() {
     return {
@@ -151,34 +155,14 @@ export default {
     }
   },
   mounted() {
-    tim.setLogLevel(1) // 普通级别，日志量较多，接入时建议使用
-    // tim.setLogLevel(1); // release 级别，SDK 输出关键信息，生产环境时建议使用
-    // 注册腾讯云即时通信 IM 上传插件
-    tim.registerPlugin({ 'tim-upload-plugin': TIMUploadPlugin })
-    tim.on(TIM.EVENT.MESSAGE_RECEIVED, (event) => {
-      // 收到推送的单聊、群聊、群提示、群系统通知的新消息，可通过遍历 event.data 获取消息列表数据并渲染到页面
-      // event.name - TIM.EVENT.MESSAGE_RECEIVED
-      // event.data - 存储 Message 对象的数组 - [Message]
-      if (event.data[0].conversationID === this.conversationID) {
-        this.messageList.push(event.data[0])
-        if (event.data[0].flow === 'in') {
-          this.news = true
-          this.$nextTick(() => {
-            this.$notification.open({
-              message: '提示',
-              description: '你有一条新消息',
-            })
-          })
-        }
-        // this.toBottom(100)
-      }
-    })
+    tim.on(TIM.EVENT.MESSAGE_RECEIVED, this.onMessageReceived)
   },
-  destroyed: function () {
+  destroyed() {
+    tim.off(TIM.EVENT.MESSAGE_RECEIVED, this.onMessageReceived)
     let promise = tim.logout()
     promise
       .then((imResponse) => {
-        console.log(imResponse.data) // 登出成功
+        // console.log(imResponse.data) // 登出成功
       })
       .catch((imError) => {
         console.warn('logout error:', imError)
@@ -266,7 +250,6 @@ export default {
         promise
           .then((imResponse) => {
             // 发送成功
-            console.log(imResponse)
             // this.getMessageList()
             this.messageList.push(message)
             this.toBottom(100)
@@ -287,7 +270,6 @@ export default {
         count: 15,
       })
       promise.then((imResponse) => {
-        console.log(imResponse)
         const messageList = imResponse.data.messageList // 消息列表。
         const nextReqMessageID = imResponse.data.nextReqMessageID // 用于续拉，分页续拉时需传入该字段。
         const isCompleted = imResponse.data.isCompleted // 表示是否已经拉完所有消息。
@@ -298,6 +280,25 @@ export default {
         }
         this.nextReqMessageID = nextReqMessageID
       })
+    },
+    // 收到消息
+    onMessageReceived(event) {
+      // 收到推送的单聊、群聊、群提示、群系统通知的新消息，可通过遍历 event.data 获取消息列表数据并渲染到页面
+      // event.name - TIM.EVENT.MESSAGE_RECEIVED
+      // event.data - 存储 Message 对象的数组 - [Message]
+      if (event.data[0].conversationID === this.conversationID) {
+        this.messageList.push(event.data[0])
+        if (event.data[0].flow === 'in') {
+          this.news = true
+          this.$nextTick(() => {
+            this.$notification.open({
+              message: '提示',
+              description: '你有一条新消息',
+            })
+          })
+        }
+        // this.toBottom(100)
+      }
     },
     handleRemove(file) {
       const index = this.fileList.indexOf(file)
