@@ -24,7 +24,7 @@
           <a-col :span="8"></a-col>
           <a-col v-for="(item,index) in this.form.schedule" :key="index" :span="8">
             <a-checkbox :checked="item.status===1?true:false" :value="`${item.weekDay}${item.dayNoon}`" @change="changeScheule">
-              周{{item.weekDay}} &nbsp; {{item.startTime}}-{{item.finishTime}}
+              星期{{getWeekDay(item.weekDay)}} &nbsp; {{item.startTime}}-{{item.finishTime}}
             </a-checkbox>
           </a-col>
           <a-col :span="8" v-if="form.schedule[0]">
@@ -195,6 +195,25 @@ export default {
         .catch((err) => {
           console.log(err)
         })
+    },
+    // 星期
+    getWeekDay(weekDay) {
+      switch (weekDay) {
+        case 1:
+          return '一'
+        case 2:
+          return '二'
+        case 3:
+          return '三'
+        case 4:
+          return '四'
+        case 5:
+          return '五'
+        case 6:
+          return '六'
+        case 7:
+          return '日'
+      }
     },
     // 选择开始时间
     onChangeStartTime(time, timeString, key) {
