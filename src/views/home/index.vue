@@ -74,15 +74,30 @@
         }">
           <a-icon class="trigger" :type="collapsed ? 'menu-unfold' : 'menu-fold'" @click="() => (collapsed = !collapsed)" />
           <div class="headerUser">
-            <div>{{orgInfo.orgName}}</div>
-            <a-dropdown :trigger="['click']">
-              <a style="width:100px;color:rgba(0, 0, 0, 0.65);text-align:center;" class="ant-dropdown-link" @click="e => e.preventDefault()">
+            <div style="padding:0 20px;">{{orgInfo.orgName}}</div>
+            <a-dropdown v-if="orgInfoList.length>1" :trigger="['click']">
+              <a style="width:auto;padding:0 20px;color:rgba(0, 0, 0, 0.65);text-align:center;" class="ant-dropdown-link" @click="e => e.preventDefault()">
                 切换
                 <a-icon type="down" />
               </a>
               <a-menu slot="overlay">
                 <a-menu-item v-for="item in orgInfoList" :key="item.orgCode">
                   <a @click="changeOrg(item)">{{item.orgName}}</a>
+                </a-menu-item>
+              </a-menu>
+            </a-dropdown>
+            <a-dropdown style="line-height:40px;margin:10px 0" :trigger="['click']">
+              <a-badge :count="changeNewsNum($store.state.conversationList)">
+                <a style="width:auto;color:rgba(0, 0, 0, 0.65);text-align:center;" class="ant-dropdown-link" @click="e => e.preventDefault()">
+                  新消息
+                </a>
+              </a-badge>
+              <a-menu slot="overlay">
+                <a-menu-item v-for="item in $store.state.conversationList" :key="item.conversationID" style="border-bottom:1px solid #eee;line-height:18px;">
+                  <a @click="toConversation(item)">
+                    <p style="margin:0;">{{item.toAccount}}（{{item.unreadCount}}）</p>
+                    <p style="margin:0;">{{item.lastMessage.messageForShow}}</p>
+                  </a>
                 </a-menu-item>
               </a-menu>
             </a-dropdown>
@@ -146,6 +161,22 @@ const panes = [
     closable: false,
   },
 ]
+import { getUserSig, getOrderInfo } from '@/api/chat'
+import { mapMutations, mapState } from 'vuex'
+
+import TIM from 'tim-js-sdk'
+import TIMUploadPlugin from 'tim-upload-plugin'
+let options = {
+  SDKAppID: 1400484455, // 接入时需要将0替换为您的即时通信 IM 应用的 SDKAppID
+}
+// 创建 SDK 实例，`TIM.create()`方法对于同一个 `SDKAppID` 只会返回同一份实例
+let tim = TIM.create(options) // SDK 实例通常用 tim 表示
+// 设置 SDK 日志输出级别，详细分级请参见 <a href="https://imsdk-1252463788.file.myqcloud.com/IM_DOC/Web/SDK.html#setLogLevel">setLogLevel 接口的说明</a>
+tim.setLogLevel(1) // 普通级别，日志量较多，接入时建议使用
+// tim.setLogLevel(1); // release 级别，SDK 输出关键信息，生产环境时建议使用
+// 注册腾讯云即时通信 IM 上传插件
+tim.registerPlugin({ 'tim-upload-plugin': TIMUploadPlugin })
+
 export default {
   name: 'Home',
   components: {
@@ -178,7 +209,11 @@ export default {
         proCode: '',
       },
       orgInfoList: [],
+      // conversationList: [], //会话列表
     }
+  },
+  computed: {
+    ...mapState(['newsNum']),
   },
   created() {
     this.orgInfo = JSON.parse(localStorage.getItem('orgInfo'))
@@ -194,6 +229,34 @@ export default {
     }
   },
   mounted() {
+    getUserSig().then((res) => {
+      if (res.success) {
+        let promise = tim.login({
+          userID: res.data.fromAccount,
+          userSig: res.data.userSig,
+        })
+        promise
+          .then((imResponse) => {
+            // console.log(imResponse.data) // 登录成功
+            if (imResponse.data.repeatLogin === true) {
+              // 标识账号已登录，本次登录操作为重复登录。v2.5.1 起支持
+              // console.log(imResponse.data.errorInfo)
+            }
+            setTimeout(() => {
+              // 获取会话列表
+              this.getConversationList()
+            }, 1500)
+          })
+          .catch((imError) => {
+            console.warn('login error:', imError) // 登录失败的相关信息
+          })
+      } else {
+        this.$message.warning(res.message)
+      }
+    })
+
+    tim.on(TIM.EVENT.MESSAGE_RECEIVED, this.onMessageReceived)
+
     const rt = this.$route
     const activeTitle = rt.meta.title
     const activeKey = rt.meta.key
@@ -217,7 +280,33 @@ export default {
       this.selectedKey = [activeKey]
     }
   },
+  destroyed() {
+    tim.off(TIM.EVENT.MESSAGE_RECEIVED, this.onMessageReceived)
+  },
+  watch: {
+    newsNum: {
+      handler: function (newVal, oldVal) {
+        this.getConversationList()
+      },
+    },
+  },
   methods: {
+    ...mapMutations(['onMessageReceived', 'setConversationList', 'removeConversationList']),
+    getConversationList() {
+      // 拉取会话列表
+      let promise = tim.getConversationList()
+      promise
+        .then((imResponse) => {
+          const conversationList = imResponse.data.conversationList // 会话列表，用该列表覆盖原有的会话列表
+          // this.conversationList = conversationList
+          this.setConversationList(conversationList)
+          console.log(imResponse)
+        })
+        .catch(function (imError) {
+          console.warn('getConversationList error:', imError) // 获取会话列表失败的相关信息
+        })
+    },
+    // 点击右键菜单
     onMenuSelect(key, target) {
       this.closeAll()
     },
@@ -241,23 +330,37 @@ export default {
       })
     },
     selected({ item, key }) {
+      console.log(item, this.$route)
       this.selectedKey = [key]
       if (!item.value) {
+        console.log('000')
       } else if (this.panes.filter((pane) => pane.key == key).length !== 0) {
+        console.log('111')
         const activeTitle = item.title
         const activeKey = key
         const activeName = item.value
         this.activeTitle = activeTitle
         this.activeName = activeName
         this.activeKey = activeKey
-        this.$router.push({ name: activeName })
+        if (item.patientInfo) {
+          this.$router.push({ name: activeName, query: { patientInfo: item.patientInfo } })
+        } else {
+          this.$router.push({ name: activeName })
+        }
+        console.log(item.patientInfo, this.$route)
         if (this.selectedKey == '3') {
           // if (this.$route.params.page) {
-          Object.assign(this.$route.params, { patientId: '', page: '', subKey: ['sub1'] })
+          Object.assign(this.$route.params, {
+            patientId: '',
+            page: '',
+            subKey: ['sub1'],
+            // patientInfo: item.patientInfo ? item.patientInfo : null,
+          })
           this.reloadCard()
           // }
         }
       } else {
+        console.log('222')
         const panes = this.panes.filter((pane) => pane.key !== key)
         const activeTitle = item.title
         const activeKey = key
@@ -267,15 +370,25 @@ export default {
           key: activeKey,
           name: activeName,
         })
-        if (this.selectedKey == '3') {
-          Object.assign(this.$route.params, { patientId: '', page: '', subKey: ['sub1'] })
-          this.reloadCard()
-        }
         this.panes = panes
         this.activeTitle = activeTitle
         this.activeName = activeName
         this.activeKey = activeKey
-        this.$router.push({ name: activeName })
+        if (item.patientInfo) {
+          this.$router.push({ name: activeName, query: { patientInfo: item.patientInfo } })
+        } else {
+          this.$router.push({ name: activeName })
+        }
+        console.log(item.patientInfo, this.$route)
+        if (this.selectedKey == '3') {
+          Object.assign(this.$route.params, {
+            patientId: '',
+            page: '',
+            subKey: ['sub1'],
+            // patientInfo: item.patientInfo ? item.patientInfo : null,
+          })
+          this.reloadCard()
+        }
       }
     },
     callback(key) {
@@ -366,6 +479,54 @@ export default {
               this.$message.error(res.message)
             }
           })
+        },
+        onCancel() {},
+      })
+    },
+    changeNewsNum(list) {
+      let sum = 0
+      list.forEach((item) => {
+        sum += item.unreadCount
+      })
+      return sum
+    },
+    // 去接诊聊天
+    toConversation(conversationList) {
+      this.$confirm({
+        title: '提示',
+        centered: true,
+        content: '确定后将接诊此患者！',
+        onOk: () => {
+          getOrderInfo(conversationList.userProfile.userID)
+            .then((res) => {
+              console.log(res)
+              if (res.success) {
+                this.selected({
+                  item: {
+                    value: 'Admission',
+                    title: '新开就诊',
+                    patientInfo: res.data,
+                  },
+                  key: '3',
+                })
+              } else {
+                let promise = tim.deleteConversation(conversationList.conversationID)
+                promise
+                  .then((imResponse) => {
+                    this.$message.info('订单失效，已为您删除此会话')
+                    // this.conversationList.filter(
+                    //   (item) => item.conversationID === conversationList.conversationID
+                    // )
+                    this.removeConversationList(conversationList)
+                    //删除成功。
+                    const { conversationID } = imResponse.data // 被删除的会话 ID
+                  })
+                  .catch(function (imError) {
+                    console.warn('deleteConversation error:', imError) // 删除会话失败的相关信息
+                  })
+              }
+            })
+            .catch((err) => {})
         },
         onCancel() {},
       })

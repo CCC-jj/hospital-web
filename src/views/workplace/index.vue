@@ -96,8 +96,8 @@ export default {
         bizType: '',
         limit: 9,
         orderFiled: '',
-        orderFinishDate: moment().endOf('day'),
-        orderStartDate: moment().startOf('day'),
+        orderFinishDate: '',
+        orderStartDate: '',
         orderStatus: '',
         orderType: 'asc',
         page: 1,
@@ -148,7 +148,7 @@ export default {
       this.params.orderFinishDate = dateStrings[1]
       this.getWorkplaceList()
     },
-    // 禁用一个月前后日期
+    // 禁用当天后日期
     disabledDate(current) {
       return current && current > moment().endOf('day')
     },

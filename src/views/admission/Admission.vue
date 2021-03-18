@@ -361,7 +361,7 @@
 // import options from '@/dist/data.js'
 import moment from 'moment'
 import conversation from '@/components/conversation'
-import { getUserSig } from '@/api/chat'
+import { getUserSigbyOrder } from '@/api/chat'
 import {
   getReceiveDiagnosis,
   getReceiveAdvice,
@@ -676,6 +676,7 @@ export default {
     }
   },
   created() {
+    console.log(this.$route)
     if (this.$route.name == 'CaseHistory') {
       this.tabs = 'b'
     }
@@ -743,6 +744,10 @@ export default {
               }
             }
           })
+        } else if (this.$route.query.patientInfo) {
+          this.writeForm(this.$route.query.patientInfo).then((res) => {
+            this.clickConfirmInfo()
+          })
         }
       }
     })
@@ -768,20 +773,25 @@ export default {
     getWorkbenchReceive() {
       getWorkbenchReceive(this.outNo, this.patientId, this.regOrderNo).then((res) => {
         if (res.success) {
-          let data = res.data.patient
-          this.form = data
-          this.receiveTypeFlag = res.data.patient.receiveTypeFlag
-          // 搜索患者
-          this.searchPatient()
-          if (data.provinceCode) {
-            const list = this.options.filter((item) => item.value == data.provinceCode)
-            this.loadData(list)
-            this.choseAddr.push(data.provinceCode, data.cityCode)
-          }
+          this.writeForm(res.data)
         } else {
           this.$message.warning(res.message)
         }
       })
+    },
+    // 填充表单
+    writeForm(info) {
+      let data = info.patient
+      this.form = data
+      this.receiveTypeFlag = info.patient.receiveTypeFlag
+      // 搜索患者
+      this.searchPatient()
+      if (data.provinceCode) {
+        const list = this.options.filter((item) => item.value == data.provinceCode)
+        this.loadData(list)
+        this.choseAddr.push(data.provinceCode, data.cityCode)
+      }
+      return Promise.resolve(/* 这里是需要返回的数据*/)
     },
     searchPatientChange(value) {
       this.searchPatient()
@@ -865,7 +875,7 @@ export default {
               getRecipeInfo(this.outpatientNo, this.patientId, this.regOrderNo).then((res) => {
                 if (res.success && res.data) {
                   if (this.form.receiveTypeId === 200 || this.form.receiveTypeId === 300) {
-                    getUserSig(this.regOrderNo).then((res) => {
+                    getUserSigbyOrder(this.regOrderNo).then((res) => {
                       if (res.success) {
                         this.openChat = true
                         this.$refs.conversationChild.showDrawer(

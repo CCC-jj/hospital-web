@@ -159,7 +159,7 @@ export default {
       this.params.page = 1
       this.getOperateLog()
     },
-    // 禁用一个月前后日期
+    // 禁用一个月后日期
     disabledDate(current) {
       return current && current > moment().endOf('day')
     },

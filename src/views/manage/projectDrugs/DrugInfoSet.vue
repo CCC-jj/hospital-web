@@ -36,7 +36,7 @@
           近一周: [moment().startOf('day').subtract(1, 'weeks'), moment()],
           近一月: [moment().startOf('day').subtract(1, 'month'), moment()],
           本月: [moment().startOf('month'), moment()],
-        }" @change="onChange" style="width:80%" />
+        }" @change="onChange" style="width:80%" :value="[queryInfo.startDate,queryInfo.endDate]" :disabled-date="disabledDate"/>
       </div>
       <div style="width:29%">
         <a-input-search placeholder="输入药品名称/编码/生产厂家" enter-button @search="onSearch" @change="onChangeSearch" />
@@ -170,14 +170,14 @@ export default {
       total: 0,
       queryInfo: {
         drugStatus: '1',
-        endDate: '',
+        endDate: moment().endOf('day'),
         limit: 10,
         orderFiled: '',
         orderType: 'asc',
         page: 1,
         recipeType: '',
         searchWords: '',
-        startDate: '',
+        startDate: moment().startOf('day').subtract(1, 'month'),
       },
     }
   },
@@ -191,6 +191,10 @@ export default {
   },
   methods: {
     moment,
+    // 禁用一个月后日期
+    disabledDate(current) {
+      return current && current > moment().endOf('day')
+    },
     getDrugList() {
       this.spinning = true
       getDrugList(this.queryInfo).then((res) => {

@@ -116,19 +116,14 @@
   </div>
 </template>
 <script>
+import { mapState, mapMutations } from 'vuex'
 import moment from 'moment'
 import TIM from 'tim-js-sdk'
-import TIMUploadPlugin from 'tim-upload-plugin'
 let options = {
   SDKAppID: 1400484455, // 接入时需要将0替换为您的即时通信 IM 应用的 SDKAppID
 }
 // 创建 SDK 实例，`TIM.create()`方法对于同一个 `SDKAppID` 只会返回同一份实例
 let tim = TIM.create(options) // SDK 实例通常用 tim 表示
-// 设置 SDK 日志输出级别，详细分级请参见 <a href="https://imsdk-1252463788.file.myqcloud.com/IM_DOC/Web/SDK.html#setLogLevel">setLogLevel 接口的说明</a>
-tim.setLogLevel(1) // 普通级别，日志量较多，接入时建议使用
-// tim.setLogLevel(1); // release 级别，SDK 输出关键信息，生产环境时建议使用
-// 注册腾讯云即时通信 IM 上传插件
-tim.registerPlugin({ 'tim-upload-plugin': TIMUploadPlugin })
 export default {
   data() {
     return {
@@ -136,40 +131,55 @@ export default {
       visible: false,
       userID: '',
       toUser: '',
-      conversationID: '',
+      // conversationID: '',
       content: '',
-      messageList: [],
+      // messageList: [],
       nextReqMessageID: '',
       fileList: [],
       file: {},
       more: true,
       isBottom: false,
-      news: false,
+      // news: false,
     }
+  },
+  computed: {
+    ...mapState(['news', 'conversationID', 'messageList']),
   },
   updated() {
     // 聊天定位到底部
     if (this.openChat && !this.isBottom) {
       let ele = document.getElementById('chatRecord')
       ele.scrollTop = ele.scrollHeight
+      setTimeout(() => {
+        this.setMessageRead()
+      }, 500)
     }
   },
-  mounted() {
-    tim.on(TIM.EVENT.MESSAGE_RECEIVED, this.onMessageReceived)
-  },
+  mounted() {},
   destroyed() {
-    tim.off(TIM.EVENT.MESSAGE_RECEIVED, this.onMessageReceived)
-    let promise = tim.logout()
-    promise
-      .then((imResponse) => {
-        // console.log(imResponse.data) // 登出成功
-      })
-      .catch((imError) => {
-        console.warn('logout error:', imError)
-      })
+    this.changeNews(false)
+    this.changeConversationID('')
+    this.changeMessageList([])
+
+    // let promise = tim.logout()
+    // promise
+    //   .then((imResponse) => {
+    //     // console.log(imResponse.data) // 登出成功
+    //   })
+    //   .catch((imError) => {
+    //     console.warn('logout error:', imError)
+    //   })
   },
   methods: {
     moment,
+    ...mapMutations([
+      'changeNews',
+      'changeConversationID',
+      'changeMessageList',
+      'pushMessageList',
+      'concatMessageList',
+      'onMessageReceived',
+    ]),
     changeParse(i) {
       if (i) {
         return JSON.parse(i)
@@ -195,7 +205,9 @@ export default {
         clearTimeout(c)
       }
       this.isBottom = false
-      this.news = false
+      // this.news = false
+      this.changeNews(false)
+      this.setMessageRead()
     },
     doctorName() {
       return localStorage.getItem('userName')
@@ -210,24 +222,25 @@ export default {
     showDrawer(userID, userSig, toUser) {
       this.openChat = true
       if (this.openChat) {
-        let promise = tim.login({ userID: userID, userSig: userSig })
-        promise
-          .then((imResponse) => {
-            this.userID = userID
-            this.toUser = toUser
-            // console.log(imResponse.data) // 登录成功
-            if (imResponse.data.repeatLogin === true) {
-              // 标识账号已登录，本次登录操作为重复登录。v2.5.1 起支持
-              // console.log(imResponse.data.errorInfo)
-            }
-            this.messageList = []
-            setTimeout(() => {
-              this.getMessageList()
-            }, 500)
-          })
-          .catch((imError) => {
-            console.warn('login error:', imError) // 登录失败的相关信息
-          })
+        // let promise = tim.login({ userID: userID, userSig: userSig })
+        // promise
+        //   .then((imResponse) => {
+        this.userID = userID
+        this.toUser = toUser
+        //     // console.log(imResponse.data) // 登录成功
+        //     if (imResponse.data.repeatLogin === true) {
+        //       // 标识账号已登录，本次登录操作为重复登录。v2.5.1 起支持
+        //       // console.log(imResponse.data.errorInfo)
+        //     }
+        this.changeMessageList([])
+        // this.messageList = []
+        setTimeout(() => {
+          this.getMessageList()
+        }, 500)
+        // })
+        // .catch((imError) => {
+        //   console.warn('login error:', imError) // 登录失败的相关信息
+        // })
       }
     },
     sendMessage() {
@@ -251,7 +264,8 @@ export default {
           .then((imResponse) => {
             // 发送成功
             // this.getMessageList()
-            this.messageList.push(message)
+            // this.messageList.push(message)
+            this.pushMessageList(message)
             this.toBottom(100)
           })
           .catch((imError) => {
@@ -263,7 +277,8 @@ export default {
     getMessageList(nextReqMessageID) {
       // 打开某个会话时，第一次拉取消息列表
       let conversationID = `C2C${this.toUser}`
-      this.conversationID = conversationID
+      // this.conversationID = conversationID
+      this.changeConversationID(conversationID)
       let promise = tim.getMessageList({
         conversationID: conversationID,
         nextReqMessageID,
@@ -273,7 +288,9 @@ export default {
         const messageList = imResponse.data.messageList // 消息列表。
         const nextReqMessageID = imResponse.data.nextReqMessageID // 用于续拉，分页续拉时需传入该字段。
         const isCompleted = imResponse.data.isCompleted // 表示是否已经拉完所有消息。
-        this.messageList = messageList.concat(this.messageList)
+        // this.messageList = messageList.concat(this.messageList)
+        this.concatMessageList(messageList)
+        this.setMessageRead()
         if (isCompleted) {
           this.more = false
           return
@@ -281,25 +298,38 @@ export default {
         this.nextReqMessageID = nextReqMessageID
       })
     },
-    // 收到消息
-    onMessageReceived(event) {
-      // 收到推送的单聊、群聊、群提示、群系统通知的新消息，可通过遍历 event.data 获取消息列表数据并渲染到页面
-      // event.name - TIM.EVENT.MESSAGE_RECEIVED
-      // event.data - 存储 Message 对象的数组 - [Message]
-      if (event.data[0].conversationID === this.conversationID) {
-        this.messageList.push(event.data[0])
-        if (event.data[0].flow === 'in') {
-          this.news = true
-          this.$nextTick(() => {
-            this.$notification.open({
-              message: '提示',
-              description: '你有一条新消息',
-            })
-          })
-        }
-        // this.toBottom(100)
-      }
+    // 消息已读
+    setMessageRead() {
+      // 将某会话下所有未读消息已读上报
+      let promise = tim.setMessageRead({ conversationID: this.conversationID })
+      promise
+        .then(function (imResponse) {
+          // 已读上报成功，指定 ID 的会话的 unreadCount 属性值被置为0
+        })
+        .catch(function (imError) {
+          // 已读上报失败
+          console.warn('setMessageRead error:', imError)
+        })
     },
+    // 收到消息
+    // onMessageReceived(event) {
+    //   // 收到推送的单聊、群聊、群提示、群系统通知的新消息，可通过遍历 event.data 获取消息列表数据并渲染到页面
+    //   // event.name - TIM.EVENT.MESSAGE_RECEIVED
+    //   // event.data - 存储 Message 对象的数组 - [Message]
+    //   if (event.data[0].conversationID === this.conversationID) {
+    //     this.messageList.push(event.data[0])
+    //     if (event.data[0].flow === 'in') {
+    //       this.news = true
+    //       // this.$nextTick(() => {
+    //       this.$notification.open({
+    //         message: '提示',
+    //         description: '你有一条新消息',
+    //       })
+    //       // })
+    //     }
+    //     // this.toBottom(100)
+    //   }
+    // },
     handleRemove(file) {
       const index = this.fileList.indexOf(file)
       const newFileList = this.fileList.slice()
@@ -336,7 +366,8 @@ export default {
           // 发送成功
           console.log(imResponse)
           // this.getMessageList()
-          this.messageList.push(message)
+          // this.messageList.push(message)
+          this.pushMessageList(message)
           this.fileList = []
           this.toBottom(100)
         })
