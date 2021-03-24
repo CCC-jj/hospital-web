@@ -72,6 +72,7 @@ const store = new Vuex.Store({
       state.conversationList.filter(
         item => item.conversationID === value.conversationID
       );
+      console.log(state.conversationList);
     }
   }
 });

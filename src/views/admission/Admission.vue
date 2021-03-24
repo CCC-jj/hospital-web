@@ -676,7 +676,6 @@ export default {
     }
   },
   created() {
-    console.log(this.$route)
     if (this.$route.name == 'CaseHistory') {
       this.tabs = 'b'
     }

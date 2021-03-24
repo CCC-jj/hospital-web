@@ -3,8 +3,9 @@
     <a-layout id="components-layout-demo-custom-trigger">
       <a-layout-sider v-model="collapsed" :trigger="null" collapsible>
         <div class="logo" @click="toHome">
-          <img v-if="orgUrl" src="@/assets/u56.png" alt="" srcset="">
-          <img v-else :src="orgUrl" alt="" srcset="">
+          <!-- <img src="@/assets/u56.png" alt="" srcset=""> -->
+          <img v-if="orgInfo.orgUrl" :src="orgInfo.orgUrl" alt="" srcset="">
+          <img v-else src="@/assets/u56.png" alt="" srcset="">
         </div>
         <a-menu theme="dark" mode="inline" :default-selected-keys="selectedKey" :selectedKeys="selectedKey" @click="selected" :default-open-keys="['sub1']">
           <!-- <a-menu-item key="1" title="经营概况" value="Business">
@@ -86,13 +87,14 @@
                 </a-menu-item>
               </a-menu>
             </a-dropdown>
-            <a-dropdown style="line-height:40px;margin:10px 0" :trigger="['click']">
+            <a-dropdown style="line-height:40px;margin:10px 0">
               <a-badge :count="changeNewsNum($store.state.conversationList)">
                 <a style="width:auto;color:rgba(0, 0, 0, 0.65);text-align:center;" class="ant-dropdown-link" @click="e => e.preventDefault()">
                   新消息
                 </a>
               </a-badge>
               <a-menu slot="overlay">
+                <a-empty v-if="$store.state.conversationList.length===0" />
                 <a-menu-item v-for="item in $store.state.conversationList" :key="item.conversationID" style="border-bottom:1px solid #eee;line-height:18px;">
                   <a @click="toConversation(item)">
                     <p style="margin:0;">{{item.toAccount}}（{{item.unreadCount}}）</p>
@@ -202,11 +204,12 @@ export default {
       newTabIndex: 0,
       collapsed: false,
       opensubKey: [],
-      orgUrl: '',
+      // orgUrl: '',
       orgInfo: {
         orgCode: '',
         orgName: '',
         proCode: '',
+        orgUrl: null,
       },
       orgInfoList: [],
       // conversationList: [], //会话列表
@@ -292,20 +295,6 @@ export default {
   },
   methods: {
     ...mapMutations(['onMessageReceived', 'setConversationList', 'removeConversationList']),
-    getConversationList() {
-      // 拉取会话列表
-      let promise = tim.getConversationList()
-      promise
-        .then((imResponse) => {
-          const conversationList = imResponse.data.conversationList // 会话列表，用该列表覆盖原有的会话列表
-          // this.conversationList = conversationList
-          this.setConversationList(conversationList)
-          console.log(imResponse)
-        })
-        .catch(function (imError) {
-          console.warn('getConversationList error:', imError) // 获取会话列表失败的相关信息
-        })
-    },
     // 点击右键菜单
     onMenuSelect(key, target) {
       this.closeAll()
@@ -330,12 +319,9 @@ export default {
       })
     },
     selected({ item, key }) {
-      console.log(item, this.$route)
       this.selectedKey = [key]
       if (!item.value) {
-        console.log('000')
       } else if (this.panes.filter((pane) => pane.key == key).length !== 0) {
-        console.log('111')
         const activeTitle = item.title
         const activeKey = key
         const activeName = item.value
@@ -347,7 +333,6 @@ export default {
         } else {
           this.$router.push({ name: activeName })
         }
-        console.log(item.patientInfo, this.$route)
         if (this.selectedKey == '3') {
           // if (this.$route.params.page) {
           Object.assign(this.$route.params, {
@@ -360,7 +345,6 @@ export default {
           // }
         }
       } else {
-        console.log('222')
         const panes = this.panes.filter((pane) => pane.key !== key)
         const activeTitle = item.title
         const activeKey = key
@@ -379,7 +363,6 @@ export default {
         } else {
           this.$router.push({ name: activeName })
         }
-        console.log(item.patientInfo, this.$route)
         if (this.selectedKey == '3') {
           Object.assign(this.$route.params, {
             patientId: '',
@@ -490,6 +473,20 @@ export default {
       })
       return sum
     },
+    getConversationList() {
+      // 拉取会话列表
+      let promise = tim.getConversationList()
+      promise
+        .then((imResponse) => {
+          const conversationList = imResponse.data.conversationList // 会话列表，用该列表覆盖原有的会话列表
+          // this.conversationList = conversationList
+          this.setConversationList(conversationList)
+          console.log(imResponse)
+        })
+        .catch(function (imError) {
+          console.warn('getConversationList error:', imError) // 获取会话列表失败的相关信息
+        })
+    },
     // 去接诊聊天
     toConversation(conversationList) {
       this.$confirm({
@@ -499,7 +496,6 @@ export default {
         onOk: () => {
           getOrderInfo(conversationList.userProfile.userID)
             .then((res) => {
-              console.log(res)
               if (res.success) {
                 this.selected({
                   item: {
@@ -517,7 +513,8 @@ export default {
                     // this.conversationList.filter(
                     //   (item) => item.conversationID === conversationList.conversationID
                     // )
-                    this.removeConversationList(conversationList)
+                    // this.removeConversationList(conversationList)
+                    this.getConversationList()
                     //删除成功。
                     const { conversationID } = imResponse.data // 被删除的会话 ID
                   })

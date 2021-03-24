@@ -33,16 +33,12 @@
       <a-input-search placeholder="姓名/手机号/证件号" enter-button @search="onSearch" @change="onChangeSearch" style="width: 30%" />
     </div>
     <div class="manageDown">
-      <a-table :loading="spinning" :columns="columns" :data-source="tableData" :pagination="{ showQuickJumper: true, pageSize: 10, total: total, current:queryInfo.page, showTotal: ((total) => {return `每页10条，共 ${total} 条`}) }" @change="tableChange" :rowKey="
-          (record, index) => {
-            return record.recordId;
-          }
-        ">
+      <a-table :loading="spinning" :columns="columns" :data-source="tableData" :pagination="{ showQuickJumper: true, pageSize: 10, total: total, current:queryInfo.page, showTotal: ((total) => {return `每页10条，共 ${total} 条`}) }" @change="tableChange" :rowKey="(record, index) => {return record.recordId;}">
         <span slot="patientSex" slot-scope="text">
-          <span v-if="text == 0">保密</span>
-          <span v-if="text == 1">男</span>
-          <span v-if="text == 2">女</span>
-          <span v-if="text == 9">未说明</span>
+          <span v-if="text === 0">保密</span>
+          <span v-else-if="text === 1">男</span>
+          <span v-else-if="text === 2">女</span>
+          <span v-else>未说明</span>
         </span>
         <span class="editBtn" slot="action" slot-scope="text,record">
           <!-- <a @click="toAdmission">接诊></a>

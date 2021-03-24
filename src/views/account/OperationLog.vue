@@ -188,16 +188,21 @@ export default {
       })
     },
     showInfoModal(record) {
-      getLogDetail(record.logId).then((res) => {
-        if (res.success) {
-          this.modalInfo = res.data
-          this.modalInfo.request = JSON.parse(res.data.request)
-          this.modalInfo.response = JSON.parse(res.data.response)
-          this.visible = true
-        } else {
-          this.$message.warning(res.message)
-        }
-      })
+      getLogDetail(record.logId)
+        .then((res) => {
+          if (res.success) {
+            this.modalInfo = res.data
+            this.modalInfo.request = JSON.parse(res.data.request)
+            this.modalInfo.response = JSON.parse(res.data.response)
+            this.visible = true
+          } else {
+            this.$message.warning(res.message)
+          }
+        })
+        .catch((err) => {
+          console.error(err)
+          this.$message.error('请求失败')
+        })
     },
     handleOk(e) {
       this.visible = false
