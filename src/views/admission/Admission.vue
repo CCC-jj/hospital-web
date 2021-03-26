@@ -19,9 +19,9 @@
         </a-button>
         <a-button-group>
           <a-button :disabled="this.form.receiveTypeId!==200" class="picBtn" @click="showModal">图文资料</a-button>
-          <a-button :disabled="this.form.receiveTypeId!==300" class="picBtn" @click="showModal">视频对话</a-button>
+          <!-- <a-button :disabled="this.form.receiveTypeId!==300" class="picBtn" @click="showModal">视频对话</a-button> -->
+          <a-button class="picBtn" @click="showVideo">视频对话</a-button>
         </a-button-group>
-
       </div>
 
       <a-modal v-model="visible" title="图文资料" @ok="handleOk">
@@ -44,6 +44,10 @@
             <img v-for="(item,index) in sickInfo.images" :src="item" :key="index" :title="item" />
           </viewer>
         </div>
+      </a-modal>
+
+      <a-modal width="600px" v-model="videoVisible" :maskClosable="false" title="视频对话" @ok="videoHandleOk" @cancel="videoCancel" :footer="null">
+        <CallbyVideo ref="videoChild" v-if="videoVisible"></CallbyVideo>
       </a-modal>
     </div>
 
@@ -361,6 +365,7 @@
 // import options from '@/dist/data.js'
 import moment from 'moment'
 import conversation from '@/components/conversation'
+import CallbyVideo from '@/components/CallbyVideo'
 import { getUserSigbyOrder } from '@/api/chat'
 import {
   getReceiveDiagnosis,
@@ -505,6 +510,7 @@ export default {
   inject: ['reloadCard'],
   components: {
     conversation,
+    CallbyVideo,
   },
   props: {
     collapsed: Boolean,
@@ -673,6 +679,7 @@ export default {
       caseFormInfo: {},
       recipeInfo: [],
       disabledBtn: true,
+      videoVisible: false, // 视频对话
     }
   },
   created() {
@@ -1107,6 +1114,7 @@ export default {
         })
       }, 500)
     },
+    // 图文资料对话框
     showModal() {
       this.visible = true
       getReceiveSickInfo(this.regOrderNo).then((res) => {
@@ -1117,6 +1125,14 @@ export default {
       })
     },
     showTalkModal() {},
+    // 视频对话对话框
+    showVideo() {
+      this.videoVisible = true
+    },
+    videoHandleOk() {},
+    videoCancel() {
+      this.$refs.videoChild.leaveRoom()
+    },
     showModalPr() {
       if (this.prtransfer == '处方调用') {
         this.prVisible = true

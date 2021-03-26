@@ -97,7 +97,7 @@
                 <a-empty v-if="$store.state.conversationList.length===0" />
                 <a-menu-item v-for="item in $store.state.conversationList" :key="item.conversationID" style="border-bottom:1px solid #eee;line-height:18px;">
                   <a @click="toConversation(item)">
-                    <p style="margin:0;">{{item.toAccount}}（{{item.unreadCount}}）</p>
+                    <p style="margin:0;">{{item.userProfile.nick}}（{{item.unreadCount}}）</p>
                     <p style="margin:0;">{{item.lastMessage.messageForShow}}</p>
                   </a>
                 </a-menu-item>
