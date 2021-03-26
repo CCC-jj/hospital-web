@@ -725,7 +725,7 @@ export default {
               : ''
           )
         this.options = option
-
+        console.log(this.$route)
         // 获取省市列表之后再获取患者信息
         if (this.$route.params.patientId && this.$route.params.regOrderNo) {
           this.patientId = this.$route.params.patientId
@@ -751,9 +751,13 @@ export default {
             }
           })
         } else if (this.$route.query.patientInfo) {
-          this.writeForm(this.$route.query.patientInfo).then((res) => {
-            this.clickConfirmInfo()
-          })
+          if (typeof this.$route.query.patientInfo === 'object') {
+            this.writeForm(this.$route.query.patientInfo).then((res) => {
+              this.clickConfirmInfo()
+            })
+          } else {
+            this.$route.query.patientInfo = null
+          }
         }
       }
     })
