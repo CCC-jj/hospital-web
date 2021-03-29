@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import { login, loginHospital } from '@/api/login'
+import { login, loginHospitalList, loginHospitalConfirm } from '@/api/login'
 import { getCommonTitle } from '@/api/common'
 import md5 from 'md5'
 export default {
@@ -157,25 +157,37 @@ export default {
           if (this.getCookie('password') && this.ruleForm.password == this.getCookie('password')) {
             password = this.getCookie('password')
           }
-          login(this.ruleForm.mobile, password).then((res) => {
+          let timestamp = Math.round(new Date().getTime() / 1000)
+          let sign = md5(timestamp + ':123456')
+          login(sign, timestamp, 2, this.ruleForm.mobile, password).then((res) => {
             // this.$store.dispatch('userInfo',res.data)
             if (res.success) {
-              this.orgInfoList = res.data.orgInfo
-              localStorage.setItem('token', res.data.tokenInfo.token)
-              localStorage.setItem('photoUrl', res.data.photoUrl)
-              localStorage.setItem('userName', res.data.userName)
-              localStorage.setItem('userSex', res.data.userSex)
-              localStorage.setItem('orgInfoList', JSON.stringify(res.data.orgInfo))
+              localStorage.setItem('token', res.data)
+              loginHospitalList()
+                .then((res) => {
+                  if (res.success) {
+                    this.orgInfoList = res.data.orgInfo
+                    localStorage.setItem('photoUrl', res.data.photoUrl)
+                    localStorage.setItem('userName', res.data.userName)
+                    localStorage.setItem('userSex', res.data.userSex)
+                    localStorage.setItem('orgInfoList', JSON.stringify(res.data.orgInfo))
+                    this.setUserInfo()
+                    if (res.data.tokenInfo.status === 1) {
+                      localStorage.setItem('orgInfo', JSON.stringify(res.data.orgInfo[0]))
+                      this.$router.push('/')
+                      this.$message.success('登录成功')
+                    } else {
+                      this.visible = true
+                      this.$message.info('请选择机构')
+                    }
+                  } else {
+                    this.$message.warning(res.message)
+                  }
+                })
+                .catch((err) => {
+                  console.error(err)
+                })
               // localStorage.setItem('orgUrl', res.data.orgUrl)
-              this.setUserInfo()
-              if (res.data.tokenInfo.status === 1) {
-                localStorage.setItem('orgInfo', JSON.stringify(res.data.orgInfo[0]))
-                this.$router.push('/')
-                this.$message.success('登录成功')
-              } else {
-                this.visible = true
-                this.$message.info('请选择机构')
-              }
             } else {
               this.$message.warning(res.message)
               return false
@@ -187,7 +199,7 @@ export default {
       })
     },
     chooseOrg(item) {
-      loginHospital(item.orgCode)
+      loginHospitalConfirm(item.orgCode, item.proCode)
         .then((res) => {
           if (res.success) {
             localStorage.setItem('token', res.data.token)

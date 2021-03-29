@@ -107,7 +107,7 @@
               <span class="ant-dropdown-link" @click="(e) => e.preventDefault()">
                 <div>
                   <a-divider type="vertical" />
-                  <div v-if="userInfo.photoUrl=='null'">
+                  <div v-if="!userInfo.photoUrl">
                     <img v-if="userInfo.userSex==2" style="width: 40px; height: 40px; border-radius: 50%" src="../../assets/p1.png" />
                     <img v-else style="width: 40px; height: 40px; border-radius: 50%" src="../../assets/p0.png" />
                   </div>
@@ -458,6 +458,7 @@ export default {
               localStorage.removeItem('token')
               window.document.title = '医生端'
               this.$router.push({ path: '/user/login' })
+              this.$message.success('退出登录成功！')
             } else {
               this.$message.error(res.message)
             }

@@ -725,7 +725,6 @@ export default {
               : ''
           )
         this.options = option
-        console.log(this.$route)
         // 获取省市列表之后再获取患者信息
         if (this.$route.params.patientId && this.$route.params.regOrderNo) {
           this.patientId = this.$route.params.patientId
@@ -938,7 +937,7 @@ export default {
       }
     },
     handleChange(value) {
-      console.log(`selected ${value}`)
+      // console.log(`selected ${value}`)
     },
     disabledDate(current) {
       // Can not select days before today and today
@@ -1002,7 +1001,7 @@ export default {
       }
     },
     handleSelect(item) {
-      console.log(item)
+      // console.log(item)
     },
     saveLoading() {
       this.iconLoading1 = true
@@ -1148,8 +1147,8 @@ export default {
       this.visible = false
     },
     onChange(dates, dateStrings) {
-      console.log('From: ', dates[0], ', to: ', dates[1])
-      console.log('From: ', dateStrings[0], ', to: ', dateStrings[1])
+      // console.log('From: ', dates[0], ', to: ', dates[1])
+      // console.log('From: ', dateStrings[0], ', to: ', dateStrings[1])
     },
     handleChangeType(value) {
       this.form.receiveTypeId = value
@@ -1191,10 +1190,10 @@ export default {
       this.form.patientAddr = e.target.value
     },
     onSearch(value) {
-      console.log(value)
+      // console.log(value)
     },
     onChangeSearch(e) {
-      console.log(e.target.value)
+      // console.log(e.target.value)
     },
     customExpandIcon(props) {
       // if(props.record.children.length > 0){

@@ -51,7 +51,13 @@ const store = new Vuex.Store({
         message: "你有一条新消息",
         top: "50px",
         duration: 2,
-        description: "来自:" + event.data[0].nick + " --- " + "消息内容: " + text
+        description: (
+          <div>
+            <p>来自：`${event.data[0].nick}`</p>
+            <p>消息内容：`${text}`</p>
+          </div>
+        )
+        // "来自:" + event.data[0].nick + " --- " + "消息内容: " + text
       });
       state.newsNum++;
       // 收到推送的单聊、群聊、群提示、群系统通知的新消息，可通过遍历 event.data 获取消息列表数据并渲染到页面
