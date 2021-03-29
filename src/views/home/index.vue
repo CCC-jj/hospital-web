@@ -154,7 +154,7 @@
 
 <script>
 import ContextMenu from '@/components/ContextMenu'
-import { loginHospital, logout } from '@/api/login'
+import { loginHospitalConfirm, logout } from '@/api/login'
 const panes = [
   {
     title: '接诊工作台',
@@ -431,7 +431,7 @@ export default {
         centered: true,
         content: '确定要切换机构吗？',
         onOk: () => {
-          loginHospital(item.orgCode)
+          loginHospitalConfirm(item.orgCode, item.proCode)
             .then((res) => {
               if (res.success) {
                 localStorage.setItem('token', res.data.token)
