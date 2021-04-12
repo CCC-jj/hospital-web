@@ -11,7 +11,7 @@
           <div class="word" v-if="item.flow === 'in'">
             <img class="avatar" src="../assets/p0.png" />
             <div class="info">
-              <p class="time">病患 {{moment(item.time*1000).format('YYYY-MM-DD HH:mm:ss')}}</p>
+              <p class="time">{{item.nick}} {{moment(item.time*1000).format('YYYY-MM-DD HH:mm:ss')}}</p>
               <div class="info-content">
 
                 <span v-if="item.type==='TIMTextElem'">{{item.payload.text}}</span>

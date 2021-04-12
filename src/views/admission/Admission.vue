@@ -20,7 +20,7 @@
         <a-button-group>
           <a-button :disabled="this.form.receiveTypeId!==200" class="picBtn" @click="showModal">图文资料</a-button>
           <!-- <a-button :disabled="this.form.receiveTypeId!==300" class="picBtn" @click="showModal">视频对话</a-button> -->
-          <a-button class="picBtn" @click="showVideo">视频对话</a-button>
+          <a-button disabled class="picBtn" @click="showVideo">视频对话</a-button>
         </a-button-group>
       </div>
 
@@ -47,7 +47,7 @@
       </a-modal>
 
       <a-modal width="600px" v-model="videoVisible" :maskClosable="false" title="视频对话" @ok="videoHandleOk" @cancel="videoCancel" :footer="null">
-        <CallbyVideo ref="videoChild" v-if="videoVisible"></CallbyVideo>
+        <!-- <CallbyVideo ref="videoChild" v-if="videoVisible"></CallbyVideo> -->
       </a-modal>
     </div>
 

@@ -167,12 +167,14 @@ export default {
                 .then((res) => {
                   if (res.success) {
                     this.orgInfoList = res.data.orgInfo
+                    
                     localStorage.setItem('photoUrl', res.data.photoUrl)
                     localStorage.setItem('userName', res.data.userName)
                     localStorage.setItem('userSex', res.data.userSex)
                     localStorage.setItem('orgInfoList', JSON.stringify(res.data.orgInfo))
                     this.setUserInfo()
                     if (res.data.tokenInfo.status === 1) {
+                      localStorage.setItem('token', res.data.tokenInfo.token)
                       localStorage.setItem('orgInfo', JSON.stringify(res.data.orgInfo[0]))
                       this.$router.push('/')
                       this.$message.success('登录成功')
