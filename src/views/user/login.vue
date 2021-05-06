@@ -171,6 +171,7 @@ export default {
                     localStorage.setItem('photoUrl', res.data.photoUrl)
                     localStorage.setItem('userName', res.data.userName)
                     localStorage.setItem('userSex', res.data.userSex)
+                    localStorage.setItem('doctorId', res.data.doctorId)
                     localStorage.setItem('orgInfoList', JSON.stringify(res.data.orgInfo))
                     this.setUserInfo()
                     if (res.data.tokenInfo.status === 1) {
@@ -201,7 +202,8 @@ export default {
       })
     },
     chooseOrg(item) {
-      loginHospitalConfirm(item.orgCode, item.proCode)
+      const doctorId = localStorage.getItem('doctorId')
+      loginHospitalConfirm(doctorId, item.orgCode, item.proCode)
         .then((res) => {
           if (res.success) {
             localStorage.setItem('token', res.data.token)

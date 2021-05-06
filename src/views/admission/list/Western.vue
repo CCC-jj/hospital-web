@@ -186,7 +186,7 @@
                 selectedRowKeys: selectedRowKeys2,
                 onChange: onSelectChange2,
               }" :columns="columns2" :data-source="data2" @change="changeDurgTable" :pagination="{ showQuickJumper: true, pageSize: 10, total: drugTotal, current:queryDrugList.page, simple: true, size: 'small', }" :scroll="{ y: 375 }" :rowKey="
-              (record, index) => {return record.id;}">
+              (record, index) => {return index;}">
             </a-table>
           </div>
           <div class="rightBoxBottom">
@@ -281,15 +281,15 @@ const columns = [
 const columns2 = [
   {
     title: '名称',
-    dataIndex: 'name',
+    dataIndex: 'goodsName',
   },
   {
     title: '规格',
-    dataIndex: 'spec',
+    dataIndex: 'specs',
   },
   {
     title: '库存',
-    dataIndex: 'stock',
+    dataIndex: 'stockNum',
   },
   {
     title: '价格',
@@ -397,7 +397,23 @@ export default {
       catId: 1,
       addVisible: false,
       settingVisible: false,
-      data: [],
+      data: [{
+        categoryId: "1",
+        code: "",
+        dosageForm: null,
+        drugId: "12",
+        goodsName: null,
+        manufacturer: "浙江佐力",
+        note: null,
+        price: "0.74",
+        productName: null,
+        specs: "0.1g*12片",
+        statItemId: null,
+        stockNum: null,
+        unit: "板",
+        usageName: null,
+        usageUnit: null,
+      }],
       columns,
       // groupNumber: [1, 2, 3],
       usage: [],
@@ -628,14 +644,14 @@ export default {
       } else {
         let list = this.data2.map((data) => {
           return {
-            drugId: data.id,
+            drugId: data.drugId,
             // groupNumber: undefined,
-            drugName: data.name,
+            drugName: data.goodsName,
             usageNumber: '',
-            usageUnit: data.unit,
-            drugUnit: data.packUnit,
+            usageUnit: data.usageUnit,
+            drugUnit: data.unit,
             itemTypeId: this.queryDrugList.categoryId,
-            usage: data.usage == null ? undefined : data.usage,
+            usage: data.usageName == null ? undefined : data.usageName,
             rateId: '',
             rateName: undefined,
             recipeItemId: '',

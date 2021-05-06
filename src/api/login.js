@@ -23,12 +23,13 @@ export function loginHospitalList() {
 }
 
 // 确定关联医院
-export function loginHospitalConfirm(orgCode, proCode) {
+export function loginHospitalConfirm(doctorId, orgCode, proCode) {
   return request({
     url: "login/hospital/confirm",
     method: "get",
     headers: { "Content-Type": "x-www-form-urlencoded" },
     params: {
+      doctorId: doctorId,
       orgCode: orgCode,
       proCode: proCode
     }

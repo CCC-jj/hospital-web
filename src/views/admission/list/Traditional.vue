@@ -132,7 +132,7 @@
                 selectedRowKeys: selectedRowKeys2,
                 onChange: onSelectChange2,
               }" :columns="columns2" :data-source="data2" @change="changeDurgTable" :pagination="{ showQuickJumper: true, pageSize: 10, total: drugTotal, current:queryDrugList.page,  simple: true, size: 'small', }" :scroll="{ y: 375 }" :rowKey="
-              (record, index) => {return record.id;}">
+              (record, index) => {return record.drugId;}">
             </a-table>
           </div>
           <div class="rightBoxBottom">
@@ -219,15 +219,15 @@ const columns = [
 const columns2 = [
   {
     title: '名称',
-    dataIndex: 'name',
+    dataIndex: 'goodsName',
   },
   {
     title: '规格',
-    dataIndex: 'spec',
+    dataIndex: 'specs',
   },
   {
     title: '库存',
-    dataIndex: 'stock',
+    dataIndex: 'stockNum',
   },
   {
     title: '价格',
