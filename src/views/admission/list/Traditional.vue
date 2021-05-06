@@ -12,7 +12,7 @@
             </div>
           </div>
           <div class="leftTable">
-            <a-table :columns="columns" :data-source="data" :pagination="false" :scroll="{ y: 350 }" style="height: 350px" :rowKey="(record, index) => {return record.drugId;}">
+            <a-table :columns="columns" :data-source="data" :pagination="false" :scroll="{ y: 350 }" style="height: 350px" :rowKey="(record, index) => {return index;}">
               <template slot="usageNumber" slot-scope="text, record">
                 <a-input :disabled="recipe.recipeOrderStatus!=0" @change="(e) => dosageChange(e, record)" style="width: 70%;color:#000;" v-model="record.usageNumber"></a-input>
                 <span>{{ record.usageUnit }}</span>
@@ -43,7 +43,7 @@
                 <a-input disabled style="width: 100%;color:#000;" v-model="record.totalFee"></a-input>
               </template>
               <template slot="delete" slot-scope="text, record">
-                <a-popconfirm v-show="recipe.recipeOrderStatus==0" v-if="data.length" title="确定删除吗?" @confirm="() => onDelete(record.drugId,record.recipeItemId)">
+                <a-popconfirm v-show="recipe.recipeOrderStatus==0" v-if="data.length" title="确定删除吗?" @confirm="() => onDelete(record)">
                   <a :disabled="recipe.recipeOrderStatus!=0" href="javascript:;" style="font-size: 20px; color: #656ee8">
                     <a-icon type="delete"></a-icon>
                   </a>
@@ -132,7 +132,7 @@
                 selectedRowKeys: selectedRowKeys2,
                 onChange: onSelectChange2,
               }" :columns="columns2" :data-source="data2" @change="changeDurgTable" :pagination="{ showQuickJumper: true, pageSize: 10, total: drugTotal, current:queryDrugList.page,  simple: true, size: 'small', }" :scroll="{ y: 375 }" :rowKey="
-              (record, index) => {return record.drugId;}">
+              (record, index) => {return index;}">
             </a-table>
           </div>
           <div class="rightBoxBottom">
@@ -422,7 +422,12 @@ export default {
     getReceiveDrugList() {
       this.drugLoading = true
       getReceiveDrugList(this.queryDrugList).then((res) => {
-        this.data2 = res.data
+        this.data2 = res.data.map((item, index) => {
+          return {
+            id: index,
+            ...item,
+          }
+        })
         this.drugTotal = res.count
         this.drugLoading = false
         this.selectedRowKeys2 = []
@@ -474,9 +479,9 @@ export default {
         (Number(record.usageNumber) * Number(record.dosageNumber) * (Number(value) * 100)) / 100
       this.getPrSumP()
     },
-    onDelete(key, recipeItemId) {
-      if (recipeItemId) {
-        deleteRecipeItem(recipeItemId).then((res) => {
+    onDelete(record) {
+      if (record.recipeItemId) {
+        deleteRecipeItem(record.recipeItemId).then((res) => {
           if (res.success) {
             this.$message.success('删除成功！')
           } else {
@@ -485,7 +490,7 @@ export default {
         })
       }
       const data = [...this.data]
-      this.data = data.filter((item) => item.drugId !== key)
+      this.data = data.filter((item) => item.drugId !== record.drugId || item.id !== record.id)
       this.getPrSumP()
     },
     onSearch(value) {
@@ -507,31 +512,38 @@ export default {
       if (this.selectedRowKeys2.length == 0) {
         this.$message.warning('请选择要添加的药品')
       } else {
-        let list = this.data2.map((data) => {
+        let list = this.data2.map((data, index) => {
           return {
+            id: index,
             dosageNumber: '',
-            drugId: data.id,
-            drugName: data.name,
+            drugId: data.drugId,
+            drugName: data.goodsName,
             drugPrice: data.price,
-            drugUnit: data.packUnit,
+            drugUnit: data.unit,
             itemTypeId: this.queryDrugList.categoryId,
             rateId: '',
             rateName: undefined,
             recipeItemId: '',
             totalFee: '',
-            usage: data.usage == null ? undefined : data.usage,
+            usage: data.usageName == null ? undefined : data.usageName,
             usageNumber: '',
-            usageUnit: data.unit,
+            usageUnit: data.usageUnit,
             statItemId: data.statItemId,
           }
         })
         this.selectedRowKeys2.forEach((item) => {
-          let option = list.filter((data) => data.drugId == item)
-          if (this.data.filter((data) => data.drugId == item).length != 0) {
-            this.$message.info('处方中已有此药品，请不要重复添加！')
-          } else {
-            this.data.push(option[0])
-          }
+          let opt = this.data2.filter((data, index) => index === item)
+          opt.forEach((items) => {
+            let option = list.filter((data) => data.id === items.id)
+            if (
+              this.data.filter((data) => data.drugId === items.drugId && data.id === items.id)
+                .length !== 0
+            ) {
+              this.$message.info('处方中已有此药品，请不要重复添加！')
+            } else {
+              this.data.push(option[0])
+            }
+          })
         })
       }
       this.selectedRowKeys2 = []

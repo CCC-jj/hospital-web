@@ -12,7 +12,7 @@
             </div>
           </div>
           <div class="leftTable">
-            <a-table :columns="columns" :data-source="data" :pagination="false" :scroll="{ y: 350 }" style="height: 350px" :rowKey="(record, index) => {return record.examineId;}">
+            <a-table :columns="columns" :data-source="data" :pagination="false" :scroll="{ y: 350 }" style="height: 350px" :rowKey="(record, index) => {return index;}">
               <template slot="partName" slot-scope="text,record">
                 <!-- <a-auto-complete :disabled="recipe.recipeOrderStatus!=0" v-model="record.partName" style="width: 100%;color:#000;" optionLabelProp="value" @select="(value, option)=>selectPatient(value,option,record)" @search="(value)=>partInput(value,record)">
                   <template slot="dataSource">
@@ -44,7 +44,7 @@
                 <a-input :disabled="recipe.recipeOrderStatus!=0" style="width: 100%;color:#000;" v-model="record.remark"></a-input>
               </template>
               <template slot="delete" slot-scope="text, record">
-                <a-popconfirm v-show="recipe.recipeOrderStatus==0" v-if="data.length" title="确定删除吗?" @confirm="() => onDelete(record.examineId,record.recipeItemId)">
+                <a-popconfirm v-show="recipe.recipeOrderStatus==0" v-if="data.length" title="确定删除吗?" @confirm="() => onDelete(record)">
                   <a :disabled="recipe.recipeOrderStatus!=0" href="javascript:;" style="font-size: 20px; color: #656ee8">
                     <a-icon type="delete"></a-icon>
                   </a>
@@ -84,7 +84,7 @@
                 selectedRowKeys: selectedRowKeys2,
                 onChange: onSelectChange2,
               }" :columns="columns2" :data-source="data2" @change="changeDurgTable" :pagination="{ showQuickJumper: true, pageSize: 10, total: drugTotal, current:queryDrugList.page,  simple: true, size: 'small', }" :scroll="{ y: 375 }" :rowKey="
-              (record, index) => {return record.drugId;}">
+              (record, index) => {return index;}">
             </a-table>
           </div>
           <div class="rightBoxBottom">
@@ -327,7 +327,12 @@ export default {
     getReceiveDrugList() {
       this.drugLoading = true
       getReceiveDrugList(this.queryDrugList).then((res) => {
-        this.data2 = res.data
+        this.data2 = res.data.map((item, index) => {
+          return {
+            id: index,
+            ...item,
+          }
+        })
         this.drugTotal = res.count
         this.drugLoading = false
         this.selectedRowKeys2 = []
@@ -386,9 +391,9 @@ export default {
       record.examineFee = Number(record.number) * Number(value)
       this.getPrSumP()
     },
-    onDelete(key, recipeItemId) {
-      if (recipeItemId) {
-        deleteRecipeItem(recipeItemId).then((res) => {
+    onDelete(record) {
+      if (record.recipeItemId) {
+        deleteRecipeItem(record.recipeItemId).then((res) => {
           if (res.success) {
             this.$message.success('删除成功！')
           } else {
@@ -397,7 +402,9 @@ export default {
         })
       }
       const data = [...this.data]
-      this.data = data.filter((item) => item.examineId !== key)
+      this.data = data.filter(
+        (item) => item.examineId !== record.examineId || item.id !== record.id
+      )
       this.getPrSumP()
     },
     onSearch(value) {
@@ -419,13 +426,15 @@ export default {
       if (this.selectedRowKeys2.length == 0) {
         this.$message.warning('请选择要添加的项目')
       } else {
-        let list = this.data2.map((data) => {
+        let list = this.data2.map((data, index) => {
           return {
+            id: index,
             examineFee: '',
-            examineId: data.id,
-            examineName: data.name,
+            examineId: data.drugId,
+            examineName: data.productName,
             examinePrice: data.price,
-            examineType: data.itemType,
+            // examineType: data.itemType,
+            examineType: data.statItemId,
             itemTypeId: this.queryDrugList.categoryId,
             number: '',
             partId: '',
@@ -437,16 +446,21 @@ export default {
           }
         })
         this.selectedRowKeys2.forEach((item) => {
-          let option = list.filter((data) => data.examineId == item)
-          if (this.data.filter((data) => data.examineId == item).length != 0) {
-            this.$message.info('处方中已有此项目，请不要重复添加！')
-          } else {
-            this.data.push(option[0])
-          }
+          let opt = this.data2.filter((data, index) => index === item)
+          opt.forEach((items) => {
+            let option = list.filter((data) => data.id === items.id)
+            console.log(items);
+            console.log(this.data);
+            if (this.data.filter((data) => data.examineId === items.drugId && data.id === items.id).length !== 0) {
+              this.$message.info('处方中已有此项目，请不要重复添加！')
+            } else {
+              this.data.push(option[0])
+            }
+          })
         })
       }
       this.selectedRowKeys2 = []
-      this.getPrSumP()
+      // this.getPrSumP()
     },
     getPrSumP() {
       let sum = 0
