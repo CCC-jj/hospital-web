@@ -1,6 +1,6 @@
 <template>
   <div class="western">
-    <!-- <a-form-model ref="recipeRuleForm" :model="recipe" :rules="recipeRules" layout="vertical">
+    <a-form-model ref="recipeRuleForm" :model="recipe" :rules="recipeRules" layout="vertical">
       <a-row class="form-row" :gutter="16">
         <a-col :span="12">
           <a-form-model-item label="诊断" prop="diagnosis">
@@ -17,7 +17,7 @@
           </a-form-model-item>
         </a-col>
       </a-row>
-    </a-form-model> -->
+    </a-form-model>
     <a-row :gutter="16">
       <a-col :span="16">
         <!--左边rp表格-->
@@ -40,9 +40,9 @@
                   <template slot="dosage" slot-scope="text">
                     <a-input style="width: 100%" :value="text"></a-input>
                   </template>
-                  <template slot="usage">
+                  <template slot="usageId">
                     <a-select show-search placeholder="请选择" option-filter-prop="children" style="width: 100%" :filter-option="filterOption" @change="handleChange">
-                      <a-select-option v-for="item in usage" :key="item.id">
+                      <a-select-option v-for="item in usageId" :key="item.id">
                         {{item.name}}
                       </a-select-option>
                     </a-select>
@@ -84,8 +84,8 @@
                 <span>{{ record.usageUnit }}</span>
               </template>
 
-              <template slot="usage" slot-scope="text,record">
-                <a-select :disabled="recipe.recipeOrderStatus!=0" v-model="record.usage" show-search placeholder="请选择" option-filter-prop="children" style="width: 100%;color:#000;" :filter-option="filterOption" @change="handleChange">
+              <template slot="usageId" slot-scope="text,record">
+                <a-select :disabled="recipe.recipeOrderStatus!=0" v-model="record.usageId" show-search placeholder="请选择" option-filter-prop="children" style="width: 100%;color:#000;" :filter-option="filterOption" @change="handleChange">
                   <a-select-option v-for="item in usage" :key="item.id">
                     {{item.name}}
                   </a-select-option>
@@ -249,9 +249,9 @@ const columns = [
   {
     title: '用法',
     width: 110,
-    dataIndex: 'usage',
+    dataIndex: 'usageId',
     scopedSlots: {
-      customRender: 'usage',
+      customRender: 'usageId',
     },
   },
   {
@@ -365,9 +365,9 @@ const setcolumns = [
   {
     title: '用法',
     width: 140,
-    dataIndex: 'usage',
+    dataIndex: 'usageId',
     scopedSlots: {
-      customRender: 'usage',
+      customRender: 'usageId',
     },
   },
   {
@@ -400,7 +400,7 @@ for (let i = 0; i < 4; i++) {
     key: i,
     group: [1, 2, 3],
     dosage: '1',
-    usage: ['口服', '静脉注射', '注射药物', '检查', '皮试', '外用', '雾化'],
+    usageId: ['口服', '静脉注射', '注射药物', '检查', '皮试', '外用', '雾化'],
     frequency: ['一天1次', '一天2次', '一天3次', '一天4次', '2小时1次', '4小时1次', '6小时1次'],
     days: [1, 2, 3, 4, 5, 6, 7],
     total: '1',
@@ -409,7 +409,16 @@ for (let i = 0; i < 4; i++) {
 
 export default {
   name: 'Western',
-  props: ['prInfo', 'load', 'allPrInfo', 'allRecipe', 'theKey', 'diagnosis', 'doctorAdvice'],
+  props: [
+    'prInfo',
+    'load',
+    'allPrInfo',
+    'allRecipe',
+    'theKey',
+    'diagnosisList',
+    'adviceList',
+    'disabledBtn',
+  ],
   data() {
     return {
       catId: 1,
@@ -494,24 +503,24 @@ export default {
     }
   },
   watch: {
-    diagnosis: {
-      handler(newVal, oldVal) {
-        this.recipe.diagnosis = newVal
-      },
-      deep: true,
-    },
-    doctorAdvice: {
-      handler(newVal, oldVal) {
-        this.recipe.doctorAdvice = newVal
-      },
-      deep: true,
-    },
+    // diagnosis: {
+    //   handler(newVal, oldVal) {
+    //     this.recipe.diagnosis = newVal
+    //   },
+    //   deep: true,
+    // },
+    // doctorAdvice: {
+    //   handler(newVal, oldVal) {
+    //     this.recipe.doctorAdvice = newVal
+    //   },
+    //   deep: true,
+    // },
     data: {
       handler(newVal, oldVal) {
         // console.log(this.theKey)
         // console.log(this.allRecipe, newVal, this.allPrInfo)
-        this.recipe.diagnosis = this.diagnosis
-        this.recipe.doctorAdvice = this.doctorAdvice
+        // this.recipe.diagnosis = this.diagnosis
+        // this.recipe.doctorAdvice = this.doctorAdvice
         this.recipe.recipeItem = newVal
         this.recipe.recipeAmount = this.prPrice
         this.recipe.recipeCount = newVal.length
@@ -566,7 +575,7 @@ export default {
       // this.sumPrice = this.allPrInfo.totalFee
       if (this.prInfo.recipeItem) {
         this.prInfo.recipeItem.map((item) => {
-          item.usage = Number(item.usage)
+          item.usageId = Number(item.usageId)
           item.rateName = Number(item.rateName)
         })
         this.data = this.prInfo.recipeItem
@@ -575,6 +584,15 @@ export default {
     }
   },
   methods: {
+    checkForm() {
+      this.$refs.recipeRuleForm.validate((valid) => {
+        if (valid) {
+          return true
+        } else {
+          return false
+        }
+      })
+    },
     getReceiveDrugList() {
       this.drugLoading = true
       getReceiveDrugList(this.queryDrugList).then((res) => {
@@ -716,7 +734,7 @@ export default {
             usageName: data.usageName ? data.usageName : '',
             usageNumber: '',
             usageUnit: data.usageUnit ? data.usageUnit : '',
-            usage: undefined,
+            usageId: data.usageId ? data.usageId : undefined,
           }
         })
 
@@ -724,10 +742,7 @@ export default {
           let opt = this.data2.filter((data, index) => index === item)
           opt.forEach((items) => {
             let option = list.filter((data) => data.id === items.id)
-            if (
-              this.data.filter((data) => data.drugId === items.drugId && data.id === items.id)
-                .length != 0
-            ) {
+            if (this.data.filter((data) => data.drugId === items.drugId).length != 0) {
               this.$message.info('处方中已有此药品，请不要重复添加！')
             } else {
               this.data.push(option[0])

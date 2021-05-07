@@ -1,5 +1,23 @@
 <template>
   <div class="traditional">
+    <a-form-model ref="recipeRuleForm" :model="recipe" :rules="recipeRules" layout="vertical">
+      <a-row class="form-row" :gutter="16">
+        <a-col :span="12">
+          <a-form-model-item label="诊断" prop="diagnosis">
+            <a-select :disabled="disabledBtn" v-model="recipe.diagnosis" mode="tags" style="width: 100%" :token-separators="[',','，']" @change="handleChange" size="large">
+              <a-select-option v-for="item in diagnosisList" :key="item">{{ item }}</a-select-option>
+            </a-select>
+          </a-form-model-item>
+        </a-col>
+        <a-col :span="12">
+          <a-form-model-item label="医嘱" prop="doctorAdvice">
+            <a-select :disabled="disabledBtn" v-model="recipe.doctorAdvice" mode="tags" style="width: 100%" :token-separators="[',','，']" @change="handleChange" size="large">
+              <a-select-option v-for="item in adviceList" :key="item">{{ item }}</a-select-option>
+            </a-select>
+          </a-form-model-item>
+        </a-col>
+      </a-row>
+    </a-form-model>
     <a-row :gutter="16">
       <a-col :span="16">
         <div class="leftBox">
@@ -21,8 +39,8 @@
                 <a-input :disabled="recipe.recipeOrderStatus!=0" v-model="record.dosageNumber" @change="(e) => quantityChange(e, record)" style="width: 70%;color:#000;"></a-input>
                 <span>{{ qtUnit }}</span>
               </template>
-              <template slot="usage" slot-scope="text,record">
-                <a-select :disabled="recipe.recipeOrderStatus!=0" v-model="record.usage" show-search placeholder="请选择" option-filter-prop="children" style="width: 100%;color:#000;" :filter-option="filterOption" @change="handleChange">
+              <template slot="usageId" slot-scope="text,record">
+                <a-select :disabled="recipe.recipeOrderStatus!=0" v-model="record.usageId" show-search placeholder="请选择" option-filter-prop="children" style="width: 100%;color:#000;" :filter-option="filterOption" @change="handleChange">
                   <a-select-option v-for="item in usage" :key="item.id">
                     {{item.name}}
                   </a-select-option>
@@ -177,9 +195,9 @@ const columns = [
   {
     title: '用法',
     width: 110,
-    dataIndex: 'usage',
+    dataIndex: 'usageId',
     scopedSlots: {
-      customRender: 'usage',
+      customRender: 'usageId',
     },
   },
   {
@@ -343,26 +361,13 @@ export default {
         recipeType: 3,
         recipeItem: [],
       },
+      recipeRules: { diagnosis: [{ required: true, message: '请输入诊断', trigger: 'change' }] },
       drugTotal: 0,
     }
   },
   watch: {
-    diagnosis: {
-      handler(newVal, oldVal) {
-        this.recipe.diagnosis = newVal
-      },
-      deep: true,
-    },
-    doctorAdvice: {
-      handler(newVal, oldVal) {
-        this.recipe.doctorAdvice = newVal
-      },
-      deep: true,
-    },
     data: {
       handler(newVal, oldVal) {
-        this.recipe.diagnosis = this.diagnosis
-        this.recipe.doctorAdvice = this.doctorAdvice
         this.recipe.recipeItem = newVal
         this.recipe.recipeAmount = this.prPrice
         this.recipe.recipeCount = newVal.length
@@ -424,7 +429,7 @@ export default {
       this.prPrice = this.prInfo.recipeAmount
       if (this.prInfo.recipeItem) {
         this.prInfo.recipeItem.map((item) => {
-          item.usage = Number(item.usage)
+          item.usageId = Number(item.usageId)
           item.rateName = Number(item.rateName)
         })
         this.data = this.prInfo.recipeItem
@@ -482,8 +487,7 @@ export default {
     quantityChange(e, record) {
       const value = e.target.value
       record.dosageNumber = value
-      record.fee =
-        (Number(record.usageNumber) * Number(value) * (Number(record.price) * 100)) / 100
+      record.fee = (Number(record.usageNumber) * Number(value) * (Number(record.price) * 100)) / 100
       this.getPrSumP()
     },
     priceChange(e, record) {
@@ -539,7 +543,8 @@ export default {
             drugId: data.drugId,
             fee: '',
             goodsName: data.goodsName,
-            manufactor: data.manufactor,
+            manufactor: data.manufacturer ? data.manufacturer : '',
+            manufactorId: data.manufacturerId ? data.manufacturerId : '',
             note: data.note,
             nums: '',
             price: data.price ? data.price : '',
@@ -555,17 +560,14 @@ export default {
             usageName: data.usageName ? data.usageName : '',
             usageNumber: '',
             usageUnit: data.usageUnit ? data.usageUnit : '',
-            usage: undefined,
+            usageId:  data.usageId ? data.usageId : undefined,
           }
         })
         this.selectedRowKeys2.forEach((item) => {
           let opt = this.data2.filter((data, index) => index === item)
           opt.forEach((items) => {
             let option = list.filter((data) => data.id === items.id)
-            if (
-              this.data.filter((data) => data.drugId === items.drugId && data.id === items.id)
-                .length !== 0
-            ) {
+            if (this.data.filter((data) => data.drugId === items.drugId).length !== 0) {
               this.$message.info('处方中已有此药品，请不要重复添加！')
             } else {
               this.data.push(option[0])

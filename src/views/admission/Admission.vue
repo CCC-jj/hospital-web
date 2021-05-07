@@ -1010,8 +1010,8 @@ export default {
       // this.save = '保存'
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
-          this.$refs.childRules.$refs.ruleForm2.validate((valid) => {
-            if (valid) {
+          // this.$refs.childRules.$refs.ruleForm2.validate((valid) => {
+          //   if (valid) {
               if (this.tabs == 'a') {
                 saveReceivePrescription(
                   // this.form2.diagnosis,
@@ -1075,13 +1075,13 @@ export default {
                   return false
                 }
               }
-            } else {
-              this.iconLoading1 = false
-              this.save = '保存'
-              this.$message.warning('请填写信息后再保存')
-              return false
-            }
-          })
+          //   } else {
+          //     this.iconLoading1 = false
+          //     this.save = '保存'
+          //     this.$message.warning('请填写信息后再保存')
+          //     return false
+          //   }
+          // })
         } else {
           this.iconLoading1 = false
           this.save = '保存'

@@ -1,6 +1,6 @@
 <template>
   <div class="preBox">
-    <a-form-model ref="ruleForm2" :model="form2" :rules="rules2" layout="vertical">
+    <!-- <a-form-model ref="ruleForm2" :model="form2" :rules="rules2" layout="vertical">
       <a-row class="form-row" :gutter="16">
         <a-col :span="12">
           <a-form-model-item label="诊断" prop="diagnosis">
@@ -17,7 +17,7 @@
           </a-form-model-item>
         </a-col>
       </a-row>
-    </a-form-model>
+    </a-form-model> -->
     <a-spin :spinning="spinning" size="large">
       <div class="preBoxTop">
         <a-row :gutter="10">
@@ -34,7 +34,7 @@
           </a-col>
         </a-row>
         <div class="prPages">
-          <component v-on:recipeItem="(val) => recipeItem(val,index)" v-on:chineseMedicine="(val) => chineseMedicine(val,index)" v-on:examine="(val) => examine(val,index)" :class="['prescription',{active: activeKey == item.key}]" v-for="(item,index) in componentList" :key="item.key" :is="item.name" :prInfo="item.prInfo" :allPrInfo="allPrInfo" :allRecipe="recipe" :load="item.load" :theKey="index" :diagnosis="form2.diagnosis" :doctorAdvice="form2.doctorAdvice"></component>
+          <component v-on:recipeItem="(val) => recipeItem(val,index)" :class="['prescription',{active: activeKey == item.key}]" v-for="(item,index) in componentList" :key="item.key" :is="item.name" :prInfo="item.prInfo" :allPrInfo="allPrInfo" :allRecipe="recipe" :load="item.load" :theKey="index" :diagnosisList="diagnosisList" :adviceList="adviceList" :disabledBtn="disabledBtn"></component>
         </div>
       </div>
     </a-spin>
@@ -121,6 +121,13 @@ export default {
     },
   },
   methods: {
+    checkForm() {
+      setTimeout(() => {
+        console.log(this.$refs.prChild.checkForm())
+      }, 500);
+      // console.log(this.$refs.prChild.checkForm())
+      // return this.$refs.prChild.checkForm()
+    },
     // 获取处方信息
     getRecipeInfo() {
       this.spinning = true
@@ -138,7 +145,7 @@ export default {
                 case 1:
                   path = 'Western'
                   break
-                case 3:
+                case 2 || 3:
                   path = 'Traditional'
                   break
                 case 4:
@@ -160,6 +167,7 @@ export default {
               this.activeKey = activeKey
               this.activePath = path
               this.activeTitle = item.recipeName
+              console.log(this.componentList);
             })
           }
           this.spinning = false
@@ -167,7 +175,7 @@ export default {
       })
     },
     recipeItem(val, index) {
-      console.log(val);
+      console.log(val)
       this.recipe[index] = val
       this.recipe[index].recipeType = val.recipeType
       this.recipe[index].recipeName = this.panes[index].title
@@ -180,7 +188,7 @@ export default {
       // this.recipe = this.recipe.concat(val)
       // this.formateArrObjData(this.recipe, val, index)
       // console.log(val, index, this.recipe, this.prList)
-      console.log(val,index, this.prList);
+      console.log(val, index, this.prList)
       this.recipe[index] = val
       this.recipe[index].recipeType = this.prList[0].id
       this.recipe[index].recipeName = this.panes[index].title
@@ -189,7 +197,7 @@ export default {
       this.$emit('recipe', this.recipe)
     },
     chineseMedicine(val, index) {
-      console.log(val,index);
+      console.log(val, index)
       this.recipe[index] = val
       this.recipe[index].recipeType = this.prList[2].id
       this.recipe[index].recipeName = this.panes[index].title
