@@ -340,7 +340,7 @@ export default {
         recipeName: '',
         recipeOrderNo: '',
         recipeOrderStatus: 0,
-        recipeType: 0,
+        recipeType: 3,
         recipeItem: [],
       },
       drugTotal: 0,

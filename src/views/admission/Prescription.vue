@@ -167,6 +167,7 @@ export default {
       })
     },
     recipeItem(val, index) {
+      console.log(val);
       this.recipe[index] = val
       this.recipe[index].recipeType = val.recipeType
       this.recipe[index].recipeName = this.panes[index].title
