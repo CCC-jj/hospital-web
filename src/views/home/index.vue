@@ -431,7 +431,8 @@ export default {
         centered: true,
         content: '确定要切换机构吗？',
         onOk: () => {
-          loginHospitalConfirm(item.orgCode, item.proCode)
+          const doctorId = localStorage.getItem('doctorId')
+          loginHospitalConfirm(doctorId, item.orgCode, item.proCode)
             .then((res) => {
               if (res.success) {
                 localStorage.setItem('token', res.data.token)

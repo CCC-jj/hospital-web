@@ -149,8 +149,8 @@ export function deleteReceiveRecipe(recipeId) {
 
 // 保存处方
 export function saveReceivePrescription(
-  diagnosis,
-  doctorAdvice,
+  // diagnosis,
+  // doctorAdvice,
   outpatientNo,
   patient,
   recipe,
@@ -160,8 +160,8 @@ export function saveReceivePrescription(
     url: "treat/receive/prescription/save",
     method: "post",
     data: {
-      diagnosis: diagnosis,
-      doctorAdvice: doctorAdvice,
+      // diagnosis: diagnosis,
+      // doctorAdvice: doctorAdvice,
       outpatientNo: outpatientNo,
       patient: patient,
       recipe: recipe,

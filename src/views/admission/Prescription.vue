@@ -16,7 +16,7 @@
           </a-col>
         </a-row>
         <div class="prPages">
-          <component v-on:westernData="(val) => westernData(val,index)" v-on:chineseMedicine="(val) => chineseMedicine(val,index)" v-on:examine="(val) => examine(val,index)" :class="['prescription',{active: activeKey == item.key}]" v-for="(item,index) in componentList" :key="item.key" :is="item.name" :prInfo="item.prInfo" :allPrInfo="allPrInfo" :allRecipe="recipe" :load="item.load" :theKey="index"></component>
+          <component v-on:westernData="(val) => westernData(val,index)" v-on:chineseMedicine="(val) => chineseMedicine(val,index)" v-on:examine="(val) => examine(val,index)" :class="['prescription',{active: activeKey == item.key}]" v-for="(item,index) in componentList" :key="item.key" :is="item.name" :prInfo="item.prInfo" :allPrInfo="allPrInfo" :allRecipe="recipe" :load="item.load" :theKey="index" :diagnosis="diagnosis" :doctorAdvice="doctorAdvice"></component>
         </div>
       </div>
     </a-spin>
@@ -40,6 +40,8 @@ export default {
     patientId: String,
     regOrderNo: String,
     disabledBtn: Boolean,
+    diagnosis: Array,
+    doctorAdvice: Array,
   },
   data() {
     return {

@@ -196,7 +196,7 @@
     <!--添加处方-->
     <div class="prescriptionBox">
       <a-spin :spinning="spinning">
-        <router-view :disabledBtn="disabledBtn" :outpatientNo="outpatientNo" :patientId="patientId" :regOrderNo="regOrderNo" v-on:caseForm="caseForm" v-on:recipe="recipe" ref="childRules"></router-view>
+        <router-view :disabledBtn="disabledBtn" :outpatientNo="outpatientNo" :patientId="patientId" :regOrderNo="regOrderNo" v-on:caseForm="caseForm" v-on:recipe="recipe" ref="childRules" :diagnosis="form2.diagnosis" :doctorAdvice="form2.doctorAdvice"></router-view>
       </a-spin>
     </div>
 
@@ -1014,8 +1014,8 @@ export default {
             if (valid) {
               if (this.tabs == 'a') {
                 saveReceivePrescription(
-                  this.form2.diagnosis,
-                  this.form2.doctorAdvice,
+                  // this.form2.diagnosis,
+                  // this.form2.doctorAdvice,
                   this.outpatientNo,
                   this.form,
                   this.recipeInfo,

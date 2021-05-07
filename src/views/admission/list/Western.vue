@@ -391,7 +391,7 @@ for (let i = 0; i < 4; i++) {
 
 export default {
   name: 'Western',
-  props: ['prInfo', 'load', 'allPrInfo', 'allRecipe', 'theKey'],
+  props: ['prInfo', 'load', 'allPrInfo', 'allRecipe', 'theKey', 'diagnosis', 'doctorAdvice'],
   data() {
     return {
       catId: 1,
@@ -455,6 +455,8 @@ export default {
       recipe: {
         deptId: '',
         deptName: '',
+        diagnosis: [],
+        doctorAdvice: [],
         doctorId: '',
         doctorName: '',
         recipeAmount: '',
@@ -464,9 +466,10 @@ export default {
         recipeOrderNo: '',
         recipeOrderStatus: 0,
         recipeType: 0,
-        westernMedicine: [],
-        chineseMedicine: [],
-        examine: [],
+        // westernMedicine: [],
+        // chineseMedicine: [],
+        // examine: [],
+        recipeItem: [],
       },
       drugTotal: 0,
     }
@@ -476,7 +479,9 @@ export default {
       handler(newVal, oldVal) {
         // console.log(this.theKey)
         // console.log(this.allRecipe, newVal, this.allPrInfo)
-        this.recipe.westernMedicine = newVal
+        this.recipe.diagnosis = this.diagnosis,
+        this.recipe.doctorAdvice = this.doctorAdvice
+        this.recipe.recipeItem = newVal
         this.recipe.recipeAmount = this.prPrice
         this.recipe.recipeCount = newVal.length
         if (this.allRecipe.length > this.theKey) {
@@ -491,7 +496,7 @@ export default {
             this.allPrInfo.totalFee = sum / 100
           })
         }
-        // console.log(newVal, this.recipe, this.allPrInfo)
+        console.log(newVal, this.recipe, this.allPrInfo)
         this.$emit('westernData', this.recipe)
       },
       deep: true,
@@ -528,12 +533,12 @@ export default {
       this.prPrice = this.prInfo.recipeAmount
       // this.prNum = this.allPrInfo.total
       // this.sumPrice = this.allPrInfo.totalFee
-      if (this.prInfo.westernMedicine) {
-        this.prInfo.westernMedicine.map((item) => {
+      if (this.prInfo.recipeItem) {
+        this.prInfo.recipeItem.map((item) => {
           item.usage = Number(item.usage)
           item.rateName = Number(item.rateName)
         })
-        this.data = this.prInfo.westernMedicine
+        this.data = this.prInfo.recipeItem
         this.getPrSumP()
       }
     }
