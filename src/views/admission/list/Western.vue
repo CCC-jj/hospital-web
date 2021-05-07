@@ -42,7 +42,7 @@
                   </template>
                   <template slot="usageId">
                     <a-select show-search placeholder="请选择" option-filter-prop="children" style="width: 100%" :filter-option="filterOption" @change="handleChange">
-                      <a-select-option v-for="item in usageId" :key="item.id">
+                      <a-select-option v-for="item in usage" :key="item.id">
                         {{item.name}}
                       </a-select-option>
                     </a-select>
@@ -92,8 +92,8 @@
                 </a-select>
               </template>
 
-              <template slot="rateName" slot-scope="text,record">
-                <a-select :disabled="recipe.recipeOrderStatus!=0" v-model="record.rateName" show-search placeholder="请选择" option-filter-prop="children" style="width: 100%;color:#000;" :filter-option="filterOption" @change="handleChange">
+              <template slot="rateId" slot-scope="text,record">
+                <a-select :disabled="recipe.recipeOrderStatus!=0" v-model="record.rateId" show-search placeholder="请选择" option-filter-prop="children" style="width: 100%;color:#000;" :filter-option="filterOption" @change="handleChange">
                   <a-select-option v-for="item in frequency" :key="item.id">
                     {{item.name}}
                   </a-select-option>
@@ -257,9 +257,9 @@ const columns = [
   {
     title: '频度',
     width: 110,
-    dataIndex: 'rateName',
+    dataIndex: 'rateId',
     scopedSlots: {
-      customRender: 'rateName',
+      customRender: 'rateId',
     },
   },
   {
@@ -576,7 +576,7 @@ export default {
       if (this.prInfo.recipeItem) {
         this.prInfo.recipeItem.map((item) => {
           item.usageId = Number(item.usageId)
-          item.rateName = Number(item.rateName)
+          item.rateId = Number(item.rateId)
         })
         this.data = this.prInfo.recipeItem
         this.getPrSumP()
@@ -723,8 +723,8 @@ export default {
             nums: '',
             price: data.price ? data.price : '',
             productName: data.productName ? data.productName : '',
-            rateId: '',
-            rateName: undefined,
+            rateId: undefined,
+            rateName: '',
             recipeId: '',
             recipeItemId: '',
             remarks: '',

@@ -206,7 +206,16 @@ const columns2 = [
 
 export default {
   name: 'Examine',
-  props: ['prInfo', 'load', 'allPrInfo', 'allRecipe', 'theKey'],
+  props: [
+    'prInfo',
+    'load',
+    'allPrInfo',
+    'allRecipe',
+    'theKey',
+    'diagnosisList',
+    'adviceList',
+    'disabledBtn',
+  ],
   data() {
     return {
       catId: 4,
@@ -422,9 +431,7 @@ export default {
         })
       }
       const data = [...this.data]
-      this.data = data.filter(
-        (item) => item.drugId !== record.drugId || item.id !== record.id
-      )
+      this.data = data.filter((item) => item.drugId !== record.drugId || item.id !== record.id)
       this.getPrSumP()
     },
     onSearch(value) {
@@ -492,7 +499,7 @@ export default {
             usageName: data.usageName ? data.usageName : '',
             usageNumber: '',
             usageUnit: data.usageUnit ? data.usageUnit : '',
-            usageId:  data.usageId ? data.usageId : undefined,
+            usageId: data.usageId ? data.usageId : undefined,
           }
         })
         this.selectedRowKeys2.forEach((item) => {
