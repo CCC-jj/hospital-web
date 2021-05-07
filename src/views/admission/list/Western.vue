@@ -1,5 +1,23 @@
 <template>
   <div class="western">
+    <!-- <a-form-model ref="recipeRuleForm" :model="recipe" :rules="recipeRules" layout="vertical">
+      <a-row class="form-row" :gutter="16">
+        <a-col :span="12">
+          <a-form-model-item label="诊断" prop="diagnosis">
+            <a-select :disabled="disabledBtn" v-model="recipe.diagnosis" mode="tags" style="width: 100%" :token-separators="[',','，']" @change="handleChange" size="large">
+              <a-select-option v-for="item in diagnosisList" :key="item">{{ item }}</a-select-option>
+            </a-select>
+          </a-form-model-item>
+        </a-col>
+        <a-col :span="12">
+          <a-form-model-item label="医嘱" prop="doctorAdvice">
+            <a-select :disabled="disabledBtn" v-model="recipe.doctorAdvice" mode="tags" style="width: 100%" :token-separators="[',','，']" @change="handleChange" size="large">
+              <a-select-option v-for="item in adviceList" :key="item">{{ item }}</a-select-option>
+            </a-select>
+          </a-form-model-item>
+        </a-col>
+      </a-row>
+    </a-form-model> -->
     <a-row :gutter="16">
       <a-col :span="16">
         <!--左边rp表格-->
@@ -471,6 +489,7 @@ export default {
         // examine: [],
         recipeItem: [],
       },
+      recipeRules: { diagnosis: [{ required: true, message: '请输入诊断', trigger: 'change' }] },
       drugTotal: 0,
     }
   },
@@ -680,7 +699,8 @@ export default {
             drugId: data.drugId,
             fee: '',
             goodsName: data.goodsName,
-            manufactor: data.manufactor,
+            manufactor: data.manufacturer ? data.manufacturer : '',
+            manufactorId: data.manufacturerId ? data.manufacturerId : '',
             note: data.note,
             nums: '',
             price: data.price ? data.price : '',
