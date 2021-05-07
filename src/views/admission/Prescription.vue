@@ -16,7 +16,7 @@
           </a-col>
         </a-row>
         <div class="prPages">
-          <component v-on:westernData="(val) => westernData(val,index)" v-on:chineseMedicine="(val) => chineseMedicine(val,index)" v-on:examine="(val) => examine(val,index)" :class="['prescription',{active: activeKey == item.key}]" v-for="(item,index) in componentList" :key="item.key" :is="item.name" :prInfo="item.prInfo" :allPrInfo="allPrInfo" :allRecipe="recipe" :load="item.load" :theKey="index" :diagnosis="diagnosis" :doctorAdvice="doctorAdvice"></component>
+          <component v-on:westernData="(val) => westernData(val,index)" v-on:chineseMedicine="(val) => chineseMedicine(val,index)" v-on:examine="(val) => examine(val,index)" :class="['prescription',{active: activeKey == item.key}]" v-for="(item,index) in componentList" :key="item.key" :is="item.name" :prInfo="item.prInfo" :allPrInfo="allPrInfo" :allRecipe="recipe" :load="item.load" :theKey="index" :diagnosis="diagnosis" :doctorAdvice="doctorAdvice" ref="childPr"></component>
         </div>
       </div>
     </a-spin>
@@ -76,6 +76,16 @@ export default {
           this.getRecipeInfo()
         }
       },
+    },
+    diagnosis: {
+      handler(newVal, oldVal) {
+        console.log(this.$refs.childPr);
+        if (this.$refs.childPr) {
+          // this.$refs.childPr.HandlerDiagnosis()
+        }
+        console.log(newVal);
+      },
+      deep: true,
     },
   },
   methods: {

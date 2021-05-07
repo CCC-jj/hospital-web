@@ -86,14 +86,14 @@
                 <a-input :disabled="recipe.recipeOrderStatus!=0" v-model="record.days" style="width: 100%;color:#000;">
                 </a-input>
               </template>
-              <template slot="drugNum" slot-scope="text, record">
-                <a-input :disabled="recipe.recipeOrderStatus!=0" @change="(e) => totalChange(e, record)" style="width: 46%;color:#000;" v-model="record.drugNum"></a-input>
+              <template slot="nums" slot-scope="text, record">
+                <a-input :disabled="recipe.recipeOrderStatus!=0" @change="(e) => totalChange(e, record)" style="width: 46%;color:#000;" v-model="record.nums"></a-input>
                 <a-select :disabled="recipe.recipeOrderStatus!=0" style="width: 50%;color:#000;" @change="handleChange" default-value="unit">
-                  <a-select-option value="unit"> {{record.drugUnit}} </a-select-option>
+                  <a-select-option value="unit"> {{record.unit}} </a-select-option>
                 </a-select>
               </template>
-              <template slot="drugPrice" slot-scope="text, record">
-                <a-input :disabled="recipe.recipeOrderStatus!=0" @change="(e) => priceChange(e, record)" style="width: 100%;color:#000;" v-model="record.drugPrice"></a-input>
+              <template slot="price" slot-scope="text, record">
+                <a-input :disabled="recipe.recipeOrderStatus!=0" @change="(e) => priceChange(e, record)" style="width: 100%;color:#000;" v-model="record.price"></a-input>
               </template>
               <template slot="delete" slot-scope="text, record">
                 <a-popconfirm v-show="recipe.recipeOrderStatus==0" v-if="data.length" title="确定删除吗?" @confirm="() => onDelete(record)">
@@ -218,7 +218,7 @@ const columns = [
   // },
   {
     title: '名称',
-    dataIndex: 'drugName',
+    dataIndex: 'goodsName',
   },
   {
     title: '单次用量',
@@ -254,18 +254,18 @@ const columns = [
   },
   {
     title: '总量',
-    dataIndex: 'drugNum',
+    dataIndex: 'nums',
     width: 120,
     scopedSlots: {
-      customRender: 'drugNum',
+      customRender: 'nums',
     },
   },
   {
     title: '单价',
     width: 60,
-    dataIndex: 'drugPrice',
+    dataIndex: 'price',
     scopedSlots: {
-      customRender: 'drugPrice',
+      customRender: 'price',
     },
   },
   {
@@ -479,8 +479,7 @@ export default {
       handler(newVal, oldVal) {
         // console.log(this.theKey)
         // console.log(this.allRecipe, newVal, this.allPrInfo)
-        this.recipe.diagnosis = this.diagnosis,
-        this.recipe.doctorAdvice = this.doctorAdvice
+        this.HandlerDiagnosis()
         this.recipe.recipeItem = newVal
         this.recipe.recipeAmount = this.prPrice
         this.recipe.recipeCount = newVal.length
@@ -544,6 +543,10 @@ export default {
     }
   },
   methods: {
+    HandlerDiagnosis() {
+      this.recipe.diagnosis = this.diagnosis
+      this.recipe.doctorAdvice = this.doctorAdvice
+    },
     getReceiveDrugList() {
       this.drugLoading = true
       getReceiveDrugList(this.queryDrugList).then((res) => {
@@ -594,14 +597,14 @@ export default {
     },
     totalChange(e, record) {
       const value = e.target.value
-      record.drugNum = value
-      record.sumPrice = Number(value) * Number(record.drugPrice)
+      record.nums = value
+      record.fee = Number(value) * Number(record.price)
       this.getPrSumP()
     },
     priceChange(e, record) {
       const value = e.target.value
-      record.drugPrice = value
-      record.sumPrice = Number(value) * Number(record.drugNum)
+      record.price = value
+      record.fee = Number(value) * Number(record.nums)
       this.getPrSumP()
     },
     onDelete(record) {
@@ -640,22 +643,51 @@ export default {
         let list = this.data2.map((data, index) => {
           return {
             id: index,
-            drugId: data.drugId,
+            // drugId: data.drugId,
             // groupNumber: undefined,
-            drugName: data.goodsName,
-            usageNumber: '',
-            usageUnit: data.usageUnit,
-            drugUnit: data.unit,
-            itemTypeId: this.queryDrugList.categoryId,
-            usage: data.usageName == null ? undefined : data.usageName,
+            // drugName: data.goodsName,
+            // usageNumber: '',
+            // usageUnit: data.usageUnit,
+            // drugUnit: data.unit,
+            // categoryId: this.queryDrugList.categoryId,
+            // usage: data.usageName == null ? undefined : data.usageName,
+            // rateId: '',
+            // rateName: undefined,
+            // recipeItemId: '',
+            // code: data.code,
+            // days: undefined,
+            // drugNum: '',
+            // drugPrice: data.price,
+            // sumPrice: '0',
+            // statItemId: data.statItemId,
+
+            categoryId: data.categoryId,
+            checkPartId: data.checkPartId ? data.checkPartId : '',
+            checkPartName: data.checkPartName ? data.checkPartName : '',
+            code: data.code,
+            days: undefined,
+            dosageForm: data.dosageForm,
+            dosageNumber: data.dosageNumber ? data.dosageNumber : '',
+            drugId: data.drugId,
+            fee: '',
+            goodsName: data.goodsName,
+            manufactor: data.manufactor,
+            note: data.note,
+            nums: '',
+            price: data.price ? data.price : '',
+            productName: data.productName ? data.productName : '',
             rateId: '',
             rateName: undefined,
+            recipeId: '',
             recipeItemId: '',
-            days: undefined,
-            drugNum: '',
-            drugPrice: data.price,
-            sumPrice: '0',
-            statItemId: data.statItemId,
+            remarks: '',
+            specs: data.specs,
+            statItemId: data.statItemId ? data.statItemId : '',
+            unit: data.unit ? data.unit : '',
+            usageName: data.usageName ? data.usageName : '',
+            usageNumber: '',
+            usageUnit: data.usageUnit ? data.usageUnit : '',
+            usage: undefined,
           }
         })
 
@@ -702,8 +734,8 @@ export default {
     getPrSumP() {
       let sum = 0
       this.data.forEach((item, index) => {
-        let sumPrice = item.drugNum * (item.drugPrice * 100)
-        let price = Number(sumPrice)
+        let fee = item.nums * (item.price * 100)
+        let price = Number(fee)
         sum += price
       })
       this.prPrice = sum / 100

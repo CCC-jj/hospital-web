@@ -324,6 +324,8 @@ export default {
     }
   },
   methods: {
+    HandlerDiagnosis() {
+    },
     getReceiveDrugList() {
       this.drugLoading = true
       getReceiveDrugList(this.queryDrugList).then((res) => {
