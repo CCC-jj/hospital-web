@@ -36,11 +36,11 @@
                 </a-select>
               </template>
 
-              <template slot="drugPrice" slot-scope="text, record">
-                <a-input :disabled="recipe.recipeOrderStatus!=0" style="width: 100%;color:#000;" v-model="record.drugPrice" @change="(e) => priceChange(e, record)"></a-input>
+              <template slot="price" slot-scope="text, record">
+                <a-input :disabled="recipe.recipeOrderStatus!=0" style="width: 100%;color:#000;" v-model="record.price" @change="(e) => priceChange(e, record)"></a-input>
               </template>
-              <template slot="totalFee" slot-scope="text,record">
-                <a-input disabled style="width: 100%;color:#000;" v-model="record.totalFee"></a-input>
+              <template slot="fee" slot-scope="text,record">
+                <a-input disabled style="width: 100%;color:#000;" v-model="record.fee"></a-input>
               </template>
               <template slot="delete" slot-scope="text, record">
                 <a-popconfirm v-show="recipe.recipeOrderStatus==0" v-if="data.length" title="确定删除吗?" @confirm="() => onDelete(record)">
@@ -156,7 +156,7 @@ const columns = [
   },
   {
     title: '名称',
-    dataIndex: 'drugName',
+    dataIndex: 'goodsName',
   },
   {
     title: '单剂量',
@@ -193,17 +193,17 @@ const columns = [
   {
     title: '单价',
     width: 70,
-    dataIndex: 'drugPrice',
+    dataIndex: 'price',
     scopedSlots: {
-      customRender: 'drugPrice',
+      customRender: 'price',
     },
   },
   {
     title: '金额',
     width: 70,
-    dataIndex: 'totalFee',
+    dataIndex: 'fee',
     scopedSlots: {
-      customRender: 'totalFee',
+      customRender: 'fee',
     },
   },
   {
@@ -269,7 +269,7 @@ for (let i = 0; i < 4; i++) {
 
 export default {
   name: 'Chinese',
-  props: ['prInfo', 'load', 'allPrInfo', 'allRecipe', 'theKey'],
+  props: ['prInfo', 'load', 'allPrInfo', 'allRecipe', 'theKey', 'diagnosis', 'doctorAdvice'],
   data() {
     return {
       catId: 3,
@@ -330,6 +330,8 @@ export default {
       recipe: {
         deptId: '',
         deptName: '',
+        diagnosis: [],
+        doctorAdvice: [],
         doctorId: '',
         doctorName: '',
         recipeAmount: '',
@@ -339,17 +341,29 @@ export default {
         recipeOrderNo: '',
         recipeOrderStatus: 0,
         recipeType: 0,
-        westernMedicine: [],
-        chineseMedicine: [],
-        examine: [],
+        recipeItem: [],
       },
       drugTotal: 0,
     }
   },
   watch: {
+    diagnosis: {
+      handler(newVal, oldVal) {
+        this.recipe.diagnosis = newVal
+      },
+      deep: true,
+    },
+    doctorAdvice: {
+      handler(newVal, oldVal) {
+        this.recipe.doctorAdvice = newVal
+      },
+      deep: true,
+    },
     data: {
       handler(newVal, oldVal) {
-        this.recipe.chineseMedicine = newVal
+        this.recipe.diagnosis = this.diagnosis
+        this.recipe.doctorAdvice = this.doctorAdvice
+        this.recipe.recipeItem = newVal
         this.recipe.recipeAmount = this.prPrice
         this.recipe.recipeCount = newVal.length
         if (this.allRecipe.length > this.theKey) {
@@ -364,7 +378,7 @@ export default {
             this.allPrInfo.totalFee = sum / 100
           })
         }
-        this.$emit('chineseMedicine', this.recipe)
+        this.$emit('recipeItem', this.recipe)
       },
       deep: true,
     },
@@ -408,19 +422,17 @@ export default {
       // this.form.deptName = this.prInfo.deptName
       // this.form.doctorName = this.prInfo.doctorName
       this.prPrice = this.prInfo.recipeAmount
-      if (this.prInfo.chineseMedicine) {
-        this.prInfo.chineseMedicine.map((item) => {
+      if (this.prInfo.recipeItem) {
+        this.prInfo.recipeItem.map((item) => {
           item.usage = Number(item.usage)
           item.rateName = Number(item.rateName)
         })
-        this.data = this.prInfo.chineseMedicine
+        this.data = this.prInfo.recipeItem
         this.getPrSumP()
       }
     }
   },
   methods: {
-    HandlerDiagnosis() {
-    },
     getReceiveDrugList() {
       this.drugLoading = true
       getReceiveDrugList(this.queryDrugList).then((res) => {
@@ -463,21 +475,21 @@ export default {
     dosageChange(e, record) {
       const value = e.target.value
       record.usageNumber = value
-      record.totalFee =
-        (Number(value) * Number(record.dosageNumber) * (Number(record.drugPrice) * 100)) / 100
+      record.fee =
+        (Number(value) * Number(record.dosageNumber) * (Number(record.price) * 100)) / 100
       this.getPrSumP()
     },
     quantityChange(e, record) {
       const value = e.target.value
       record.dosageNumber = value
-      record.totalFee =
-        (Number(record.usageNumber) * Number(value) * (Number(record.drugPrice) * 100)) / 100
+      record.fee =
+        (Number(record.usageNumber) * Number(value) * (Number(record.price) * 100)) / 100
       this.getPrSumP()
     },
     priceChange(e, record) {
       const value = e.target.value
-      record.drugPrice = value
-      record.totalFee =
+      record.price = value
+      record.fee =
         (Number(record.usageNumber) * Number(record.dosageNumber) * (Number(value) * 100)) / 100
       this.getPrSumP()
     },
@@ -517,20 +529,33 @@ export default {
         let list = this.data2.map((data, index) => {
           return {
             id: index,
-            dosageNumber: '',
+            categoryId: data.categoryId,
+            checkPartId: data.checkPartId ? data.checkPartId : '',
+            checkPartName: data.checkPartName ? data.checkPartName : '',
+            code: data.code,
+            days: undefined,
+            dosageForm: data.dosageForm,
+            dosageNumber: data.dosageNumber ? data.dosageNumber : '',
             drugId: data.drugId,
-            drugName: data.goodsName,
-            drugPrice: data.price,
-            drugUnit: data.unit,
-            itemTypeId: this.queryDrugList.categoryId,
+            fee: '',
+            goodsName: data.goodsName,
+            manufactor: data.manufactor,
+            note: data.note,
+            nums: '',
+            price: data.price ? data.price : '',
+            productName: data.productName ? data.productName : '',
             rateId: '',
             rateName: undefined,
+            recipeId: '',
             recipeItemId: '',
-            totalFee: '',
-            usage: data.usageName == null ? undefined : data.usageName,
+            remarks: '',
+            specs: data.specs,
+            statItemId: data.statItemId ? data.statItemId : '',
+            unit: data.unit ? data.unit : '',
+            usageName: data.usageName ? data.usageName : '',
             usageNumber: '',
-            usageUnit: data.usageUnit,
-            statItemId: data.statItemId,
+            usageUnit: data.usageUnit ? data.usageUnit : '',
+            usage: undefined,
           }
         })
         this.selectedRowKeys2.forEach((item) => {
@@ -569,7 +594,7 @@ export default {
     getPrSumP() {
       let sum = 0
       this.data.forEach((item, index) => {
-        let price = Number(item.totalFee) * 100
+        let price = Number(item.fee) * 100
         sum += price
       })
       this.prPrice = sum / 100

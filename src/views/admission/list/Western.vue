@@ -475,11 +475,24 @@ export default {
     }
   },
   watch: {
+    diagnosis: {
+      handler(newVal, oldVal) {
+        this.recipe.diagnosis = newVal
+      },
+      deep: true,
+    },
+    doctorAdvice: {
+      handler(newVal, oldVal) {
+        this.recipe.doctorAdvice = newVal
+      },
+      deep: true,
+    },
     data: {
       handler(newVal, oldVal) {
         // console.log(this.theKey)
         // console.log(this.allRecipe, newVal, this.allPrInfo)
-        this.HandlerDiagnosis()
+        this.recipe.diagnosis = this.diagnosis
+        this.recipe.doctorAdvice = this.doctorAdvice
         this.recipe.recipeItem = newVal
         this.recipe.recipeAmount = this.prPrice
         this.recipe.recipeCount = newVal.length
@@ -496,7 +509,7 @@ export default {
           })
         }
         console.log(newVal, this.recipe, this.allPrInfo)
-        this.$emit('westernData', this.recipe)
+        this.$emit('recipeItem', this.recipe)
       },
       deep: true,
     },
@@ -543,10 +556,6 @@ export default {
     }
   },
   methods: {
-    HandlerDiagnosis() {
-      this.recipe.diagnosis = this.diagnosis
-      this.recipe.doctorAdvice = this.doctorAdvice
-    },
     getReceiveDrugList() {
       this.drugLoading = true
       getReceiveDrugList(this.queryDrugList).then((res) => {

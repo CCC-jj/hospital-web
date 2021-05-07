@@ -154,7 +154,7 @@
           <a-form-model-item :wrapper-col="{ span: 14, offset: 4 }"></a-form-model-item>
         </a-form-model>
 
-        <a-form-model ref="ruleForm2" :model="form2" :rules="rules2" layout="vertical">
+        <!-- <a-form-model ref="ruleForm2" :model="form2" :rules="rules2" layout="vertical">
           <a-row class="form-row" :gutter="16">
             <a-col :span="12">
               <a-form-model-item label="诊断" prop="diagnosis">
@@ -171,7 +171,7 @@
               </a-form-model-item>
             </a-col>
           </a-row>
-        </a-form-model>
+        </a-form-model> -->
       </div>
       <div :class="['chatFlex',{chatContent: openChat}]">
         <conversation ref="conversationChild"></conversation>
@@ -196,7 +196,7 @@
     <!--添加处方-->
     <div class="prescriptionBox">
       <a-spin :spinning="spinning">
-        <router-view :disabledBtn="disabledBtn" :outpatientNo="outpatientNo" :patientId="patientId" :regOrderNo="regOrderNo" v-on:caseForm="caseForm" v-on:recipe="recipe" ref="childRules" :diagnosis="form2.diagnosis" :doctorAdvice="form2.doctorAdvice"></router-view>
+        <router-view :disabledBtn="disabledBtn" :outpatientNo="outpatientNo" :patientId="patientId" :regOrderNo="regOrderNo" v-on:caseForm="caseForm" v-on:recipe="recipe" ref="childRules"></router-view>
       </a-spin>
     </div>
 
@@ -1010,7 +1010,7 @@ export default {
       // this.save = '保存'
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
-          this.$refs.ruleForm2.validate((valid) => {
+          this.$refs.childRules.$refs.ruleForm2.validate((valid) => {
             if (valid) {
               if (this.tabs == 'a') {
                 saveReceivePrescription(
