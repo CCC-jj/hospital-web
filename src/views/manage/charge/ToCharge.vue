@@ -39,12 +39,12 @@
           <span>待收费</span>
         </span>
         <span class="editBtn" slot="action" slot-scope="text, record">
-          <a @click="toCharge(record.orderNo)">收费</a>
+          <a :disabled="record.validStatus" :style="record.validStatus?'color:rgba(0, 0, 0, 0.5)':''" @click="toCharge(record.orderNo)">收费</a>
           <a-divider type="vertical" />
-          <a @click="toEdit(record.patientId)">编辑</a>
+          <a :disabled="record.validStatus" :style="record.validStatus?'color:rgba(0, 0, 0, 0.5)':''" @click="toEdit(record.patientId)">编辑</a>
           <a-divider type="vertical" />
           <a-popconfirm v-if="tableData.length" title="确定删除吗?" @confirm="() => onDelete(record.orderNo)">
-            <a href="javascript:;"> 删除 </a>
+            <a :disabled="record.validStatus" :style="record.validStatus?'color:rgba(0, 0, 0, 0.5)':''" href="javascript:;"> 删除 </a>
           </a-popconfirm>
         </span>
       </a-table>

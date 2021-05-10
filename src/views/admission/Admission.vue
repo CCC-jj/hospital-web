@@ -1,6 +1,6 @@
 <template>
   <div class="admissionBox">
-    <div :class="['loadingPage',{collapsedLoading: collapsed}]" v-show="iconLoading1">
+    <div :class="['loadingPage',{collapsedLoading: collapsed}]" v-show="iconLoading">
       <a-spin class="loadingPic" size="large">
         <a-icon slot="indicator" type="loading" style="font-size: 80px;color:#ffffff;" spin />
       </a-spin>
@@ -188,15 +188,16 @@
         <span style="margin-right: 15px" @click="showModalSave">
           <a-icon type="save" theme="filled" />存为模板
         </span>
-        <a-button :disabled="disabledBtn" :class="['saveBtn', {disabledBtn: disabledBtn}]" icon="save" :loading="iconLoading1" @click="saveLoading">{{ save }}</a-button>
-        <a-button :disabled="disabledBtn" :class="['endBtn', {disabledBtn: disabledBtn}]" icon="poweroff" :loading="iconLoading2" @click="endLoading">{{ end }}</a-button>
+        <a-button v-if="tabs === 'a'" :disabled="disabledBtn" :class="['saveBtn', {disabledBtn: disabledBtn}]" icon="save" @click="TemporarySave">暂存</a-button>
+        <a-button :disabled="disabledBtn" :class="['saveBtn', {disabledBtn: disabledBtn}]" icon="save" @click="saveLoading">{{ save }}</a-button>
+        <a-button :disabled="disabledBtn" :class="['endBtn', {disabledBtn: disabledBtn}]" icon="poweroff" :loading="iconLoading1" @click="endLoading">{{ end }}</a-button>
       </div>
     </div>
 
     <!--添加处方-->
     <div class="prescriptionBox">
       <a-spin :spinning="spinning">
-        <router-view :disabledBtn="disabledBtn" :outpatientNo="outpatientNo" :patientId="patientId" :regOrderNo="regOrderNo" v-on:caseForm="caseForm" v-on:recipe="recipe" ref="childRules"></router-view>
+        <router-view :disabledBtn="disabledBtn" :outpatientNo="outpatientNo" :patientId="patientId" :regOrderNo="regOrderNo" v-on:caseForm="caseForm" v-on:recipe="recipe" ref="childRules" v-on:TemporarySave="TemporarySave"></router-view>
       </a-spin>
     </div>
 
@@ -377,6 +378,7 @@ import {
   getQueryRegister,
   getWorkbenchReceive,
   getReceivePatientInfo,
+  tSaveReceivePrescription,
   saveReceivePrescription,
   getRecipeInfo,
   getReceiveSickInfo,
@@ -555,8 +557,9 @@ export default {
       caseData,
       save: '保存',
       end: '结束就诊',
+      iconLoading: false,
+      // iconLoading1: false,
       iconLoading1: false,
-      iconLoading2: false,
       options: [],
       bottom: 15,
       defaultValue: 'year',
@@ -682,6 +685,14 @@ export default {
       videoVisible: false, // 视频对话
     }
   },
+  // beforeDestroy() {
+  //   console.log(this.regOrderNo,this.recipeInfo,this.outpatientNo);
+  //   if (this.regOrderNo && this.recipeInfo!==[] && this.outpatientNo) {
+  //     if (confirm('离开此页面吗前是否暂存您的处方信息？') == true) {
+  //       this.TemporarySave()
+  //     }
+  //   }
+  // },
   created() {
     if (this.$route.name == 'CaseHistory') {
       this.tabs = 'b'
@@ -807,6 +818,7 @@ export default {
     },
     // 选择搜索到的患者
     selectPatient(value, option) {
+      this.regOrderNo = ''
       if (option.data.key == value) {
         this.form.patientName = option.componentOptions.propsData.title
         let data = this.dataSource.filter((item) => item.patientId == value)[0]
@@ -970,7 +982,7 @@ export default {
       let sex = null
       let birth = null
       // 当保存时不调用此方法
-      if (!this.iconLoading1 && !this.iconLoadingConfirmInfo) {
+      if (!this.iconLoading && !this.iconLoadingConfirmInfo) {
         if (value === 18) {
           birth =
             idCard.substring(6, 10) +
@@ -1003,8 +1015,36 @@ export default {
     handleSelect(item) {
       // console.log(item)
     },
+    // 暂存
+    TemporarySave() {
+      this.iconLoading = true
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          tSaveReceivePrescription(this.outpatientNo, this.form, this.recipeInfo, this.regOrderNo)
+            .then((res) => {
+              if (res.success) {
+                this.iconLoading = false
+                this.$message.success('暂存处方成功')
+                // this.$refs['childRules'].getRecipeInfo()
+              } else {
+                this.iconLoading = false
+                this.$message.error(res.message)
+              }
+            })
+            .catch((err) => {
+              this.iconLoading = false
+              this.$message.error('请求失败！')
+            })
+        } else {
+          this.iconLoading = false
+          this.$message.warning('请填写信息后再保存')
+          return false
+        }
+      })
+    },
+    // 保存
     saveLoading() {
-      this.iconLoading1 = true
+      this.iconLoading = true
       this.save = '保存中'
       // this.iconLoading1 = false
       // this.save = '保存'
@@ -1012,69 +1052,69 @@ export default {
         if (valid) {
           // this.$refs.childRules.$refs.ruleForm2.validate((valid) => {
           //   if (valid) {
-              if (this.tabs == 'a') {
-                saveReceivePrescription(
-                  // this.form2.diagnosis,
-                  // this.form2.doctorAdvice,
-                  this.outpatientNo,
-                  this.form,
-                  this.recipeInfo,
-                  this.regOrderNo
-                )
-                  .then((res) => {
-                    if (res.success) {
-                      this.iconLoading1 = false
-                      this.save = '保存'
-                      this.$message.success('保存处方成功')
-                      this.$refs['childRules'].getRecipeInfo()
-                    } else {
-                      this.iconLoading1 = false
-                      this.save = '保存'
-                      this.$message.error(res.message)
-                    }
-                  })
-                  .catch((err) => {
-                    this.iconLoading1 = false
-                    this.save = '保存'
-                    this.$message.error('请求失败！')
-                  })
-              } else {
-                let flag = this.$refs['childRules'].caseValidateForm()
-                if (flag) {
-                  saveReceiveRecords({
-                    diagnosis: this.form2.diagnosis,
-                    doctorAdvice: this.form2.doctorAdvice,
-                    firstVisit: this.form.visitType,
-                    medical: this.caseFormInfo.form,
-                    outpatientNo: this.outpatientNo,
-                    patient: this.form,
-                    physique: this.caseFormInfo.physique,
-                    recipeOrderNo: this.recipeOrderNo,
-                    regOrderNo: this.regOrderNo,
-                  })
-                    .then((res) => {
-                      if (res.success) {
-                        this.iconLoading1 = false
-                        this.save = '保存'
-                        this.$message.success('保存病历成功')
-                      } else {
-                        this.iconLoading1 = false
-                        this.save = '保存'
-                        this.$message.error(res.message)
-                      }
-                    })
-                    .catch((err) => {
-                      this.iconLoading1 = false
-                      this.save = '保存'
-                      this.$message.error('请求失败！')
-                    })
-                } else {
-                  this.iconLoading1 = false
+          if (this.tabs == 'a') {
+            saveReceivePrescription(
+              // this.form2.diagnosis,
+              // this.form2.doctorAdvice,
+              this.outpatientNo,
+              this.form,
+              this.recipeInfo,
+              this.regOrderNo
+            )
+              .then((res) => {
+                if (res.success) {
+                  this.iconLoading = false
                   this.save = '保存'
-                  this.$message.warning('请填写信息后再保存')
-                  return false
+                  this.$message.success('保存处方成功')
+                  this.$refs['childRules'].getRecipeInfo()
+                } else {
+                  this.iconLoading = false
+                  this.save = '保存'
+                  this.$message.error(res.message)
                 }
-              }
+              })
+              .catch((err) => {
+                this.iconLoading = false
+                this.save = '保存'
+                this.$message.error('请求失败！')
+              })
+          } else {
+            let flag = this.$refs['childRules'].caseValidateForm()
+            if (flag) {
+              saveReceiveRecords({
+                diagnosis: this.form2.diagnosis,
+                doctorAdvice: this.form2.doctorAdvice,
+                firstVisit: this.form.visitType,
+                medical: this.caseFormInfo.form,
+                outpatientNo: this.outpatientNo,
+                patient: this.form,
+                physique: this.caseFormInfo.physique,
+                recipeOrderNo: this.recipeOrderNo,
+                regOrderNo: this.regOrderNo,
+              })
+                .then((res) => {
+                  if (res.success) {
+                    this.iconLoading = false
+                    this.save = '保存'
+                    this.$message.success('保存病历成功')
+                  } else {
+                    this.iconLoading = false
+                    this.save = '保存'
+                    this.$message.error(res.message)
+                  }
+                })
+                .catch((err) => {
+                  this.iconLoading = false
+                  this.save = '保存'
+                  this.$message.error('请求失败！')
+                })
+            } else {
+              this.iconLoading = false
+              this.save = '保存'
+              this.$message.warning('请填写信息后再保存')
+              return false
+            }
+          }
           //   } else {
           //     this.iconLoading1 = false
           //     this.save = '保存'
@@ -1083,18 +1123,19 @@ export default {
           //   }
           // })
         } else {
-          this.iconLoading1 = false
+          this.iconLoading = false
           this.save = '保存'
           this.$message.warning('请填写信息后再保存')
           return false
         }
       })
     },
+    // 结束就诊
     endLoading() {
-      this.iconLoading2 = true
+      this.iconLoading1 = true
       this.end = '保存中'
       setTimeout(() => {
-        this.iconLoading2 = false
+        this.iconLoading1 = false
         this.end = '结束就诊'
         this.$confirm({
           title: '结束确认',
@@ -1333,7 +1374,7 @@ export default {
   z-index: 10;
 }
 .bottomsBox {
-  width: 46%;
+  width: 52%;
   padding: 0 30px;
   line-height: 60px;
   float: right;

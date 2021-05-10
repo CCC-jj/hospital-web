@@ -585,13 +585,15 @@ export default {
   },
   methods: {
     checkForm() {
-      this.$refs.recipeRuleForm.validate((valid) => {
+      let flag = null
+      this.$refs['recipeRuleForm'].validate((valid) => {
         if (valid) {
-          return true
+          flag = true
         } else {
-          return false
+          flag = false
         }
       })
+      return flag
     },
     getReceiveDrugList() {
       this.drugLoading = true

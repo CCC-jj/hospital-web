@@ -1,23 +1,5 @@
 <template>
   <div class="preBox">
-    <!-- <a-form-model ref="ruleForm2" :model="form2" :rules="rules2" layout="vertical">
-      <a-row class="form-row" :gutter="16">
-        <a-col :span="12">
-          <a-form-model-item label="诊断" prop="diagnosis">
-            <a-select :disabled="disabledBtn" v-model="form2.diagnosis" mode="tags" style="width: 100%" :token-separators="[',','，']" @change="handleChange" size="large">
-              <a-select-option v-for="item in diagnosisList" :key="item">{{ item }}</a-select-option>
-            </a-select>
-          </a-form-model-item>
-        </a-col>
-        <a-col :span="12">
-          <a-form-model-item label="医嘱" prop="doctorAdvice">
-            <a-select :disabled="disabledBtn" v-model="form2.doctorAdvice" mode="tags" style="width: 100%" :token-separators="[',','，']" @change="handleChange" size="large">
-              <a-select-option v-for="item in adviceList" :key="item">{{ item }}</a-select-option>
-            </a-select>
-          </a-form-model-item>
-        </a-col>
-      </a-row>
-    </a-form-model> -->
     <a-spin :spinning="spinning" size="large">
       <div class="preBoxTop">
         <a-row :gutter="10">
@@ -34,7 +16,7 @@
           </a-col>
         </a-row>
         <div class="prPages">
-          <component v-on:recipeItem="(val) => recipeItem(val,index)" :class="['prescription',{active: activeKey == item.key}]" v-for="(item,index) in componentList" :key="item.key" :is="item.name" :prInfo="item.prInfo" :allPrInfo="allPrInfo" :allRecipe="recipe" :load="item.load" :theKey="index" :diagnosisList="diagnosisList" :adviceList="adviceList" :disabledBtn="disabledBtn"></component>
+          <component v-on:recipeItem="(val) => recipeItem(val,index)" :class="['prescription',{active: activeKey == item.key}]" v-for="(item,index) in componentList" :key="item.key" :is="item.name" :prInfo="item.prInfo" :allPrInfo="allPrInfo" :allRecipe="recipe" :load="item.load" :theKey="index" :diagnosisList="diagnosisList" :adviceList="adviceList" :disabledBtn="disabledBtn" ref="prChild"></component>
         </div>
       </div>
     </a-spin>
@@ -68,13 +50,6 @@ export default {
     return {
       diagnosisList: [],
       adviceList: [],
-      form2: {
-        diagnosis: [],
-        doctorAdvice: [],
-      },
-      rules2: {
-        diagnosis: [{ required: true, message: '请输入诊断', trigger: 'change' }],
-      },
       spinning: false,
       activeKey: 0,
       activeTitle: '',
@@ -86,6 +61,13 @@ export default {
       recipe: [],
       RecipeInfoList: [],
       allPrInfo: {},
+    }
+  },
+  beforeDestroy() {
+    if (this.regOrderNo && !this.disabledBtn && this.outpatientNo) {
+      if (confirm('离开处方页面前是否暂存您的处方信息？') == true) {
+        this.$emit('TemporarySave')
+      }
     }
   },
   created() {
@@ -122,9 +104,11 @@ export default {
   },
   methods: {
     checkForm() {
-      setTimeout(() => {
-        console.log(this.$refs.prChild.checkForm())
-      }, 500);
+      let flag = this.$refs['prChild'].checkForm()
+      return flag
+      // setTimeout(() => {
+      //   console.log(this.$refs.prChild.checkForm())
+      // }, 500);
       // console.log(this.$refs.prChild.checkForm())
       // return this.$refs.prChild.checkForm()
     },
@@ -167,7 +151,7 @@ export default {
               this.activeKey = activeKey
               this.activePath = path
               this.activeTitle = item.recipeName
-              console.log(this.componentList);
+              console.log(this.componentList)
             })
           }
           this.spinning = false
@@ -178,36 +162,6 @@ export default {
       console.log(val)
       this.recipe[index] = val
       this.recipe[index].recipeType = val.recipeType
-      this.recipe[index].recipeName = this.panes[index].title
-      this.recipe[index].recipeCount = 1
-      this.getSumPrice()
-      this.$emit('recipe', this.recipe)
-    },
-    westernData(val, index) {
-      // Object.assign(this.recipe, val)
-      // this.recipe = this.recipe.concat(val)
-      // this.formateArrObjData(this.recipe, val, index)
-      // console.log(val, index, this.recipe, this.prList)
-      console.log(val, index, this.prList)
-      this.recipe[index] = val
-      this.recipe[index].recipeType = this.prList[0].id
-      this.recipe[index].recipeName = this.panes[index].title
-      this.recipe[index].recipeCount = 1
-      this.getSumPrice()
-      this.$emit('recipe', this.recipe)
-    },
-    chineseMedicine(val, index) {
-      console.log(val, index)
-      this.recipe[index] = val
-      this.recipe[index].recipeType = this.prList[2].id
-      this.recipe[index].recipeName = this.panes[index].title
-      this.recipe[index].recipeCount = 1
-      this.getSumPrice()
-      this.$emit('recipe', this.recipe)
-    },
-    examine(val, index) {
-      this.recipe[index] = val
-      this.recipe[index].recipeType = this.prList[3].id
       this.recipe[index].recipeName = this.panes[index].title
       this.recipe[index].recipeCount = 1
       this.getSumPrice()
