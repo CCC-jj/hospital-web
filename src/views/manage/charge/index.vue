@@ -244,7 +244,8 @@ export default {
   },
   created() {
     // this.page = this.$route.params.page
-    this.orderNo = this.$route.query.orderNo
+    this.orderNo = JSON.parse(this.$route.query.orderNo)
+    console.log(this.orderNo);
     // 获取支付类型
     getPaymentTypes().then((res) => {
       if (res.success) {

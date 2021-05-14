@@ -28,7 +28,7 @@
       <a-button :disabled="selectedRowKeys.length===0" type="primary" @click="toCharge(selectedRowKeys)">批量收费</a-button>
     </div>
     <div class="manageDown">
-      <a-table :loading="spinning" :row-selection="{selectedRowKeys: selectedRowKeys,onChange: onSelectChange}" :columns="columns" :data-source="tableData" @change="tableChange" :pagination="{ showQuickJumper: true, pageSize: 10, total: total, current:queryInfo.page, showTotal: ((total) => {return `每页10条，共 ${total} 条`;})}" :rowKey="(record, index) => {return record.orderNo;}">
+      <a-table :loading="spinning" :row-selection="{selectedRowKeys: selectedRowKeys,onChange: onSelectChange}" :columns="columns" :data-source="tableData" @change="tableChange" :pagination="{ showQuickJumper: true, pageSize: 10, total: total, current:queryInfo.page, showTotal: ((total) => {return `每页10条，共 ${total} 条`;})}" :rowKey="(record, index) => {return record.orderNo;}" :customRow="customRow">
         <span slot="sex" slot-scope="text">
           <span v-if="text == 0">保密</span>
           <span v-if="text == 1">男</span>
@@ -38,19 +38,19 @@
         <span slot="bizTypeName" slot-scope="text">
           <span>{{text}}</span>
         </span>
-        <span slot="validStatus" slot-scope="text" >
+        <span slot="validStatus" slot-scope="text">
           <span v-if="!text" style="color: #44c765">待收费</span>
           <span v-else style="color: #b4b4b4">已失效</span>
         </span>
-        <span class="editBtn" slot="action" slot-scope="text, record">
-          <a :disabled="record.validStatus" :style="record.validStatus?'color:rgba(0, 0, 0, 0.5)':''" @click="toCharge(record.orderNo)">收费</a>
-          <!-- <a-divider type="vertical" />
+        <!-- <span class="editBtn" slot="action" slot-scope="text, record">
+          <a :disabled="record.validStatus" :style="record.validStatus?'color:rgba(0, 0, 0, 0.5)':''" @click="toCharge(record.orderNo)">收费</a> -->
+        <!-- <a-divider type="vertical" />
           <a :disabled="record.validStatus" :style="record.validStatus?'color:rgba(0, 0, 0, 0.5)':''" @click="toEdit(record.patientId)">编辑</a>
           <a-divider type="vertical" />
           <a-popconfirm v-if="tableData.length" title="确定删除吗?" @confirm="() => onDelete(record.orderNo)">
             <a :disabled="record.validStatus" :style="record.validStatus?'color:rgba(0, 0, 0, 0.5)':''" href="javascript:;"> 删除 </a>
           </a-popconfirm> -->
-        </span>
+        <!-- </span> -->
       </a-table>
     </div>
   </div>
@@ -123,12 +123,6 @@ const columns = [
     title: '收费状态',
     dataIndex: 'validStatus',
     scopedSlots: { customRender: 'validStatus' },
-    align: 'center',
-  },
-  {
-    title: '操作',
-    dataIndex: 'action',
-    scopedSlots: { customRender: 'action' },
     align: 'center',
   },
 ]
@@ -217,16 +211,29 @@ export default {
       console.log('selectedRowKeys changed: ', selectedRowKeys)
       this.selectedRowKeys = selectedRowKeys
     },
+    // 点击表格行
+    customRow(record) {
+      return {
+        on: {
+          // 鼠标单击行
+          click: () => {
+            if (this.selectedRowKeys.filter(item => item === record.orderNo).length === 0) {
+              this.selectedRowKeys.push(record.orderNo)
+            } else {
+              this.selectedRowKeys = this.selectedRowKeys.filter(item => item !== record.orderNo)
+            }
+          },
+        },
+      }
+    },
     toCharge(orderNo) {
       // const page = this.$route.name
+      let list = JSON.stringify(orderNo)
       this.$router.push({
         name: 'Charge',
         query: {
-          orderNo: orderNo,
+          orderNo: list,
         },
-        // params: {
-        //   page: page,
-        // },
       })
     },
     toEdit(patientId) {

@@ -25,11 +25,9 @@ export function deleteUnpaidList(orderNo) {
 export function getCheckstand(orderNo) {
   return request({
     url: "charge/checkstand",
-    method: "get",
-    headers: { "Content-Type": "x-www-form-urlencoded" },
-    params: {
-      orderNo: orderNo
-    }
+    method: "post",
+    // headers: { "Content-Type": "x-www-form-urlencoded" },
+    data: orderNo
   });
 }
 
