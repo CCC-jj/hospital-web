@@ -41,15 +41,12 @@ export function getPaymentTypes() {
 }
 
 // 查询订单是否允许收费
-export function getOrderQuery(orderNo, payMode) {
+export function getOrderQuery(orderNo) {
   return request({
     url: "charge/order/query",
-    method: "get",
-    headers: { "Content-Type": "x-www-form-urlencoded" },
-    params: {
-      orderNo: orderNo,
-      payMode: payMode
-    }
+    method: "post",
+    // headers: { "Content-Type": "x-www-form-urlencoded" },
+    data: orderNo
   });
 }
 
