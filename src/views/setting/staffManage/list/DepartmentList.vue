@@ -38,11 +38,11 @@ const columns = [
     dataIndex: 'name',
     align: 'center',
   },
-  {
-    title: '科室简介',
-    dataIndex: 'intro',
-    align: 'center',
-  },
+  // {
+  //   title: '科室简介',
+  //   dataIndex: 'intro',
+  //   align: 'center',
+  // },
   {
     title: '创建时间',
     dataIndex: 'createTime',
