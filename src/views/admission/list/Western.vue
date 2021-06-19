@@ -1,5 +1,23 @@
 <template>
   <div class="western">
+    <a-form-model ref="recipeRuleForm" :model="recipe" :rules="recipeRules" layout="vertical">
+      <a-row class="form-row" :gutter="16">
+        <a-col :span="12">
+          <a-form-model-item label="诊断" prop="diagnosis">
+            <a-select :disabled="disabledBtn" v-model="recipe.diagnosis" mode="tags" style="width: 100%" :token-separators="[',','，']" @change="handleChange" size="large">
+              <a-select-option v-for="item in diagnosisList" :key="item">{{ item }}</a-select-option>
+            </a-select>
+          </a-form-model-item>
+        </a-col>
+        <a-col :span="12">
+          <a-form-model-item label="医嘱" prop="doctorAdvice">
+            <a-select :disabled="disabledBtn" v-model="recipe.doctorAdvice" mode="tags" style="width: 100%" :token-separators="[',','，']" @change="handleChange" size="large">
+              <a-select-option v-for="item in adviceList" :key="item">{{ item }}</a-select-option>
+            </a-select>
+          </a-form-model-item>
+        </a-col>
+      </a-row>
+    </a-form-model>
     <a-row :gutter="16">
       <a-col :span="16">
         <!--左边rp表格-->
@@ -22,7 +40,7 @@
                   <template slot="dosage" slot-scope="text">
                     <a-input style="width: 100%" :value="text"></a-input>
                   </template>
-                  <template slot="usage">
+                  <template slot="usageId">
                     <a-select show-search placeholder="请选择" option-filter-prop="children" style="width: 100%" :filter-option="filterOption" @change="handleChange">
                       <a-select-option v-for="item in usage" :key="item.id">
                         {{item.name}}
@@ -53,7 +71,7 @@
 
           <!--表格主体-->
           <div class="leftTable">
-            <a-table @change="tableChange" :columns="columns" :data-source="data" :pagination="false" :scroll="{ y: 350 }" style="height: 350px" :rowKey="(record, index) => {return record.drugId;}">
+            <a-table @change="tableChange" :columns="columns" :data-source="data" :pagination="false" :scroll="{ y: 350 }" style="height: 350px" :rowKey="(record, index) => {return index;}">
               <template slot="groupNumber" slot-scope="text,record">
                 <a-select :disabled="recipe.recipeOrderStatus!=0" v-model="record.groupNumber" style="width: 100%;color:#000;" @change="handleChange">
                   <a-select-option v-for="item in groupNumber" :key="item">
@@ -66,16 +84,16 @@
                 <span>{{ record.usageUnit }}</span>
               </template>
 
-              <template slot="usage" slot-scope="text,record">
-                <a-select :disabled="recipe.recipeOrderStatus!=0" v-model="record.usage" show-search placeholder="请选择" option-filter-prop="children" style="width: 100%;color:#000;" :filter-option="filterOption" @change="handleChange">
+              <template slot="usageId" slot-scope="text,record">
+                <a-select :disabled="recipe.recipeOrderStatus!=0" v-model="record.usageId" show-search placeholder="请选择" option-filter-prop="children" style="width: 100%;color:#000;" :filter-option="filterOption" @change="handleChange">
                   <a-select-option v-for="item in usage" :key="item.id">
                     {{item.name}}
                   </a-select-option>
                 </a-select>
               </template>
 
-              <template slot="rateName" slot-scope="text,record">
-                <a-select :disabled="recipe.recipeOrderStatus!=0" v-model="record.rateName" show-search placeholder="请选择" option-filter-prop="children" style="width: 100%;color:#000;" :filter-option="filterOption" @change="handleChange">
+              <template slot="rateId" slot-scope="text,record">
+                <a-select :disabled="recipe.recipeOrderStatus!=0" v-model="record.rateId" show-search placeholder="请选择" option-filter-prop="children" style="width: 100%;color:#000;" :filter-option="filterOption" @change="handleChange">
                   <a-select-option v-for="item in frequency" :key="item.id">
                     {{item.name}}
                   </a-select-option>
@@ -86,17 +104,17 @@
                 <a-input :disabled="recipe.recipeOrderStatus!=0" v-model="record.days" style="width: 100%;color:#000;">
                 </a-input>
               </template>
-              <template slot="drugNum" slot-scope="text, record">
-                <a-input :disabled="recipe.recipeOrderStatus!=0" @change="(e) => totalChange(e, record)" style="width: 46%;color:#000;" v-model="record.drugNum"></a-input>
+              <template slot="nums" slot-scope="text, record">
+                <a-input :disabled="recipe.recipeOrderStatus!=0" @change="(e) => totalChange(e, record)" style="width: 46%;color:#000;" v-model="record.nums"></a-input>
                 <a-select :disabled="recipe.recipeOrderStatus!=0" style="width: 50%;color:#000;" @change="handleChange" default-value="unit">
-                  <a-select-option value="unit"> {{record.drugUnit}} </a-select-option>
+                  <a-select-option value="unit"> {{record.unit}} </a-select-option>
                 </a-select>
               </template>
-              <template slot="drugPrice" slot-scope="text, record">
-                <a-input :disabled="recipe.recipeOrderStatus!=0" @change="(e) => priceChange(e, record)" style="width: 100%;color:#000;" v-model="record.drugPrice"></a-input>
+              <template slot="price" slot-scope="text, record">
+                <a-input :disabled="recipe.recipeOrderStatus!=0" @change="(e) => priceChange(e, record)" style="width: 100%;color:#000;" v-model="record.price"></a-input>
               </template>
               <template slot="delete" slot-scope="text, record">
-                <a-popconfirm v-show="recipe.recipeOrderStatus==0" v-if="data.length" title="确定删除吗?" @confirm="() => onDelete(record.drugId,record.recipeItemId)">
+                <a-popconfirm v-show="recipe.recipeOrderStatus==0" v-if="data.length" title="确定删除吗?" @confirm="() => onDelete(record)">
                   <a :disabled="recipe.recipeOrderStatus!=0" href="javascript:;" style="font-size: 20px; color: #656ee8">
                     <a-icon type="delete"></a-icon>
                   </a>
@@ -156,13 +174,13 @@
             </div>
             <div class="leftBottomPrice">
               <span>此方合计：<span style="color: red; font-weight: bold">{{
-                  prPrice
+                  Number(prPrice).toFixed(2)
                 }}</span>
                 元；</span>
               <span>共
                 <span style="color: red; font-weight: bold">{{ allPrInfo.total }}</span>
                 个处方，共计：<span style="color: red; font-weight: bold">{{
-                  allPrInfo.totalFee
+                  Number(allPrInfo.totalFee).toFixed(2)
                 }}</span>
                 元
               </span>
@@ -185,8 +203,8 @@
             <a-table :loading="drugLoading" :row-selection="{
                 selectedRowKeys: selectedRowKeys2,
                 onChange: onSelectChange2,
-              }" :columns="columns2" :data-source="data2" @change="changeDurgTable" :pagination="{ showQuickJumper: true, pageSize: 10, total: drugTotal, simple: true, size: 'small', }" :scroll="{ y: 375 }" :rowKey="
-              (record, index) => {return record.id;}">
+              }" :columns="columns2" :data-source="data2" @change="changeDurgTable" :pagination="{ showQuickJumper: true, pageSize: 10, total: drugTotal, current:queryDrugList.page, simple: true, size: 'small', }" :scroll="{ y: 375 }" :rowKey="
+              (record, index) => {return index;}">
             </a-table>
           </div>
           <div class="rightBoxBottom">
@@ -218,7 +236,7 @@ const columns = [
   // },
   {
     title: '名称',
-    dataIndex: 'drugName',
+    dataIndex: 'goodsName',
   },
   {
     title: '单次用量',
@@ -231,17 +249,17 @@ const columns = [
   {
     title: '用法',
     width: 110,
-    dataIndex: 'usage',
+    dataIndex: 'usageId',
     scopedSlots: {
-      customRender: 'usage',
+      customRender: 'usageId',
     },
   },
   {
     title: '频度',
     width: 110,
-    dataIndex: 'rateName',
+    dataIndex: 'rateId',
     scopedSlots: {
-      customRender: 'rateName',
+      customRender: 'rateId',
     },
   },
   {
@@ -254,18 +272,18 @@ const columns = [
   },
   {
     title: '总量',
-    dataIndex: 'drugNum',
+    dataIndex: 'nums',
     width: 120,
     scopedSlots: {
-      customRender: 'drugNum',
+      customRender: 'nums',
     },
   },
   {
     title: '单价',
     width: 60,
-    dataIndex: 'drugPrice',
+    dataIndex: 'price',
     scopedSlots: {
-      customRender: 'drugPrice',
+      customRender: 'price',
     },
   },
   {
@@ -278,39 +296,18 @@ const columns = [
   },
 ]
 
-const data = []
-// for (let i = 0; i < 2; i++) {
-//   data.push({
-//     drugId: i,
-//     groupNumber: undefined,
-//     drugName: '雷丁、舒必利盖子',
-//     usageNumber: '1',
-//     usageUnit: '片',
-//     drugUnit: '瓶',
-//     itemTypeId: '',
-//     usage: undefined,
-//     rateId: '',
-//     rateName: undefined,
-//     recipeItemId: '',
-//     days: undefined,
-//     drugNum: '1',
-//     drugPrice: '6.00',
-//     sumPrice: '6.00',
-//   })
-// }
-
 const columns2 = [
   {
     title: '名称',
-    dataIndex: 'name',
+    dataIndex: 'goodsName',
   },
   {
     title: '规格',
-    dataIndex: 'spec',
+    dataIndex: 'specs',
   },
   {
     title: '库存',
-    dataIndex: 'stock',
+    dataIndex: 'stockNum',
   },
   {
     title: '价格',
@@ -368,9 +365,9 @@ const setcolumns = [
   {
     title: '用法',
     width: 140,
-    dataIndex: 'usage',
+    dataIndex: 'usageId',
     scopedSlots: {
-      customRender: 'usage',
+      customRender: 'usageId',
     },
   },
   {
@@ -403,7 +400,7 @@ for (let i = 0; i < 4; i++) {
     key: i,
     group: [1, 2, 3],
     dosage: '1',
-    usage: ['口服', '静脉注射', '注射药物', '检查', '皮试', '外用', '雾化'],
+    usageId: ['口服', '静脉注射', '注射药物', '检查', '皮试', '外用', '雾化'],
     frequency: ['一天1次', '一天2次', '一天3次', '一天4次', '2小时1次', '4小时1次', '6小时1次'],
     days: [1, 2, 3, 4, 5, 6, 7],
     total: '1',
@@ -412,13 +409,22 @@ for (let i = 0; i < 4; i++) {
 
 export default {
   name: 'Western',
-  props: ['prInfo', 'load', 'allPrInfo', 'allRecipe', 'theKey'],
+  props: [
+    'prInfo',
+    'load',
+    'allPrInfo',
+    'allRecipe',
+    'theKey',
+    'diagnosisList',
+    'adviceList',
+    'disabledBtn',
+  ],
   data() {
     return {
       catId: 1,
       addVisible: false,
       settingVisible: false,
-      data,
+      data: [],
       columns,
       // groupNumber: [1, 2, 3],
       usage: [],
@@ -459,9 +465,9 @@ export default {
           },
         ],
       },
-      prPrice: '0.00',
-      prNum: 0,
-      sumPrice: '0.00',
+      prPrice: 0,
+      // prNum: 0,
+      // sumPrice: '0.00',
       DrugCategoryList: [],
       drugLoading: false,
       queryDrugList: {
@@ -476,6 +482,8 @@ export default {
       recipe: {
         deptId: '',
         deptName: '',
+        diagnosis: [],
+        doctorAdvice: [],
         doctorId: '',
         doctorName: '',
         recipeAmount: '',
@@ -484,20 +492,36 @@ export default {
         recipeName: '',
         recipeOrderNo: '',
         recipeOrderStatus: 0,
-        recipeType: 0,
-        westernMedicine: [],
-        chineseMedicine: [],
-        examine: [],
+        recipeType: 1,
+        // westernMedicine: [],
+        // chineseMedicine: [],
+        // examine: [],
+        recipeItem: [],
       },
+      recipeRules: { diagnosis: [{ required: true, message: '请输入诊断', trigger: 'change' }] },
       drugTotal: 0,
     }
   },
   watch: {
+    // diagnosis: {
+    //   handler(newVal, oldVal) {
+    //     this.recipe.diagnosis = newVal
+    //   },
+    //   deep: true,
+    // },
+    // doctorAdvice: {
+    //   handler(newVal, oldVal) {
+    //     this.recipe.doctorAdvice = newVal
+    //   },
+    //   deep: true,
+    // },
     data: {
       handler(newVal, oldVal) {
         // console.log(this.theKey)
         // console.log(this.allRecipe, newVal, this.allPrInfo)
-        this.recipe.westernMedicine = newVal
+        // this.recipe.diagnosis = this.diagnosis
+        // this.recipe.doctorAdvice = this.doctorAdvice
+        this.recipe.recipeItem = newVal
         this.recipe.recipeAmount = this.prPrice
         this.recipe.recipeCount = newVal.length
         if (this.allRecipe.length > this.theKey) {
@@ -506,14 +530,14 @@ export default {
             this.allPrInfo.total = this.allRecipe.length
             let sum = 0
             this.allRecipe.forEach((item) => {
-              let price = Number(item.recipeAmount)
+              let price = Number(item.recipeAmount) * 100 //*100是为了避免精度缺失
               sum += price
             })
-            this.allPrInfo.totalFee = sum
+            this.allPrInfo.totalFee = sum / 100
           })
         }
-        // console.log(newVal, this.recipe, this.allPrInfo)
-        this.$emit('westernData', this.recipe)
+        console.log(newVal, this.recipe, this.allPrInfo)
+        this.$emit('recipeItem', this.recipe)
       },
       deep: true,
     },
@@ -544,28 +568,46 @@ export default {
     this.recipe.doctorName = this.allPrInfo.doctorName
     if (this.prInfo && this.prInfo.recipeType == 1) {
       this.recipe = this.prInfo
-      this.form.deptName = this.prInfo.deptName
-      this.form.doctorName = this.prInfo.doctorName
+      // this.form.deptName = this.prInfo.deptName
+      // this.form.doctorName = this.prInfo.doctorName
       this.prPrice = this.prInfo.recipeAmount
       // this.prNum = this.allPrInfo.total
       // this.sumPrice = this.allPrInfo.totalFee
-      if (this.prInfo.westernMedicine) {
-        this.prInfo.westernMedicine.map((item) => {
-          item.usage = Number(item.usage)
-          item.rateName = Number(item.rateName)
+      if (this.prInfo.recipeItem) {
+        this.prInfo.recipeItem.map((item) => {
+          item.usageId = Number(item.usageId)
+          item.rateId = Number(item.rateId)
         })
-        this.data = this.prInfo.westernMedicine
+        this.data = this.prInfo.recipeItem
         this.getPrSumP()
       }
     }
   },
   methods: {
+    checkForm() {
+      let flag = null
+      this.$refs['recipeRuleForm'].validate((valid) => {
+        if (valid) {
+          flag = true
+        } else {
+          flag = false
+        }
+      })
+      return flag
+    },
     getReceiveDrugList() {
       this.drugLoading = true
       getReceiveDrugList(this.queryDrugList).then((res) => {
-        this.data2 = res.data
+        this.data2 = res.data.map((item, index) => {
+          return {
+            id: index,
+            ...item,
+          }
+        })
+        console.log(this.data2)
         this.drugTotal = res.count
         this.drugLoading = false
+        this.selectedRowKeys2 = []
       })
     },
     // startBatchset() {
@@ -592,6 +634,7 @@ export default {
       console.log(`selected ${value}`)
     },
     handleChangeDrug(value) {
+      this.queryDrugList.page = 1
       this.queryDrugList.categoryId = value
       this.getReceiveDrugList()
     },
@@ -602,19 +645,19 @@ export default {
     },
     totalChange(e, record) {
       const value = e.target.value
-      record.drugNum = value
-      record.sumPrice = Number(value) * Number(record.drugPrice)
+      record.nums = value
+      record.fee = Number(value) * Number(record.price)
       this.getPrSumP()
     },
     priceChange(e, record) {
       const value = e.target.value
-      record.drugPrice = value
-      record.sumPrice = Number(value) * Number(record.drugNum)
+      record.price = value
+      record.fee = Number(value) * Number(record.nums)
       this.getPrSumP()
     },
-    onDelete(key, recipeItemId) {
-      if (recipeItemId) {
-        deleteRecipeItem(recipeItemId).then((res) => {
+    onDelete(record) {
+      if (record.recipeItemId) {
+        deleteRecipeItem(record.recipeItemId).then((res) => {
           if (res.success) {
             this.$message.success('删除成功！')
           } else {
@@ -623,14 +666,16 @@ export default {
         })
       }
       const data = [...this.data]
-      this.data = data.filter((item) => item.drugId !== key)
+      this.data = data.filter((item) => item.drugId !== record.drugId || item.id !== record.id)
       this.getPrSumP()
     },
     onSearch(value) {
+      this.queryDrugList.page = 1
       this.queryDrugList.keyWord = value
       this.getReceiveDrugList()
     },
     onChangeSearch(e) {
+      this.queryDrugList.page = 1
       this.queryDrugList.keyWord = e.target.value
       this.getReceiveDrugList()
     },
@@ -643,33 +688,68 @@ export default {
       if (this.selectedRowKeys2.length == 0) {
         this.$message.warning('请选择要添加的药品')
       } else {
-        let list = this.data2.map((data) => {
+        let list = this.data2.map((data, index) => {
           return {
-            drugId: data.id,
+            id: index,
+            // drugId: data.drugId,
             // groupNumber: undefined,
-            drugName: data.name,
-            usageNumber: '',
-            usageUnit: data.unit,
-            drugUnit: data.packUnit,
-            itemTypeId: this.queryDrugList.categoryId,
-            usage: data.usage == null ? undefined : data.usage,
-            rateId: '',
-            rateName: undefined,
-            recipeItemId: '',
+            // drugName: data.goodsName,
+            // usageNumber: '',
+            // usageUnit: data.usageUnit,
+            // drugUnit: data.unit,
+            // categoryId: this.queryDrugList.categoryId,
+            // usage: data.usageName == null ? undefined : data.usageName,
+            // rateId: '',
+            // rateName: undefined,
+            // recipeItemId: '',
+            // code: data.code,
+            // days: undefined,
+            // drugNum: '',
+            // drugPrice: data.price,
+            // sumPrice: '0',
+            // statItemId: data.statItemId,
+
+            categoryId: data.categoryId,
+            checkPartId: data.checkPartId ? data.checkPartId : '',
+            checkPartName: data.checkPartName ? data.checkPartName : '',
+            code: data.code,
             days: undefined,
-            drugNum: '',
-            drugPrice: data.price,
-            sumPrice: '0',
-            statItemId: data.statItemId,
+            dosageForm: data.dosageForm,
+            dosageNumber: data.dosageNumber ? data.dosageNumber : '',
+            drugId: data.drugId,
+            fee: '',
+            goodsName: data.goodsName,
+            manufactor: data.manufacturer ? data.manufacturer : '',
+            manufactorId: data.manufacturerId ? data.manufacturerId : '',
+            note: data.note,
+            nums: '',
+            price: data.price ? data.price : '',
+            productName: data.productName ? data.productName : '',
+            rateId: undefined,
+            rateName: '',
+            recipeId: '',
+            recipeItemId: '',
+            remarks: '',
+            specs: data.specs,
+            statItemId: data.statItemId ? data.statItemId : '',
+            unit: data.unit ? data.unit : '',
+            usageName: data.usageName ? data.usageName : '',
+            usageNumber: '',
+            usageUnit: data.usageUnit ? data.usageUnit : '',
+            usageId: data.usageId ? data.usageId : undefined,
           }
         })
+
         this.selectedRowKeys2.forEach((item) => {
-          let option = list.filter((data) => data.drugId == item)
-          if (this.data.filter((data) => data.drugId == item).length != 0) {
-            this.$message.info('处方中已有此药品，请不要重复添加！')
-          } else {
-            this.data.push(option[0])
-          }
+          let opt = this.data2.filter((data, index) => index === item)
+          opt.forEach((items) => {
+            let option = list.filter((data) => data.id === items.id)
+            if (this.data.filter((data) => data.drugId === items.drugId).length != 0) {
+              this.$message.info('处方中已有此药品，请不要重复添加！')
+            } else {
+              this.data.push(option[0])
+            }
+          })
         })
       }
       this.selectedRowKeys2 = []
@@ -700,11 +780,11 @@ export default {
     getPrSumP() {
       let sum = 0
       this.data.forEach((item, index) => {
-        let sumPrice = item.drugNum * item.drugPrice
-        let price = Number(sumPrice)
+        let fee = item.nums * (item.price * 100)
+        let price = Number(fee)
         sum += price
       })
-      this.prPrice = sum
+      this.prPrice = sum / 100
     },
   },
 }

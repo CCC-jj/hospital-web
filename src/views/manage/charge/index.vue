@@ -13,8 +13,20 @@
         </div>
         <a-modal :okButtonProps="{ props: { disabled: orderTime==0 } }" centered style="color: #000" width="700px" v-model="visible" title="收费" @ok="handleOk" @cancel="handleCancel">
           <div class="totalPayAmount">
-            应收金额
-            <span style="font-size: 20px; font-weight: bold">{{bill.payAmount}}</span> 元 <span style="margin-left:20px;">当前订单剩余支付时间：<span style="color:red;">{{orderTime}}</span></span>
+            <a-row class="countDown">
+              <a-col :span="6" style="height:30px;">
+                应收金额
+                <span style="font-size: 20px; font-weight: bold">{{bill.payAmount}}</span> 元
+              </a-col>
+              <a-col :span="7">
+                <!-- <span style="margin-left:20px;">当前订单剩余支付时间：<span style="color:red;">{{orderTime}}</span></span> -->
+                <span style="margin-left:20px;">当前订单剩余支付时间：
+                </span>
+              </a-col>
+              <a-col :span="6">
+                <a-statistic-countdown valueStyle="color:red;font-size:14px;line-height:30px;" :value="deadline" format="H 小时 m 分钟 s 秒" @finish="onFinish" />
+              </a-col>
+            </a-row>
           </div>
 
           <div class="bill">
@@ -227,11 +239,13 @@ export default {
       payingStatus: 'loading',
       payedStatus: 'smile-o',
       timer: null,
+      deadline: 0,
     }
   },
   created() {
     // this.page = this.$route.params.page
-    this.orderNo = this.$route.query.orderNo
+    this.orderNo = JSON.parse(this.$route.query.orderNo)
+    console.log(this.orderNo);
     // 获取支付类型
     getPaymentTypes().then((res) => {
       if (res.success) {
@@ -265,30 +279,30 @@ export default {
       // }
     },
     // 倒计时方法
-    countDown(time) {
-      if (time === 0) {
-        this.orderTime = time
-        return
-      } else {
-        if (time > 60) {
-          this.orderTime =
-            (Math.floor(time / 60).toString().length < 2
-              ? '0' + Math.floor(time / 60).toString()
-              : Math.floor(time / 60).toString()) +
-            '小时' +
-            ((time % 60).toString().length < 2
-              ? '0' + (time % 60).toString()
-              : (time % 60).toString()) +
-            '分钟'
-        } else {
-          this.orderTime = time + '分钟'
-        }
-        time--
-      }
-      this.timer = setTimeout(() => {
-        this.countDown(time)
-      }, 60000)
-    },
+    // countDown(time) {
+    //   if (time === 0) {
+    //     this.orderTime = time
+    //     return
+    //   } else {
+    //     if (time > 60) {
+    //       this.orderTime =
+    //         (Math.floor(time / 60).toString().length < 2
+    //           ? '0' + Math.floor(time / 60).toString()
+    //           : Math.floor(time / 60).toString()) +
+    //         '小时' +
+    //         ((time % 60).toString().length < 2
+    //           ? '0' + (time % 60).toString()
+    //           : (time % 60).toString()) +
+    //         '分钟'
+    //     } else {
+    //       this.orderTime = time + '分钟'
+    //     }
+    //     time--
+    //   }
+    //   this.timer = setTimeout(() => {
+    //     this.countDown(time)
+    //   }, 60000)
+    // },
     showChargeModal() {
       getOrderQuery(this.orderNo).then((res) => {
         if (res.success) {
@@ -296,12 +310,18 @@ export default {
           if (res.data < 0) {
             this.orderTime = '∞'
           } else {
-            this.countDown(res.data)
+            this.orderTime = res.data
+            this.deadline = Date.now() + res.data * 60 * 1000
+            // this.countDown(res.data)
           }
         } else {
           this.$message.error(res.message)
         }
       })
+    },
+    // 倒计时完成
+    onFinish() {
+      this.orderTime = 0
     },
     handleOk(e) {
       this.$refs.ruleForm.validate((valid) => {
@@ -589,5 +609,10 @@ export default {
   padding: 0 30px;
   line-height: 60px;
   float: right;
+}
+.countDown {
+  height: 30px;
+  line-height: 30px;
+  margin: 0;
 }
 </style>

@@ -23,6 +23,18 @@ export function getWorkbenchReceive(outpatientNo, patientId, regOrderNo) {
   });
 }
 
+// 就诊信息
+export function getReceiveSickInfo(orderNo) {
+  return request({
+    url: "treat/receive/sick/info",
+    method: "get",
+    headers: { "Content-Type": "x-www-form-urlencoded" },
+    params: {
+      orderNo: orderNo
+    }
+  });
+}
+
 // 获取诊断
 export function getReceiveDiagnosis() {
   return request({
@@ -135,10 +147,27 @@ export function deleteReceiveRecipe(recipeId) {
   });
 }
 
+// 暂存处方
+export function tSaveReceivePrescription(
+  outpatientNo,
+  patient,
+  recipe,
+  regOrderNo
+) {
+  return request({
+    url: "treat/receive/prescription/temporary/save",
+    method: "post",
+    data: {
+      outpatientNo: outpatientNo,
+      patient: patient,
+      recipe: recipe,
+      regOrderNo: regOrderNo
+    }
+  });
+}
+
 // 保存处方
 export function saveReceivePrescription(
-  diagnosis,
-  doctorAdvice,
   outpatientNo,
   patient,
   recipe,
@@ -148,8 +177,6 @@ export function saveReceivePrescription(
     url: "treat/receive/prescription/save",
     method: "post",
     data: {
-      diagnosis: diagnosis,
-      doctorAdvice: doctorAdvice,
       outpatientNo: outpatientNo,
       patient: patient,
       recipe: recipe,

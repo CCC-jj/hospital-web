@@ -74,25 +74,25 @@
 
       <a-form-model ref="saveRuleForm" :model="saveForm" :rules="saveRules" :label-col="labelCol" :wrapper-col="wrapperCol">
         <a-row>
-          <a-col :span="12">
+          <a-col class="saveCol" :span="12">
             <a-form-model-item label="模板编号" prop="number">
               <a-input v-model="saveForm.number" disabled />
             </a-form-model-item>
           </a-col>
-          <a-col :span="12">
+          <a-col class="saveCol" :span="12">
             <a-form-model-item label="创建人" prop="creator">
               <a-input v-model="saveForm.creator" disabled />
             </a-form-model-item>
           </a-col>
         </a-row>
         <a-row>
-          <a-col :span="12">
+          <a-col class="saveCol" :span="12">
             <a-form-model-item label="模板名称" prop="name">
               <a-input v-model="saveForm.name" />
             </a-form-model-item>
           </a-col>
 
-          <a-col :span="12">
+          <a-col class="saveCol" :span="12">
             <a-form-model-item label="模板权限" prop="authority">
               <a-radio-group class="authority" v-model="saveForm.authority">
                 <a-radio value="1">私人模板</a-radio>
@@ -302,7 +302,7 @@
           <p class="reportInfoTitle">诊断意见</p>
           <a-textarea v-model="report.diagnosis" :rows="8" />
         </div>
-        <div>
+        <div v-if="auditHistory">
           <p class="reportInfoTitle">审核信息</p>
           <a-timeline>
             <a-timeline-item :color="timeLineColor(item.result)" v-for="(item,index) in auditHistory" :key="index">
@@ -331,7 +331,7 @@
         <div class="reportDiagnosis">
           <div>
             <span> 报告 &nbsp; </span>
-            <a-input v-model="report.diagnosisDoctorName" style="width:100px;" />
+            <a-input disabled v-model="report.diagnosisDoctorName" style="width:100px;" />
           </div>
 
           <!-- <div>
@@ -360,7 +360,7 @@
 
           <div>
             <span> 诊断日期 &nbsp; </span>
-            <a-date-picker mode="time" v-model="report.diagnosisTime" format="YYYY-MM-DD HH:mm:ss" @change="changeDiagnosisTime" :disabled-date="diagnosisDisabledDate" show-time />
+            <a-date-picker disabled mode="time" v-model="report.diagnosisTime" format="YYYY-MM-DD HH:mm:ss" @change="changeDiagnosisTime" :disabled-date="diagnosisDisabledDate" show-time />
             <!-- <a-date-picker valueFormat="value" @change="changeDiagnosisTime" v-model="report.diagnosisTime" :disabled-date="diagnosisDisabledDate" style="width:150px;" /> -->
           </div>
 
@@ -518,7 +518,7 @@ export default {
         name: [{ required: true, message: '请输入模板名称', trigger: 'blur' }],
       },
       iconLoading: false,
-      auditHistory: [],
+      auditHistory: null,
     }
   },
   created() {
@@ -534,6 +534,9 @@ export default {
     getExamineReportInfo(this.patientId, this.recordId).then((res) => {
       if (res.success) {
         this.report = Object.assign(this.report, res.data.report)
+        if (!res.data.report.diagnosisTime) {
+          this.report.diagnosisTime = this.getNowTime()
+        }
       } else {
         this.$warning({
           title: '提示',
@@ -552,6 +555,18 @@ export default {
     })
   },
   methods: {
+    // 获取当前年月日时分秒
+    getNowTime() {
+      let yy = new Date().getFullYear()
+      let mm = new Date().getMonth() + 1
+      let dd = new Date().getDate()
+      let hh = new Date().getHours()
+      let mf =
+        new Date().getMinutes() < 10 ? '0' + new Date().getMinutes() : new Date().getMinutes()
+      let ss =
+        new Date().getSeconds() < 10 ? '0' + new Date().getSeconds() : new Date().getSeconds()
+      return yy + '-' + mm + '-' + dd + ' ' + hh + ':' + mf + ':' + ss
+    },
     catchData(value) {
       this.report.checkResult = value //在这里接受子组件传过来的参数，赋值给data里的参数
     },
@@ -653,6 +668,7 @@ export default {
       this.$refs.reportRuleForm.validate((valid) => {
         if (valid) {
           this.iconLoading = true
+          this.report.diagnosisTime = this.getNowTime()
           saveExamineReportInfo({ recordId: this.recordId, report: this.report }).then((res) => {
             if (res.success) {
               this.$message.success('保存成功')
@@ -828,5 +844,8 @@ a {
 }
 .ant-col {
   width: 20%;
+}
+.saveCol{
+  width: 50%;
 }
 </style>

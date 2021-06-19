@@ -54,16 +54,16 @@ export default {
 .ant-select-disabled {
   color: rgba(0, 0, 0, 0.65) !important;
 }
-.ant-btn-primary{
+.ant-btn-primary {
   background-color: #656ee8 !important;
   border: 1px solid #656ee8 !important;
 }
-.ant-btn-primary:hover{
+.ant-btn-primary:hover {
   background-color: #7b82e2 !important;
   border: 1px solid #7b82e2 !important;
 }
-.ant-btn-primary[disabled]{
-  background-color: rgb(245,245,245) !important;
+.ant-btn-primary[disabled] {
+  background-color: rgb(245, 245, 245) !important;
   border: 1px solid #dcdcdc !important;
 }
 .ant-menu.ant-menu-dark .ant-menu-item-selected,

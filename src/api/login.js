@@ -1,25 +1,38 @@
 import request from "@/utils/request";
 
 // 用户登录
-export function loginByMobile(mobile, password, orgCode, proCode) {
+export function login(sign, timestamp, loginType, mobile, password) {
   return request({
-    url: "login/index",
+    url: "union/login",
     method: "post",
+    headers: { sign: sign, timestamp: timestamp },
     data: {
+      loginType: loginType,
       mobile: mobile,
-      password: password,
-      orgCode: orgCode,
-      proCode: proCode
+      password: password
     }
   });
 }
 
-// 项目医院列表
-export function getHospitalList() {
+// 获取医生关联医院
+export function loginHospitalList() {
   return request({
-    url: "login/hospital",
-    method: "get"
-    // headers: { "Content-Type": "x-www-form-urlencoded" },
+    url: "login/hospital/list",
+    method: "post"
+  });
+}
+
+// 确定关联医院
+export function loginHospitalConfirm(doctorId, orgCode, proCode) {
+  return request({
+    url: "login/hospital/confirm",
+    method: "get",
+    headers: { "Content-Type": "x-www-form-urlencoded" },
+    params: {
+      doctorId: doctorId,
+      orgCode: orgCode,
+      proCode: proCode
+    }
   });
 }
 
@@ -53,7 +66,7 @@ export function retrievePassword(mobile, code, password, serialNumber) {
 // 退出登录
 export function logout() {
   return request({
-    url: "logout",
+    url: "union/logout",
     method: "get"
     // headers: { "Content-Type": "x-www-form-urlencoded" },
   });

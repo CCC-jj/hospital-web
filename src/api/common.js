@@ -1,5 +1,13 @@
 import request from "@/utils/request";
 
+// 获取服务端标题
+export function getCommonTitle(){
+  return request({
+    url: "common/title",
+    method: "get",
+  })
+}
+
 // 获取处方分类
 export function getRecipelCategory() {
   return request({

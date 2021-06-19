@@ -337,3 +337,221 @@ export function deleteTreatmentList(id) {
     }
   });
 }
+
+// 员工管理
+
+// 搜索查询员工列表
+export function getEmployDoctorList(params) {
+  return request({
+    url: "setting/employ/doctor/list",
+    method: "post",
+    data: params
+  });
+}
+
+// 修改员工状态
+export function getDoctorStatus(params) {
+  return request({
+    url: "setting/employ/doctor/status",
+    method: "post",
+    data: params
+  });
+}
+
+// 获取科室列表
+export function getDoctorDepartmentList(params) {
+  return request({
+    url: "setting/employ/doctor/department",
+    method: "post",
+    data: params
+  });
+}
+
+// 获取角色列表
+export function getDoctorTitleList(searchWord) {
+  return request({
+    url: "setting/employ/doctor/title",
+    method: "post",
+    data: {
+      searchWord: searchWord
+    }
+  });
+}
+
+// 搜索查询职称列表
+export function getDoctorRoleList(params) {
+  return request({
+    url: "setting/employ/doctor/role",
+    method: "post",
+    data: params
+  });
+}
+
+// 创建新员工信息
+export function createDoctor(params) {
+  return request({
+    url: "setting/employ/doctor/create",
+    method: "post",
+    data: params
+  });
+}
+
+// 修改员工信息
+export function modifyDoctor(params) {
+  return request({
+    url: "setting/employ/doctor/modify",
+    method: "post",
+    data: params
+  });
+}
+
+// 删除员工
+export function deleteDoctor(code) {
+  return request({
+    url: "setting/employ/doctor/delete",
+    method: "get",
+    headers: { "Content-Type": "x-www-form-urlencoded" },
+    params: {
+      code: code
+    }
+  });
+}
+
+// 搜索查询科室列表
+export function getDepartmentList(params) {
+  return request({
+    url: "setting/employ/department/list",
+    method: "post",
+    data: params
+  });
+}
+
+// 修改科室状态
+export function getDepartmentStatus(params) {
+  return request({
+    url: "setting/employ/department/status",
+    method: "post",
+    data: params
+  });
+}
+
+// 创建新科室信息
+export function createDepartment(params) {
+  return request({
+    url: "setting/employ/department/create",
+    method: "post",
+    data: params
+  });
+}
+
+// 修改科室信息
+export function modifyDepartment(params) {
+  return request({
+    url: "setting/employ/department/modify",
+    method: "post",
+    data: params
+  });
+}
+
+// 删除科室
+export function deleteDepartment(code) {
+  return request({
+    url: "setting/employ/department/delete",
+    method: "get",
+    headers: { "Content-Type": "x-www-form-urlencoded" },
+    params: {
+      code: code
+    }
+  });
+}
+
+// 搜索查询角色列表
+export function getRoleList(params) {
+  return request({
+    url: "setting/employ/role/list",
+    method: "post",
+    data: params
+  });
+}
+
+// 修改角色状态
+export function getRoleStatus(params) {
+  return request({
+    url: "setting/employ/role/status",
+    method: "post",
+    data: params
+  });
+}
+
+// 创建新角色信息
+export function createRole(params) {
+  return request({
+    url: "setting/employ/role/create",
+    method: "post",
+    data: params
+  });
+}
+
+// 修改角色信息
+export function modifyRole(params) {
+  return request({
+    url: "setting/employ/role/modify",
+    method: "post",
+    data: params
+  });
+}
+
+// 删除角色
+export function deleteRole(code) {
+  return request({
+    url: "setting/employ/role/delete",
+    method: "get",
+    headers: { "Content-Type": "x-www-form-urlencoded" },
+    params: {
+      code: code
+    }
+  });
+}
+
+// 获取问诊服务设置信息
+export function getOutAbility() {
+  return request({
+    url: "setting/out-call/get/ability",
+    method: "get",
+    headers: { "Content-Type": "x-www-form-urlencoded" }
+  });
+}
+
+// 问诊状态设置
+export function getOutEnable(consStatus, consType) {
+  return request({
+    url: "setting/out-call/enable",
+    method: "get",
+    headers: { "Content-Type": "x-www-form-urlencoded" },
+    params: {
+      consStatus: consStatus,
+      consType: consType
+    }
+  });
+}
+
+// 获取问诊详细配置信息
+export function getOutConfiguration(consType) {
+  return request({
+    url: "setting/out-call/get/configuration",
+    method: "get",
+    headers: { "Content-Type": "x-www-form-urlencoded" },
+    params: {
+      consType: consType
+    }
+  });
+}
+
+// 设置问诊详细配置信息
+export function setOutAbility(params) {
+  return request({
+    url: "setting/out-call/set/ability",
+    method: "post",
+    data: params
+  });
+}

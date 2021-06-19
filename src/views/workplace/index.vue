@@ -49,10 +49,10 @@
                 <span class="age">{{ item.age }}</span>
               </div>
               <div class="worktypes">
-                <span class="pictype" v-if="item.bizType=='图文问诊'">{{ item.bizType }}</span>
-                <span class="pictype" v-if="item.bizType=='窗口'">{{ item.bizType }}</span>
+                <span class="pictype" style="background-color:rgb(116,130,231)">{{ item.bizType }}</span>
+                <!-- <span class="pictype" v-if="item.bizType=='窗口'">{{ item.bizType }}</span>
                 <span class="pictype" v-if="item.bizType=='视频问诊'" style="background-color:rgb(40,208,148)">{{ item.bizType }}</span>
-                <span class="pictype" v-if="item.bizType=='检查开单'" style="background-color:rgb(116,130,231)">{{ item.bizType }}</span>
+                <span class="pictype" v-if="item.bizType=='检查开单'" style="background-color:rgb(116,130,231)">{{ item.bizType }}</span> -->
                 <span class="workstatus" v-if="item.status=='待接诊'">{{ item.status }}</span>
                 <span class="workstatus" v-else-if="item.status=='接诊中'" style="background-color:rgb(40,208,148)">{{ item.status }}</span>
                 <span class="workstatus" v-else-if="item.status=='已完成'" style="background-color:rgb(204,204,204)">{{ item.status }}</span>
@@ -74,7 +74,7 @@
       </div>
     </a-spin>
     <div class="paginationBox">
-      <a-pagination show-quick-jumper :pageSize='9' :total="total" :showTotal="((total) => {return `每页 9 条，共 ${total} 条`;})" @change="pageOnChange" />
+      <a-pagination v-model="params.page" show-quick-jumper :pageSize='9' :total="total" :showTotal="((total) => {return `每页 9 条，共 ${total} 条`;})" @change="pageOnChange" />
     </div>
   </div>
 </template>
@@ -96,8 +96,8 @@ export default {
         bizType: '',
         limit: 9,
         orderFiled: '',
-        orderFinishDate: moment().endOf('day'),
-        orderStartDate: moment().startOf('day'),
+        orderFinishDate: '',
+        orderStartDate: '',
         orderStatus: '',
         orderType: 'asc',
         page: 1,
@@ -107,6 +107,7 @@ export default {
     }
   },
   created() {
+    this.addDate()
     getTreatState().then((res) => {
       this.stateList = res.data
     })
@@ -117,6 +118,17 @@ export default {
   },
   methods: {
     moment,
+    // 当前时间
+    addDate() {
+      let nowDate = new Date()
+      let date = {
+        year: nowDate.getFullYear(),
+        month: nowDate.getMonth() + 1,
+        date: nowDate.getDate(),
+      }
+      this.params.orderStartDate = date.year + '-' + date.month + '-' + date.date
+      this.params.orderFinishDate = date.year + '-' + date.month + '-' + date.date
+    },
     getWorkplaceList() {
       this.spinning = true
       getWorkplaceList(this.params).then((res) => {
@@ -131,22 +143,22 @@ export default {
       })
     },
     onChange(dates, dateStrings) {
+      this.params.page = 1
       this.params.orderStartDate = dateStrings[0]
       this.params.orderFinishDate = dateStrings[1]
       this.getWorkplaceList()
     },
-    // 禁用一个月前后日期
+    // 禁用当天后日期
     disabledDate(current) {
-      return (
-        (current && current < moment().startOf('day').subtract(1, 'month')) ||
-        (current && current > moment().endOf('day'))
-      )
+      return current && current > moment().endOf('day')
     },
     handleChange(value) {
+      this.params.page = 1
       this.params.orderStatus = value
       this.getWorkplaceList()
     },
     handleChange2(value) {
+      this.params.page = 1
       this.params.bizType = value
       this.getWorkplaceList()
     },
@@ -179,10 +191,12 @@ export default {
       })
     },
     onSearch(value) {
+      this.params.page = 1
       this.params.patientName = value
       this.getWorkplaceList()
     },
     onChangeSearch(e) {
+      this.params.page = 1
       this.params.patientName = e.target.value
       this.getWorkplaceList()
     },

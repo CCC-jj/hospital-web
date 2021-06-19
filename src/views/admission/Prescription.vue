@@ -16,7 +16,7 @@
           </a-col>
         </a-row>
         <div class="prPages">
-          <component v-on:westernData="(val) => westernData(val,index)" v-on:chineseMedicine="(val) => chineseMedicine(val,index)" v-on:examine="(val) => examine(val,index)" :class="['prescription',{active: activeKey == item.key}]" v-for="(item,index) in componentList" :key="index" :is="item.name" :prInfo="item.prInfo" :allPrInfo="allPrInfo" :allRecipe="recipe" :load="item.load" :theKey="index"></component>
+          <component v-on:recipeItem="(val) => recipeItem(val,index)" :class="['prescription',{active: activeKey == item.key}]" v-for="(item,index) in componentList" :key="item.key" :is="item.name" :prInfo="item.prInfo" :allPrInfo="allPrInfo" :allRecipe="recipe" :load="item.load" :theKey="index" :diagnosisList="diagnosisList" :adviceList="adviceList" :disabledBtn="disabledBtn" ref="prChild"></component>
         </div>
       </div>
     </a-spin>
@@ -25,7 +25,12 @@
 
 <script>
 import { getRecipelCategory } from '@/api/common'
-import { getRecipeInfo, deleteReceiveRecipe } from '@/api/admission'
+import {
+  getReceiveDiagnosis,
+  getReceiveAdvice,
+  getRecipeInfo,
+  deleteReceiveRecipe,
+} from '@/api/admission'
 import Western from './list/Western'
 import Traditional from './list/Traditional'
 import CheckItem from './list/CheckItem'
@@ -43,6 +48,8 @@ export default {
   },
   data() {
     return {
+      diagnosisList: [],
+      adviceList: [],
       spinning: false,
       activeKey: 0,
       activeTitle: '',
@@ -56,6 +63,13 @@ export default {
       allPrInfo: {},
     }
   },
+  beforeDestroy() {
+    if (this.regOrderNo && !this.disabledBtn && this.outpatientNo) {
+      if (confirm('离开处方页面前是否暂存您的处方信息？') == true) {
+        this.$emit('TemporarySave')
+      }
+    }
+  },
   created() {
     getRecipelCategory().then((res) => {
       this.prList = res.data
@@ -63,6 +77,18 @@ export default {
     if (this.outpatientNo) {
       this.getRecipeInfo()
     }
+    // 获取诊断信息
+    getReceiveDiagnosis().then((res) => {
+      if (res.success) {
+        this.diagnosisList = res.data
+      }
+    })
+    // 获取医嘱信息
+    getReceiveAdvice().then((res) => {
+      if (res.success) {
+        this.adviceList = res.data
+      }
+    })
   },
   mounted() {
     // this.$router.push({ name: this.activePath })
@@ -77,6 +103,15 @@ export default {
     },
   },
   methods: {
+    checkForm() {
+      let flag = this.$refs['prChild'].checkForm()
+      return flag
+      // setTimeout(() => {
+      //   console.log(this.$refs.prChild.checkForm())
+      // }, 500);
+      // console.log(this.$refs.prChild.checkForm())
+      // return this.$refs.prChild.checkForm()
+    },
     // 获取处方信息
     getRecipeInfo() {
       this.spinning = true
@@ -94,7 +129,7 @@ export default {
                 case 1:
                   path = 'Western'
                   break
-                case 3:
+                case 2 || 3:
                   path = 'Traditional'
                   break
                 case 4:
@@ -116,35 +151,17 @@ export default {
               this.activeKey = activeKey
               this.activePath = path
               this.activeTitle = item.recipeName
+              console.log(this.componentList)
             })
           }
           this.spinning = false
         }
       })
     },
-    westernData(val, index) {
-      // Object.assign(this.recipe, val)
-      // this.recipe = this.recipe.concat(val)
-      // this.formateArrObjData(this.recipe, val, index)
-      // console.log(val, index, this.recipe, this.prList)
+    recipeItem(val, index) {
+      console.log(val)
       this.recipe[index] = val
-      this.recipe[index].recipeType = this.prList[0].id
-      this.recipe[index].recipeName = this.panes[index].title
-      this.recipe[index].recipeCount = 1
-      this.getSumPrice()
-      this.$emit('recipe', this.recipe)
-    },
-    chineseMedicine(val, index) {
-      this.recipe[index] = val
-      this.recipe[index].recipeType = this.prList[2].id
-      this.recipe[index].recipeName = this.panes[index].title
-      this.recipe[index].recipeCount = 1
-      this.getSumPrice()
-      this.$emit('recipe', this.recipe)
-    },
-    examine(val, index) {
-      this.recipe[index] = val
-      this.recipe[index].recipeType = this.prList[3].id
+      this.recipe[index].recipeType = val.recipeType
       this.recipe[index].recipeName = this.panes[index].title
       this.recipe[index].recipeCount = 1
       this.getSumPrice()
@@ -153,11 +170,11 @@ export default {
     getSumPrice() {
       let totalFee = 0
       this.recipe.forEach((item) => {
-        let price = Number(item.recipeAmount)
+        let price = Number(item.recipeAmount) * 100
         totalFee += price
       })
       this.allPrInfo.total = this.recipe.length
-      this.allPrInfo.totalFee = totalFee
+      this.allPrInfo.totalFee = totalFee / 100
     },
     // formateArrObjData(initialArr, obj, pro) {
     //   let index = initialArr.findIndex((val) => val[pro] === obj[pro])
@@ -284,6 +301,7 @@ export default {
             this.activeTitle = activeTitle
             this.activePath = activePath
           }
+          this.getSumPrice()
         },
         onCancel: () => {},
       })

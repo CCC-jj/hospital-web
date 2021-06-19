@@ -69,10 +69,9 @@ export default {
         labelCol: { span: 4 },
         wrapperCol: { span: 14 },
       },
-      oldPwd: '',
-      newPwd: '',
-      confirmPwd: '',
-      visible: false,
+      // oldPwd: '',
+      // newPwd: '',
+      // confirmPwd: '',
       confirmLoading: false,
     }
   },
@@ -100,7 +99,7 @@ export default {
               localStorage.removeItem('token')
               this.setCookie('account', '', -1)
               this.setCookie('password', '', -1)
-              this.$router.push('/')
+              this.$router.push('/user/login')
             } else {
               this.$message.warning(res.message)
             }

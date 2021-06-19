@@ -310,12 +310,12 @@
 
           <div>
             <span> 诊断日期 &nbsp; </span>
-            <a-date-picker disabled v-model="report.diagnosisTime" valueFormat="value" style="width:150px;" />
+            <a-date-picker disabled show-time format="YYYY-MM-DD HH:mm:ss" v-model="report.diagnosisTime" />
           </div>
 
           <div>
             <span> 审核 &nbsp; </span>
-            <a-input v-model="report.auditDoctorName" style="width:100px;" />
+            <a-input disabled v-model="report.auditDoctorName" style="width:100px;" />
           </div>
 
           <!-- <div>
@@ -332,7 +332,7 @@
 
           <div>
             <span> 审核日期 &nbsp; </span>
-            <a-date-picker valueFormat="value" @change="changeAuditTime" v-model="report.auditTime" :disabled-date="auditTimeDisabledDate" style="width:150px;" />
+            <a-date-picker disabled show-time format="YYYY-MM-DD HH:mm:ss" @change="changeAuditTime" v-model="report.auditTime" :disabled-date="auditTimeDisabledDate" />
           </div>
         </div>
       </div>
@@ -501,6 +501,9 @@ export default {
       this.report.auditDoctorName = localStorage.getItem('userName')
       if (res.success) {
         this.report = Object.assign(this.report, res.data.report)
+        if (!res.data.report.auditTime) {
+          this.report.auditTime = this.getNowTime()
+        }
       } else {
         this.$warning({
           title: '提示',
@@ -520,6 +523,18 @@ export default {
     // })
   },
   methods: {
+    // 获取当前年月日时分秒
+    getNowTime() {
+      let yy = new Date().getFullYear()
+      let mm = new Date().getMonth() + 1
+      let dd = new Date().getDate()
+      let hh = new Date().getHours()
+      let mf =
+        new Date().getMinutes() < 10 ? '0' + new Date().getMinutes() : new Date().getMinutes()
+      let ss =
+        new Date().getSeconds() < 10 ? '0' + new Date().getSeconds() : new Date().getSeconds()
+      return yy + '-' + mm + '-' + dd + ' ' + hh + ':' + mf + ':' + ss
+    },
     goBack() {
       const page = this.page
       if (page == undefined) {
@@ -539,7 +554,7 @@ export default {
       // Can not select days before today and today
       return current && current > moment().endOf('day')
     },
-    auditTimeDisabledDate(current){
+    auditTimeDisabledDate(current) {
       return current && current < moment().startOf('day')
     },
     handleChange(value) {
@@ -603,6 +618,7 @@ export default {
       this.$refs.reportRuleForm.validate((valid) => {
         if (valid) {
           this.iconLoading = true
+          this.report.auditTime = this.getNowTime()
           saveExamineAudit({
             auditDesc: this.auditInfo.auditDesc,
             auditStatus: this.auditInfo.auditStatus,

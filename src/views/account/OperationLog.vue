@@ -31,7 +31,7 @@
     </div>
     <div class="manageDown">
       <a-spin :spinning="spinning">
-        <a-table :columns="columns" :data-source="tableData" @change="tableChange" :pagination="{ showQuickJumper: true, pageSize: 10, total: total, showTotal: ((total) => {
+        <a-table :columns="columns" :data-source="tableData" @change="tableChange" :pagination="{ showQuickJumper: true, pageSize: 10, total: total, current:params.page, showTotal: ((total) => {
         return `每页10条，共 ${total} 条`;
       }) }" :rowKey="
           (record, index) => {
@@ -156,17 +156,15 @@ export default {
       })
     },
     handleChange(value) {
-      console.log(`selected ${value}`)
+      this.params.page = 1
       this.getOperateLog()
     },
-    // 禁用一个月前后日期
+    // 禁用一个月后日期
     disabledDate(current) {
-      return (
-        (current && current < moment().startOf('day').subtract(1, 'month')) ||
-        (current && current > moment().endOf('day'))
-      )
+      return current && current > moment().endOf('day')
     },
     onDateChange(dates, dateStrings) {
+      this.params.page = 1
       this.params.startDate = dateStrings[0]
       this.params.endDate = dateStrings[1]
       this.getOperateLog()
@@ -190,16 +188,21 @@ export default {
       })
     },
     showInfoModal(record) {
-      getLogDetail(record.logId).then((res) => {
-        if (res.success) {
-          this.modalInfo = res.data
-          this.modalInfo.request = JSON.parse(res.data.request)
-          this.modalInfo.response = JSON.parse(res.data.response)
-          this.visible = true
-        } else {
-          this.$message.warning(res.message)
-        }
-      })
+      getLogDetail(record.logId)
+        .then((res) => {
+          if (res.success) {
+            this.modalInfo = res.data
+            this.modalInfo.request = JSON.parse(res.data.request)
+            this.modalInfo.response = JSON.parse(res.data.response)
+            this.visible = true
+          } else {
+            this.$message.warning(res.message)
+          }
+        })
+        .catch((err) => {
+          console.error(err)
+          this.$message.error('请求失败')
+        })
     },
     handleOk(e) {
       this.visible = false

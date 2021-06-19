@@ -34,22 +34,33 @@ import "viewerjs/dist/viewer.css";
 
 Vue.use(Viewer, {
   defaultOptions: {
-    zIndex: 9999
+    zIndex: 9999,
+    inline: false,
+    button: true,
+    navbar: false,
+    title: false,
+    toolbar: true,
+    tooltip: false,
+    movable: true,
+    zoomable: true,
+    rotatable: true,
+    scalable: false,
+    transition: false,
+    fullscreen: false,
+    keyboard: false
   }
 });
 
 router.beforeEach((to, from, next) => {
-  if (to.path == "/login" || to.path == "/forgetpwd") {
+  if (to.path == "/user/login" || to.path == "/user/forgetpwd") {
     next();
   } else {
     let getToken = localStorage.getItem("token");
-    let getName = localStorage.getItem("orgName");
     if (getToken) {
       next();
-      window.document.title = getName;
     } else {
-      next("/login");
-      window.document.title = "医生工作站";
+      next("/user/login");
+      Vue.prototype.$message.info('请先登录')
     }
   }
 });

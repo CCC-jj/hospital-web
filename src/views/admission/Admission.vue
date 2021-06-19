@@ -1,6 +1,6 @@
 <template>
   <div class="admissionBox">
-    <div :class="['loadingPage',{collapsedLoading: collapsed}]" v-show="iconLoading1">
+    <div :class="['loadingPage',{collapsedLoading: collapsed}]" v-show="iconLoading">
       <a-spin class="loadingPic" size="large">
         <a-icon slot="indicator" type="loading" style="font-size: 80px;color:#ffffff;" spin />
       </a-spin>
@@ -18,152 +18,164 @@
           返回
         </a-button>
         <a-button-group>
-          <a-button disabled class="picBtn" @click="showModal">图文资料</a-button>
-          <a-button disabled class="picBtn" @click="showModal">视频对话</a-button>
+          <a-button :disabled="this.form.receiveTypeId!==200" class="picBtn" @click="showModal">图文资料</a-button>
+          <!-- <a-button :disabled="this.form.receiveTypeId!==300" class="picBtn" @click="showModal">视频对话</a-button> -->
+          <a-button disabled class="picBtn" @click="showVideo">视频对话</a-button>
         </a-button-group>
       </div>
 
       <a-modal v-model="visible" title="图文资料" @ok="handleOk">
-        <div class="picTitle">病情描述</div>
-        <br />
-        <div class="picDescription">病情描述：头疼头晕 浑身乏力</div>
-        <br />
-        <div class="picDescription">患病时长：一周内</div>
-        <br />
-        <div class="picDescription">就诊情况：就诊过</div>
-        <br />
+        <div v-if="sickInfo">
+          <div class="picTitle">病情描述</div>
+          <br />
+          <div class="picDescription">病情描述：{{sickInfo.description}}</div>
+          <br />
+          <div class="picDescription">患病时长：{{sickInfo.sickTime}}</div>
+          <br />
+          <div class="picDescription">是否就诊：{{sickInfo.seeDoctor?'是':'否'}}</div>
+          <br />
 
-        <div class="picTitle">
-          检查报告或患处照片
-          <span>（点击放大）</span>
+          <div class="picTitle">
+            检查报告或患处照片
+            <span>（点击放大）</span>
+          </div>
+          <br />
+          <viewer class="prPic" :images="sickInfo.images">
+            <img v-for="(item,index) in sickInfo.images" :src="item" :key="index" :title="item" />
+          </viewer>
         </div>
-        <br />
-        <viewer class="prPic" :images="images">
-          <img v-for="src in images" :src="src" :key="src" :title="src" />
-        </viewer>
+      </a-modal>
+
+      <a-modal width="600px" v-model="videoVisible" :maskClosable="false" title="视频对话" @ok="videoHandleOk" @cancel="videoCancel" :footer="null">
+        <!-- <CallbyVideo ref="videoChild" v-if="videoVisible"></CallbyVideo> -->
       </a-modal>
     </div>
 
     <!--新开就诊表单-->
     <div class="admissionForm">
-      <a-form-model ref="ruleForm" :model="form" :rules="rules" layout="vertical">
-        <a-row class="form-row" :gutter="16">
-          <a-col :span="6">
-            <a-form-model-item label="患者姓名" prop="patientName">
-              <!--<a-auto-complete v-model="form.name" :data-source="dataSource" style="width: 100%" placeholder="请输入患者姓名" :filter-option="filterOption" size="large" />-->
-              <a-auto-complete v-model="form.patientName" size="large" style="width: 100%" placeholder="患者姓名/手机号码/证件号码/卡号" option-label-prop="value" @change="searchPatientChange" @select="selectPatient">
-                <template slot="dataSource">
-                  <a-select-option v-for="item in dataSource" :key="item.patientId" :title="item.patientName">
-                    <span>{{item.patientName}} </span>
-                    <span v-if="item.patientSex==0">保密 </span>
-                    <span v-else-if="item.patientSex==1">男 </span>
-                    <span v-else-if="item.patientSex==2">女 </span>
-                    <span v-else>未说明 </span>
-                    <span>{{item.patientAge}}岁 </span>
-                    <span>{{item.patientMobile}}</span>
-                  </a-select-option>
-                </template>
-              </a-auto-complete>
-            </a-form-model-item>
-          </a-col>
-          <a-col :span="6">
-            <a-form-model-item label="身份证号码" required prop="patientCertNo">
-              <a-input v-model="form.patientCertNo" placeholder="请输入身份证号码" size="large"></a-input>
-            </a-form-model-item>
-          </a-col>
-          <a-col :span="6">
-            <a-form-model-item label="患者年龄" prop="patientAge">
-              <a-input disabled v-model="form.patientAge" placeholder="请输入数字" type="number" size="large">
-                <a-select disabled slot="addonAfter" v-model="defaultValue" style="width: 60px;color:rgba(0, 0, 0, 0.65);">
-                  <a-select-option value="year">岁</a-select-option>
-                  <a-select-option value="month">月</a-select-option>
-                  <a-select-option value="day">天</a-select-option>
+      <div :class="['formFlex',{formContent: openChat}]">
+        <a-form-model ref="ruleForm" :model="form" :rules="rules" layout="vertical">
+          <a-row class="form-row" :gutter="16">
+            <a-col :span="6">
+              <a-form-model-item label="患者姓名" prop="patientName">
+                <!--<a-auto-complete v-model="form.name" :data-source="dataSource" style="width: 100%" placeholder="请输入患者姓名" :filter-option="filterOption" size="large" />-->
+                <a-auto-complete v-model="form.patientName" size="large" style="width: 100%" placeholder="患者姓名/手机号码/证件号码/卡号" option-label-prop="value" @change="searchPatientChange" @select="selectPatient">
+                  <template slot="dataSource">
+                    <a-select-option v-for="item in dataSource" :key="item.patientId" :title="item.patientName">
+                      <span>{{item.patientName}} </span>
+                      <span v-if="item.patientSex==0">保密 </span>
+                      <span v-else-if="item.patientSex==1">男 </span>
+                      <span v-else-if="item.patientSex==2">女 </span>
+                      <span v-else>未说明 </span>
+                      <span>{{item.patientAge}}岁 </span>
+                      <span>{{item.patientMobile}}</span>
+                    </a-select-option>
+                  </template>
+                </a-auto-complete>
+              </a-form-model-item>
+            </a-col>
+            <a-col :span="6">
+              <a-form-model-item label="身份证号码" required prop="patientCertNo">
+                <a-input v-model="form.patientCertNo" placeholder="请输入身份证号码" size="large"></a-input>
+              </a-form-model-item>
+            </a-col>
+            <a-col :span="6">
+              <a-form-model-item label="患者年龄" prop="patientAge">
+                <a-input disabled v-model="form.patientAge" placeholder="请输入数字" type="number" size="large">
+                  <a-select disabled slot="addonAfter" v-model="defaultValue" style="width: 60px;color:rgba(0, 0, 0, 0.65);">
+                    <a-select-option value="year">岁</a-select-option>
+                    <a-select-option value="month">月</a-select-option>
+                    <a-select-option value="day">天</a-select-option>
+                  </a-select>
+                </a-input>
+              </a-form-model-item>
+            </a-col>
+            <a-col :span="6">
+              <a-form-model-item label="出生日期" prop="patientBirth">
+                <a-date-picker valueFormat="value" v-model="form.patientBirth" :disabled-date="disabledDate" type="date" style="width: 100%" size="large" @change="changeDate" />
+              </a-form-model-item>
+            </a-col>
+          </a-row>
+          <a-row class="form-row" :gutter="16">
+            <a-col :span="6">
+              <a-form-model-item label="性别" prop="patientSex">
+                <a-select v-model="form.patientSex" placeholder="请选择患者性别" size="large">
+                  <a-select-option v-for="item in sexList" :key="item.value">{{item.desc}}</a-select-option>
                 </a-select>
-              </a-input>
-            </a-form-model-item>
-          </a-col>
-          <a-col :span="6">
-            <a-form-model-item label="出生日期" prop="patientBirth">
-              <a-date-picker valueFormat="value" v-model="form.patientBirth" :disabled-date="disabledDate" type="date" style="width: 100%" size="large" @change="changeDate" />
-            </a-form-model-item>
-          </a-col>
-        </a-row>
-        <a-row class="form-row" :gutter="16">
-          <a-col :span="6">
-            <a-form-model-item label="性别" prop="patientSex">
-              <a-select v-model="form.patientSex" placeholder="请选择患者性别" size="large">
-                <a-select-option v-for="item in sexList" :key="item.value">{{item.desc}}</a-select-option>
-              </a-select>
-            </a-form-model-item>
-          </a-col>
-          <a-col :span="6">
-            <a-form-model-item label="手机号码" prop="patientMobile">
-              <a-input v-model="form.patientMobile" placeholder="请输入手机号码" size="large"></a-input>
-            </a-form-model-item>
-          </a-col>
-          <a-col :span="6">
-            <a-form-model-item label="患者卡号" prop="patientCardNo">
-              <a-input v-model="form.patientCardNo" placeholder="请输入患者卡号" size="large"></a-input>
-            </a-form-model-item>
-          </a-col>
-          <a-col :span="6">
-            <a-form-model-item label="接诊类型" prop="receiveTypeId">
-              <a-select v-model="form.receiveTypeId" placeholder="请选择" size="large" @change="handleChangeType">
-                <a-select-option v-for="item in typesList" :key="item.typeCode"> {{item.typeName}} </a-select-option>
-              </a-select>
-            </a-form-model-item>
-          </a-col>
-        </a-row>
-        <a-row class="form-row" :gutter="16">
-          <a-col :span="12">
-            <a-form-model-item label="地址" prop="patientAddr">
-              <a-input-group compact size="large">
-                <!-- <a-cascader :options="options" placeholder="请选择" @change="onChangeAddr" v-model="choseAddr" style="width: 25%" /> -->
-                <a-cascader :options="options" :load-data="loadData" placeholder="请选择" change-on-select @change="onChangeAddr" v-model="choseAddr" style="width: 33%" />
-                <a-input @input="onInputAddr" v-model="form.patientAddr" style="width: 67%" placeholder="请输入详细地址" />
-              </a-input-group>
-            </a-form-model-item>
-          </a-col>
-          <a-col :span="6">
-            <a-form-model-item label="初复诊" prop="visitType">
-              <a-radio-group button-style="solid" v-model="form.visitType" style="width:100%;" size="large">
-                <a-radio-button style="width:50%;" value="0">
-                  初诊
-                </a-radio-button>
-                <a-radio-button style="width:50%;" value="1">
-                  复诊
-                </a-radio-button>
-              </a-radio-group>
-            </a-form-model-item>
-          </a-col>
-          <a-col :span="6">
-            <a-form-model-item label="确定接诊" required>
-              <a-button class="confirmBtn" :loading="iconLoadingConfirmInfo" @click="clickConfirmInfo" style="width:100%;" size="large">接诊</a-button>
-            </a-form-model-item>
-          </a-col>
-        </a-row>
+              </a-form-model-item>
+            </a-col>
+            <a-col :span="6">
+              <a-form-model-item label="手机号码" prop="patientMobile">
+                <a-input v-model="form.patientMobile" placeholder="请输入手机号码" size="large"></a-input>
+              </a-form-model-item>
+            </a-col>
+            <a-col :span="6">
+              <a-form-model-item label="患者卡号" prop="patientCardNo">
+                <a-input v-model="form.patientCardNo" placeholder="请输入患者卡号" size="large"></a-input>
+              </a-form-model-item>
+            </a-col>
+            <a-col :span="6">
+              <a-form-model-item label="接诊类型" prop="receiveTypeId">
+                <a-select :disabled="!receiveTypeFlag" v-model="form.receiveTypeId" placeholder="请选择" size="large" @change="handleChangeType">
+                  <a-select-option v-for="item in typesList" :key="item.typeCode" :disabled="item.typeCode===200 || item.typeCode===300"> {{item.typeName}} </a-select-option>
+                </a-select>
+              </a-form-model-item>
+            </a-col>
+          </a-row>
+          <a-row class="form-row" :gutter="16">
+            <a-col :span="12">
+              <a-form-model-item label="地址" prop="patientAddr">
+                <a-input-group compact size="large">
+                  <!-- <a-cascader :options="options" placeholder="请选择" @change="onChangeAddr" v-model="choseAddr" style="width: 25%" /> -->
+                  <a-cascader :options="options" :load-data="loadData" placeholder="请选择" change-on-select @change="onChangeAddr" v-model="choseAddr" style="width: 33%" />
+                  <a-input @input="onInputAddr" v-model="form.patientAddr" style="width: 67%" placeholder="请输入详细地址" />
+                </a-input-group>
+              </a-form-model-item>
+            </a-col>
+            <a-col :span="6">
+              <a-form-model-item label="初复诊" prop="visitType">
+                <a-radio-group button-style="solid" v-model="form.visitType" style="width:100%;" size="large">
+                  <a-radio-button style="width:50%;" value="0">
+                    初诊
+                  </a-radio-button>
+                  <a-radio-button style="width:50%;" value="1">
+                    复诊
+                  </a-radio-button>
+                </a-radio-group>
+              </a-form-model-item>
+            </a-col>
+            <a-col :span="6">
+              <a-form-model-item label="确定接诊" required>
+                <a-button class="confirmBtn" :loading="iconLoadingConfirmInfo" @click="clickConfirmInfo" style="width:100%;" size="large">接诊</a-button>
+              </a-form-model-item>
+            </a-col>
+          </a-row>
 
-        <a-form-model-item :wrapper-col="{ span: 14, offset: 4 }"></a-form-model-item>
-      </a-form-model>
+          <a-form-model-item :wrapper-col="{ span: 14, offset: 4 }"></a-form-model-item>
+        </a-form-model>
 
-      <a-form-model ref="ruleForm2" :model="form2" :rules="rules2" layout="vertical">
-        <a-row class="form-row" :gutter="16">
-          <a-col :span="12">
-            <a-form-model-item label="诊断" prop="diagnosis">
-              <a-select :disabled="disabledBtn" v-model="form2.diagnosis" mode="tags" style="width: 100%" :token-separators="[',','，']" @change="handleChange" size="large">
-                <a-select-option v-for="item in diagnosisList" :key="item">{{ item }}</a-select-option>
-              </a-select>
-            </a-form-model-item>
-          </a-col>
-          <a-col :span="12">
-            <a-form-model-item label="医嘱" prop="doctorAdvice">
-              <a-select :disabled="disabledBtn" v-model="form2.doctorAdvice" mode="tags" style="width: 100%" :token-separators="[',','，']" @change="handleChange" size="large">
-                <a-select-option v-for="item in adviceList" :key="item">{{ item }}</a-select-option>
-              </a-select>
-            </a-form-model-item>
-          </a-col>
-        </a-row>
-      </a-form-model>
+        <!-- <a-form-model ref="ruleForm2" :model="form2" :rules="rules2" layout="vertical">
+          <a-row class="form-row" :gutter="16">
+            <a-col :span="12">
+              <a-form-model-item label="诊断" prop="diagnosis">
+                <a-select :disabled="disabledBtn" v-model="form2.diagnosis" mode="tags" style="width: 100%" :token-separators="[',','，']" @change="handleChange" size="large">
+                  <a-select-option v-for="item in diagnosisList" :key="item">{{ item }}</a-select-option>
+                </a-select>
+              </a-form-model-item>
+            </a-col>
+            <a-col :span="12">
+              <a-form-model-item label="医嘱" prop="doctorAdvice">
+                <a-select :disabled="disabledBtn" v-model="form2.doctorAdvice" mode="tags" style="width: 100%" :token-separators="[',','，']" @change="handleChange" size="large">
+                  <a-select-option v-for="item in adviceList" :key="item">{{ item }}</a-select-option>
+                </a-select>
+              </a-form-model-item>
+            </a-col>
+          </a-row>
+        </a-form-model> -->
+      </div>
+      <div :class="['chatFlex',{chatContent: openChat}]">
+        <conversation ref="conversationChild"></conversation>
+      </div>
     </div>
 
     <!--底部浮动编辑-->
@@ -176,15 +188,16 @@
         <span style="margin-right: 15px" @click="showModalSave">
           <a-icon type="save" theme="filled" />存为模板
         </span>
-        <a-button :disabled="disabledBtn" :class="['saveBtn', {disabledBtn: disabledBtn}]" icon="save" :loading="iconLoading1" @click="saveLoading">{{ save }}</a-button>
-        <a-button :disabled="disabledBtn" :class="['endBtn', {disabledBtn: disabledBtn}]" icon="poweroff" :loading="iconLoading2" @click="endLoading">{{ end }}</a-button>
+        <a-button v-if="tabs === 'a'" :disabled="disabledBtn" :class="['saveBtn', {disabledBtn: disabledBtn}]" icon="save" @click="TemporarySave">暂存</a-button>
+        <a-button :disabled="disabledBtn" :class="['saveBtn', {disabledBtn: disabledBtn}]" icon="save" @click="saveLoading">{{ save }}</a-button>
+        <a-button :disabled="disabledBtn" :class="['endBtn', {disabledBtn: disabledBtn}]" icon="poweroff" :loading="iconLoading1" @click="endLoading">{{ end }}</a-button>
       </div>
     </div>
 
     <!--添加处方-->
     <div class="prescriptionBox">
       <a-spin :spinning="spinning">
-        <router-view :disabledBtn="disabledBtn" :outpatientNo="outpatientNo" :patientId="patientId" :regOrderNo="regOrderNo" v-on:caseForm="caseForm" v-on:recipe="recipe" ref="childRules"></router-view>
+        <router-view :disabledBtn="disabledBtn" :outpatientNo="outpatientNo" :patientId="patientId" :regOrderNo="regOrderNo" v-on:caseForm="caseForm" v-on:recipe="recipe" ref="childRules" v-on:TemporarySave="TemporarySave"></router-view>
       </a-spin>
     </div>
 
@@ -352,6 +365,9 @@
 <script>
 // import options from '@/dist/data.js'
 import moment from 'moment'
+import conversation from '@/components/conversation'
+import CallbyVideo from '@/components/CallbyVideo'
+import { getUserSigbyOrder } from '@/api/chat'
 import {
   getReceiveDiagnosis,
   getReceiveAdvice,
@@ -362,8 +378,10 @@ import {
   getQueryRegister,
   getWorkbenchReceive,
   getReceivePatientInfo,
+  tSaveReceivePrescription,
   saveReceivePrescription,
   getRecipeInfo,
+  getReceiveSickInfo,
 } from '@/api/admission'
 import { getSexList, getTreatTypes, getProvinceList, getCityList } from '@/api/common'
 import { getPatientReceive } from '@/api/patient'
@@ -492,6 +510,10 @@ for (let i = 0; i < 3; ++i) {
 export default {
   name: 'Admission',
   inject: ['reloadCard'],
+  components: {
+    conversation,
+    CallbyVideo,
+  },
   props: {
     collapsed: Boolean,
   },
@@ -508,6 +530,7 @@ export default {
       }
     }
     return {
+      openChat: false,
       spinning: false,
       page: '',
       orderNo: '',
@@ -534,8 +557,9 @@ export default {
       caseData,
       save: '保存',
       end: '结束就诊',
+      iconLoading: false,
+      // iconLoading1: false,
       iconLoading1: false,
-      iconLoading2: false,
       options: [],
       bottom: 15,
       defaultValue: 'year',
@@ -548,6 +572,7 @@ export default {
         'https://gw.alipayobjects.com/zos/rmsportal/WdGqmHpayyMjiEhcKoVE.png',
         'https://gw.alipayobjects.com/zos/rmsportal/WdGqmHpayyMjiEhcKoVE.png',
       ],
+      sickInfo: {}, //就诊信息
       choseAddr: [],
       // choseAddrStr: '',
       // inputAddr: '',
@@ -557,6 +582,7 @@ export default {
       // cityListt: [],
       diagnosisList: [],
       adviceList: [],
+      receiveTypeFlag: true,
       form: {
         patientId: '',
         patientName: '',
@@ -605,7 +631,7 @@ export default {
           {
             required: true,
             validator: validateIdCard,
-            message: '请输入身份证号码',
+            message: '请输入正确身份证号码',
             trigger: 'change',
           },
         ],
@@ -656,8 +682,17 @@ export default {
       caseFormInfo: {},
       recipeInfo: [],
       disabledBtn: true,
+      videoVisible: false, // 视频对话
     }
   },
+  // beforeDestroy() {
+  //   console.log(this.regOrderNo,this.recipeInfo,this.outpatientNo);
+  //   if (this.regOrderNo && this.recipeInfo!==[] && this.outpatientNo) {
+  //     if (confirm('离开此页面吗前是否暂存您的处方信息？') == true) {
+  //       this.TemporarySave()
+  //     }
+  //   }
+  // },
   created() {
     if (this.$route.name == 'CaseHistory') {
       this.tabs = 'b'
@@ -701,16 +736,14 @@ export default {
               : ''
           )
         this.options = option
-
         // 获取省市列表之后再获取患者信息
-        if (
-          this.$route.params.patientId &&
-          this.$route.params.regOrderNo &&
-          this.$route.params.outpatientNo
-        ) {
+        if (this.$route.params.patientId && this.$route.params.regOrderNo) {
           this.patientId = this.$route.params.patientId
           this.regOrderNo = this.$route.params.regOrderNo
-          this.outNo = this.$route.params.outpatientNo
+          if (this.$route.params.outpatientNo) {
+            this.outNo = this.$route.params.outpatientNo
+          }
+          // 从接诊工作台接诊
           this.getWorkbenchReceive()
         } else if (this.$route.params.patientId) {
           this.patientId = this.$route.params.patientId
@@ -718,6 +751,8 @@ export default {
             if (res.success) {
               let data = res.data
               this.form = data
+              // 搜索患者
+              this.searchPatient()
               if (data.provinceCode) {
                 const list = this.options.filter((item) => item.value == data.provinceCode)
                 this.loadData(list)
@@ -725,6 +760,14 @@ export default {
               }
             }
           })
+        } else if (this.$route.query.patientInfo) {
+          if (typeof this.$route.query.patientInfo === 'object') {
+            this.writeForm(this.$route.query.patientInfo).then((res) => {
+              this.clickConfirmInfo()
+            })
+          } else {
+            this.$route.query.patientInfo = null
+          }
         }
       }
     })
@@ -746,24 +789,36 @@ export default {
         }
       })
     },
+    // 接诊工作台进入获取数据
     getWorkbenchReceive() {
       getWorkbenchReceive(this.outNo, this.patientId, this.regOrderNo).then((res) => {
         if (res.success) {
-          let data = res.data.patient
-          this.form = data
-          if (data.provinceCode) {
-            const list = this.options.filter((item) => item.value == data.provinceCode)
-            this.loadData(list)
-            this.choseAddr.push(data.provinceCode, data.cityCode)
-          }
+          this.writeForm(res.data)
+        } else {
+          this.$message.warning(res.message)
         }
       })
+    },
+    // 填充表单
+    writeForm(info) {
+      let data = info.patient
+      this.form = data
+      this.receiveTypeFlag = info.patient.receiveTypeFlag
+      // 搜索患者
+      this.searchPatient()
+      if (data.provinceCode) {
+        const list = this.options.filter((item) => item.value == data.provinceCode)
+        this.loadData(list)
+        this.choseAddr.push(data.provinceCode, data.cityCode)
+      }
+      return Promise.resolve(/* 这里是需要返回的数据*/)
     },
     searchPatientChange(value) {
       this.searchPatient()
     },
     // 选择搜索到的患者
     selectPatient(value, option) {
+      this.regOrderNo = ''
       if (option.data.key == value) {
         this.form.patientName = option.componentOptions.propsData.title
         let data = this.dataSource.filter((item) => item.patientId == value)[0]
@@ -823,12 +878,13 @@ export default {
     //     }
     //   })
     // },
+    // 确定接诊
     clickConfirmInfo() {
-      this.regOrderNo = ''
-      this.iconLoadingConfirmInfo = true
+      // this.regOrderNo = ''
       // this.disabledBtn = false
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
+          this.iconLoadingConfirmInfo = true
           this.spinning = true
           getReceivePatientInfo(this.form, this.regOrderNo).then((res) => {
             if (res.success) {
@@ -839,6 +895,20 @@ export default {
               this.$message.success('提交成功！')
               getRecipeInfo(this.outpatientNo, this.patientId, this.regOrderNo).then((res) => {
                 if (res.success && res.data) {
+                  if (this.form.receiveTypeId === 200 || this.form.receiveTypeId === 300) {
+                    getUserSigbyOrder(this.regOrderNo).then((res) => {
+                      if (res.success) {
+                        this.openChat = true
+                        this.$refs.conversationChild.showDrawer(
+                          res.data.fromAccount,
+                          res.data.userSig,
+                          res.data.toAccount
+                        )
+                      } else {
+                        this.$message.warning(res.message)
+                      }
+                    })
+                  }
                   if (!res.data.diagnosis) {
                     this.form2.diagnosis = undefined
                   } else {
@@ -849,6 +919,8 @@ export default {
                   } else {
                     this.form2.doctorAdvice = res.data.doctorAdvice
                   }
+                } else {
+                  this.$message.warning('处方信息获取失败！')
                 }
                 this.spinning = false
               })
@@ -859,7 +931,6 @@ export default {
             }
           })
         } else {
-          this.iconLoadingConfirmInfo = false
           this.$message.warning('请填写信息后再提交')
           return false
         }
@@ -878,7 +949,7 @@ export default {
       }
     },
     handleChange(value) {
-      console.log(`selected ${value}`)
+      // console.log(`selected ${value}`)
     },
     disabledDate(current) {
       // Can not select days before today and today
@@ -911,7 +982,7 @@ export default {
       let sex = null
       let birth = null
       // 当保存时不调用此方法
-      if (!this.iconLoading1 && !this.iconLoadingConfirmInfo) {
+      if (!this.iconLoading && !this.iconLoadingConfirmInfo) {
         if (value === 18) {
           birth =
             idCard.substring(6, 10) +
@@ -942,104 +1013,134 @@ export default {
       }
     },
     handleSelect(item) {
-      console.log(item)
+      // console.log(item)
     },
+    // 暂存
+    TemporarySave() {
+      this.iconLoading = true
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          tSaveReceivePrescription(this.outpatientNo, this.form, this.recipeInfo, this.regOrderNo)
+            .then((res) => {
+              if (res.success) {
+                this.iconLoading = false
+                this.$message.success('暂存处方成功')
+                // this.$refs['childRules'].getRecipeInfo()
+              } else {
+                this.iconLoading = false
+                this.$message.error(res.message)
+              }
+            })
+            .catch((err) => {
+              this.iconLoading = false
+              this.$message.error('请求失败！')
+            })
+        } else {
+          this.iconLoading = false
+          this.$message.warning('请填写信息后再保存')
+          return false
+        }
+      })
+    },
+    // 保存
     saveLoading() {
-      this.iconLoading1 = true
+      this.iconLoading = true
       this.save = '保存中'
       // this.iconLoading1 = false
       // this.save = '保存'
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
-          this.$refs.ruleForm2.validate((valid) => {
-            if (valid) {
-              if (this.tabs == 'a') {
-                saveReceivePrescription(
-                  this.form2.diagnosis,
-                  this.form2.doctorAdvice,
-                  this.outpatientNo,
-                  this.form,
-                  this.recipeInfo,
-                  this.regOrderNo
-                )
-                  .then((res) => {
-                    if (res.success) {
-                      this.iconLoading1 = false
-                      this.save = '保存'
-                      this.$message.success('保存处方成功')
-                      this.$refs['childRules'].getRecipeInfo()
-                    } else {
-                      this.iconLoading1 = false
-                      this.save = '保存'
-                      this.$message.error(res.message)
-                    }
-                  })
-                  .catch((err) => {
-                    this.iconLoading1 = false
-                    this.save = '保存'
-                    this.$message.error('请求失败！')
-                  })
-              } else {
-                let flag = this.$refs['childRules'].caseValidateForm()
-                if (flag) {
-                  saveReceiveRecords({
-                    diagnosis: this.form2.diagnosis,
-                    doctorAdvice: this.form2.doctorAdvice,
-                    firstVisit: this.form.visitType,
-                    medical: this.caseFormInfo.form,
-                    outpatientNo: this.outpatientNo,
-                    patient: this.form,
-                    physique: this.caseFormInfo.physique,
-                    recipeOrderNo: this.recipeOrderNo,
-                    regOrderNo: this.regOrderNo,
-                  })
-                    .then((res) => {
-                      if (res.success) {
-                        this.iconLoading1 = false
-                        this.save = '保存'
-                        this.$message.success('保存病历成功')
-                      } else {
-                        this.iconLoading1 = false
-                        this.save = '保存'
-                        this.$message.error(res.message)
-                      }
-                    })
-                    .catch((err) => {
-                      this.iconLoading1 = false
-                      this.save = '保存'
-                      this.$message.error('请求失败！')
-                    })
-                } else {
-                  this.iconLoading1 = false
+          // this.$refs.childRules.$refs.ruleForm2.validate((valid) => {
+          //   if (valid) {
+          if (this.tabs == 'a') {
+            saveReceivePrescription(
+              // this.form2.diagnosis,
+              // this.form2.doctorAdvice,
+              this.outpatientNo,
+              this.form,
+              this.recipeInfo,
+              this.regOrderNo
+            )
+              .then((res) => {
+                if (res.success) {
+                  this.iconLoading = false
                   this.save = '保存'
-                  this.$message.warning('请填写信息后再保存')
-                  return false
+                  this.$message.success('保存处方成功')
+                  this.$refs['childRules'].getRecipeInfo()
+                } else {
+                  this.iconLoading = false
+                  this.save = '保存'
+                  this.$message.error(res.message)
                 }
-              }
+              })
+              .catch((err) => {
+                this.iconLoading = false
+                this.save = '保存'
+                this.$message.error('请求失败！')
+              })
+          } else {
+            let flag = this.$refs['childRules'].caseValidateForm()
+            if (flag) {
+              saveReceiveRecords({
+                diagnosis: this.form2.diagnosis,
+                doctorAdvice: this.form2.doctorAdvice,
+                firstVisit: this.form.visitType,
+                medical: this.caseFormInfo.form,
+                outpatientNo: this.outpatientNo,
+                patient: this.form,
+                physique: this.caseFormInfo.physique,
+                recipeOrderNo: this.recipeOrderNo,
+                regOrderNo: this.regOrderNo,
+              })
+                .then((res) => {
+                  if (res.success) {
+                    this.iconLoading = false
+                    this.save = '保存'
+                    this.$message.success('保存病历成功')
+                  } else {
+                    this.iconLoading = false
+                    this.save = '保存'
+                    this.$message.error(res.message)
+                  }
+                })
+                .catch((err) => {
+                  this.iconLoading = false
+                  this.save = '保存'
+                  this.$message.error('请求失败！')
+                })
             } else {
-              this.iconLoading1 = false
+              this.iconLoading = false
               this.save = '保存'
               this.$message.warning('请填写信息后再保存')
               return false
             }
-          })
+          }
+          //   } else {
+          //     this.iconLoading1 = false
+          //     this.save = '保存'
+          //     this.$message.warning('请填写信息后再保存')
+          //     return false
+          //   }
+          // })
         } else {
-          this.iconLoading1 = false
+          this.iconLoading = false
           this.save = '保存'
           this.$message.warning('请填写信息后再保存')
           return false
         }
       })
     },
+    // 结束就诊
     endLoading() {
-      this.iconLoading2 = true
+      this.iconLoading1 = true
       this.end = '保存中'
       setTimeout(() => {
-        this.iconLoading2 = false
+        this.iconLoading1 = false
         this.end = '结束就诊'
         this.$confirm({
           title: '结束确认',
           content: '确定要结束此次就诊吗？',
+          centered: true,
           onOk: () => {
             getReceiveFinish(this.regOrderNo).then((res) => {
               if (res.success) {
@@ -1057,8 +1158,24 @@ export default {
         })
       }, 500)
     },
+    // 图文资料对话框
     showModal() {
       this.visible = true
+      getReceiveSickInfo(this.regOrderNo).then((res) => {
+        this.sickInfo = res.data
+        if (!res.success) {
+          this.$message.warning(res.message)
+        }
+      })
+    },
+    showTalkModal() {},
+    // 视频对话对话框
+    showVideo() {
+      this.videoVisible = true
+    },
+    videoHandleOk() {},
+    videoCancel() {
+      this.$refs.videoChild.leaveRoom()
     },
     showModalPr() {
       if (this.prtransfer == '处方调用') {
@@ -1071,8 +1188,8 @@ export default {
       this.visible = false
     },
     onChange(dates, dateStrings) {
-      console.log('From: ', dates[0], ', to: ', dates[1])
-      console.log('From: ', dateStrings[0], ', to: ', dateStrings[1])
+      // console.log('From: ', dates[0], ', to: ', dates[1])
+      // console.log('From: ', dateStrings[0], ', to: ', dateStrings[1])
     },
     handleChangeType(value) {
       this.form.receiveTypeId = value
@@ -1114,10 +1231,10 @@ export default {
       this.form.patientAddr = e.target.value
     },
     onSearch(value) {
-      console.log(value)
+      // console.log(value)
     },
     onChangeSearch(e) {
-      console.log(e.target.value)
+      // console.log(e.target.value)
     },
     customExpandIcon(props) {
       // if(props.record.children.length > 0){
@@ -1228,6 +1345,7 @@ export default {
   border: 1px solid #656ee8;
 }
 .admissionForm {
+  display: flex;
   margin-top: 25px;
 }
 .ant-form-item {
@@ -1256,7 +1374,7 @@ export default {
   z-index: 10;
 }
 .bottomsBox {
-  width: 46%;
+  width: 52%;
   padding: 0 30px;
   line-height: 60px;
   float: right;
@@ -1313,10 +1431,15 @@ export default {
 }
 .prPic {
   display: flex;
-  justify-content: space-between;
+  /* justify-content: space-between; */
+  flex-direction: row;
+  flex-wrap: wrap;
 }
 .prPic img {
-  width: 20%;
+  max-width: 10%;
+  /* height: ; */
+  margin-right: 1%;
+  margin-bottom: 10px;
 }
 .ant-divider {
   height: auto;
@@ -1356,5 +1479,19 @@ a {
   top: 60%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+.formFlex {
+  flex: 1;
+}
+.chatFlex {
+  flex: 0;
+}
+.formContent {
+  width: 60%;
+  flex: 6;
+}
+.chatContent {
+  width: 40%;
+  flex: 4;
 }
 </style>

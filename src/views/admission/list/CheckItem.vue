@@ -1,5 +1,23 @@
 <template>
   <div class="traditional">
+    <a-form-model ref="recipeRuleForm" :model="recipe" :rules="recipeRules" layout="vertical">
+      <a-row class="form-row" :gutter="16">
+        <a-col :span="12">
+          <a-form-model-item label="诊断" prop="diagnosis">
+            <a-select :disabled="disabledBtn" v-model="recipe.diagnosis" mode="tags" style="width: 100%" :token-separators="[',','，']" @change="handleChange" size="large">
+              <a-select-option v-for="item in diagnosisList" :key="item">{{ item }}</a-select-option>
+            </a-select>
+          </a-form-model-item>
+        </a-col>
+        <a-col :span="12">
+          <a-form-model-item label="医嘱" prop="doctorAdvice">
+            <a-select :disabled="disabledBtn" v-model="recipe.doctorAdvice" mode="tags" style="width: 100%" :token-separators="[',','，']" @change="handleChange" size="large">
+              <a-select-option v-for="item in adviceList" :key="item">{{ item }}</a-select-option>
+            </a-select>
+          </a-form-model-item>
+        </a-col>
+      </a-row>
+    </a-form-model>
     <a-row :gutter="16">
       <a-col :span="16">
         <div class="leftBox">
@@ -12,34 +30,39 @@
             </div>
           </div>
           <div class="leftTable">
-            <a-table :columns="columns" :data-source="data" :pagination="false" :scroll="{ y: 350 }" style="height: 350px" :rowKey="(record, index) => {return record.examineId;}">
-              <template slot="partName" slot-scope="text,record">
-                <a-auto-complete :disabled="recipe.recipeOrderStatus!=0" v-model="record.partName" style="width: 100%;color:#000;" optionLabelProp="title" @select="(value, option)=>selectPatient(value,option,record)" @change="(value)=>partInput(value,record)">
+            <a-table :columns="columns" :data-source="data" :pagination="false" :scroll="{ y: 350 }" style="height: 350px" :rowKey="(record, index) => {return index;}">
+              <template slot="checkPartName" slot-scope="text,record">
+                <!-- <a-auto-complete :disabled="recipe.recipeOrderStatus!=0" v-model="record.partName" style="width: 100%;color:#000;" optionLabelProp="value" @select="(value, option)=>selectPatient(value,option,record)" @search="(value)=>partInput(value,record)">
                   <template slot="dataSource">
-                    <a-select-option v-for="item in dataSource" :key="`${item.id}`" :title="item.partName">
+                    <a-select-option v-for="item in dataSource" :key="item.partName" :title="`${item.id}`">
                       {{item.partName}}
                     </a-select-option>
                   </template>
-                </a-auto-complete>
+                </a-auto-complete> -->
+                <a-select style="width:100%;" optionLabelProp="title" show-search placeholder="选择部位" :show-arrow="false" :filter-option="false" v-model="record.checkPartName" @select="(value, option)=>selectPatient(value,option,record)" @search="(value)=>partInput(value,record)">
+                  <a-select-option v-for="item in dataSource" :key="item.id" :title="item.partName">
+                    {{item.partName}}
+                  </a-select-option>
+                </a-select>
               </template>
-              <template slot="number" slot-scope="text, record">
-                <a-input :disabled="recipe.recipeOrderStatus!=0" @change="(e) => quantityChange(e, record)" style="width: 70%;color:#000;" v-model="record.number"></a-input>
+              <template slot="nums" slot-scope="text, record">
+                <a-input :disabled="recipe.recipeOrderStatus!=0" @change="(e) => quantityChange(e, record)" style="width: 70%;color:#000;" v-model="record.nums"></a-input>
                 <span>{{ record.unit }}</span>
               </template>
-              <template slot="examineType" slot-scope="text">
+              <template slot="statItemName" slot-scope="text">
                 {{text}}
               </template>
-              <template slot="examinePrice" slot-scope="text, record">
-                <a-input disabled style="width: 100%;color:#000;" v-model="record.examinePrice" @change="(e) => priceChange(e, record)"></a-input>
+              <template slot="price" slot-scope="text, record">
+                <a-input disabled style="width: 100%;color:#000;" v-model="record.price" @change="(e) => priceChange(e, record)"></a-input>
               </template>
-              <template slot="examineFee" slot-scope="text,record">
-                <a-input disabled style="width: 100%;color:#000;" v-model="record.examineFee"></a-input>
+              <template slot="fee" slot-scope="text,record">
+                <a-input disabled style="width: 100%;color:#000;" v-model="record.fee"></a-input>
               </template>
-              <template slot="remark" slot-scope="text,record">
-                <a-input :disabled="recipe.recipeOrderStatus!=0" style="width: 100%;color:#000;" v-model="record.remark"></a-input>
+              <template slot="remarks" slot-scope="text,record">
+                <a-input :disabled="recipe.recipeOrderStatus!=0" style="width: 100%;color:#000;" v-model="record.remarks"></a-input>
               </template>
               <template slot="delete" slot-scope="text, record">
-                <a-popconfirm v-show="recipe.recipeOrderStatus==0" v-if="data.length" title="确定删除吗?" @confirm="() => onDelete(record.examineId,record.recipeItemId)">
+                <a-popconfirm v-show="recipe.recipeOrderStatus==0" v-if="data.length" title="确定删除吗?" @confirm="() => onDelete(record)">
                   <a :disabled="recipe.recipeOrderStatus!=0" href="javascript:;" style="font-size: 20px; color: #656ee8">
                     <a-icon type="delete"></a-icon>
                   </a>
@@ -50,13 +73,13 @@
           <div class="leftBottom">
             <div class="leftBottomPrice">
               <span>此方合计：<span style="color: red; font-weight: bold">{{
-                  prPrice
+                  Number(prPrice).toFixed(2)
                 }}</span>
                 元；</span>
               <span>共
                 <span style="color: red; font-weight: bold">{{ allPrInfo.total }}</span>
                 个处方，共计：<span style="color: red; font-weight: bold">{{
-                  allPrInfo.totalFee
+                  Number(allPrInfo.totalFee).toFixed(2)
                 }}</span>
                 元
               </span>
@@ -78,8 +101,8 @@
             <a-table :loading="drugLoading" :row-selection="{
                 selectedRowKeys: selectedRowKeys2,
                 onChange: onSelectChange2,
-              }" :columns="columns2" :data-source="data2" @change="changeDurgTable" :pagination="{ showQuickJumper: true, pageSize: 10, total: drugTotal, simple: true, size: 'small', }" :scroll="{ y: 375 }" :rowKey="
-              (record, index) => {return record.id;}">
+              }" :columns="columns2" :data-source="data2" @change="changeDurgTable" :pagination="{ showQuickJumper: true, pageSize: 10, total: drugTotal, current:queryDrugList.page,  simple: true, size: 'small', }" :scroll="{ y: 375 }" :rowKey="
+              (record, index) => {return index;}">
             </a-table>
           </div>
           <div class="rightBoxBottom">
@@ -103,53 +126,53 @@ const columns = [
   },
   {
     title: '名称',
-    dataIndex: 'examineName',
+    dataIndex: 'productName',
   },
   {
     title: '部位',
-    dataIndex: 'partName',
+    dataIndex: 'checkPartName',
     scopedSlots: {
-      customRender: 'partName',
+      customRender: 'checkPartName',
     },
   },
   {
     title: '数量',
     width: 80,
-    dataIndex: 'number',
+    dataIndex: 'nums',
     scopedSlots: {
-      customRender: 'number',
+      customRender: 'nums',
     },
   },
   {
     title: '类型',
-    width: 120,
-    dataIndex: 'examineType',
+    // width: 120,
+    dataIndex: 'statItemName',
     scopedSlots: {
-      customRender: 'examineType',
+      customRender: 'statItemName',
     },
   },
   {
     title: '单价',
     width: 70,
-    dataIndex: 'examinePrice',
+    dataIndex: 'price',
     scopedSlots: {
-      customRender: 'examinePrice',
+      customRender: 'price',
     },
   },
   {
     title: '金额',
     width: 70,
-    dataIndex: 'examineFee',
+    dataIndex: 'fee',
     scopedSlots: {
-      customRender: 'examineFee',
+      customRender: 'fee',
     },
   },
   {
     title: '备注',
     width: 100,
-    dataIndex: 'remark',
+    dataIndex: 'remarks',
     scopedSlots: {
-      customRender: 'remark',
+      customRender: 'remarks',
     },
   },
   {
@@ -162,29 +185,14 @@ const columns = [
   },
 ]
 
-const data = []
-// for (let i = 0; i < 2; i++) {
-//   data.push({
-//     examineFee: '30.00',
-//     examineName: '拔牙',
-//     examinePrice: '30.00',
-//     examineType: undefined,
-//     itemTypeId: '',
-//     number: 1,
-//     part: '',
-//     recipeItemId: i,
-//     remark: '',
-//   })
-// }
-
 const columns2 = [
   {
     title: '名称',
-    dataIndex: 'name',
+    dataIndex: 'productName',
   },
   {
     title: '类型',
-    dataIndex: 'itemType',
+    dataIndex: 'statItemName',
   },
   {
     title: '单位',
@@ -196,29 +204,27 @@ const columns2 = [
   },
 ]
 
-const data2 = []
-// for (let i = 0; i < 20; i++) {
-//   data2.push({
-//     key: i,
-//     name: '局部推拿',
-//     format: '检查费',
-//     stock: '次',
-//     price: '10',
-//   })
-// }
-
 export default {
   name: 'Examine',
-  props: ['prInfo', 'load', 'allPrInfo', 'allRecipe', 'theKey'],
+  props: [
+    'prInfo',
+    'load',
+    'allPrInfo',
+    'allRecipe',
+    'theKey',
+    'diagnosisList',
+    'adviceList',
+    'disabledBtn',
+  ],
   data() {
     return {
       catId: 4,
       addVisible: false,
       qtUnit: '次',
       dataSource: [],
-      data,
+      data: [],
       columns,
-      data2,
+      data2: [],
       columns2,
       selectedRowKeys: [], // Check here to configure the default column
       selectedRowKeys2: [],
@@ -249,7 +255,7 @@ export default {
           },
         ],
       },
-      prPrice: '0.00',
+      prPrice: 0,
       // prNum: 0,
       // sumPrice: '0.00',
       DrugCategoryList: [],
@@ -266,6 +272,8 @@ export default {
       recipe: {
         deptId: '',
         deptName: '',
+        diagnosis: [],
+        doctorAdvice: [],
         doctorId: '',
         doctorName: '',
         recipeAmount: '',
@@ -274,18 +282,17 @@ export default {
         recipeName: '',
         recipeOrderNo: '',
         recipeOrderStatus: 0,
-        recipeType: 0,
-        westernMedicine: [],
-        chineseMedicine: [],
-        examine: [],
+        recipeType: 4,
+        recipeItem: [],
       },
+      recipeRules: { diagnosis: [{ required: true, message: '请输入诊断', trigger: 'change' }] },
       drugTotal: 0,
     }
   },
   watch: {
     data: {
       handler(newVal, oldVal) {
-        this.recipe.examine = newVal
+        this.recipe.recipeItem = newVal
         this.recipe.recipeAmount = this.prPrice
         this.recipe.recipeCount = newVal.length
         if (this.allRecipe.length > this.theKey) {
@@ -294,13 +301,13 @@ export default {
             this.allPrInfo.total = this.allRecipe.length
             let sum = 0
             this.allRecipe.forEach((item) => {
-              let price = Number(item.recipeAmount)
+              let price = Number(item.recipeAmount) * 100
               sum += price
             })
-            this.allPrInfo.totalFee = sum
+            this.allPrInfo.totalFee = sum / 100
           })
         }
-        this.$emit('examine', this.recipe)
+        this.$emit('recipeItem', this.recipe)
       },
       deep: true,
     },
@@ -331,26 +338,33 @@ export default {
     this.recipe.doctorName = this.allPrInfo.doctorName
     if (this.prInfo && this.prInfo.recipeType == 4) {
       this.recipe = this.prInfo
-      this.form.deptName = this.prInfo.deptName
-      this.form.doctorName = this.prInfo.doctorName
+      // this.form.deptName = this.prInfo.deptName
+      // this.form.doctorName = this.prInfo.doctorName
       this.prPrice = this.prInfo.recipeAmount
-      if (this.prInfo.examine) {
-        // this.prInfo.examine.map((item) => {
-        //   item.examineType = Number(item.examineType)
+      if (this.prInfo.recipeItem) {
+        // this.prInfo.recipeItem.map((item) => {
+        //   item.statItemName = Number(item.statItemName)
         //   // item.rateName = Number(item.rateName)
         // })
-        this.data = this.prInfo.examine
+        this.data = this.prInfo.recipeItem
         this.getPrSumP()
       }
     }
   },
   methods: {
+    HandlerDiagnosis() {},
     getReceiveDrugList() {
       this.drugLoading = true
       getReceiveDrugList(this.queryDrugList).then((res) => {
-        this.data2 = res.data
+        this.data2 = res.data.map((item, index) => {
+          return {
+            id: index,
+            ...item,
+          }
+        })
         this.drugTotal = res.count
         this.drugLoading = false
+        this.selectedRowKeys2 = []
       })
     },
     // 搜索部位
@@ -360,8 +374,9 @@ export default {
       })
     },
     partInput(value, record) {
+      console.log(value)
       if (!value) {
-        record.partId = ''
+        record.checkPartId = ''
       }
       this.getBodyPart(value)
     },
@@ -371,41 +386,43 @@ export default {
       )
     },
     selectPatient(value, option, record) {
+      console.log(value, option, record)
+      this.getBodyPart()
       if (option.key == value) {
-        record.partId = option.key
-        record.partName = option.componentOptions.propsData.title
+        record.checkPartId = option.key
+        record.checkPartName = option.componentOptions.propsData.title
       }
     },
     onSelectChange(selectedRowKeys) {
-      console.log('selectedRowKeys changed: ', selectedRowKeys)
       this.selectedRowKeys = selectedRowKeys
     },
     onSelectChange2(selectedRowKeys) {
-      console.log('selectedRowKeys changed: ', selectedRowKeys)
       this.selectedRowKeys2 = selectedRowKeys
     },
     handleChange(value) {
       console.log(`selected ${value}`)
     },
+    // 切换分类
     handleChangeDrug(value) {
+      this.queryDrugList.page = 1
       this.queryDrugList.categoryId = value
       this.getReceiveDrugList()
     },
     quantityChange(e, record) {
       const value = e.target.value
-      record.number = value
-      record.examineFee = Number(value) * Number(record.examinePrice)
+      record.nums = value
+      record.fee = Number(value) * Number(record.price)
       this.getPrSumP()
     },
     priceChange(e, record) {
       const value = e.target.value
-      record.examinePrice = value
-      record.examineFee = Number(record.number) * Number(value)
+      record.price = value
+      record.fee = Number(record.nums) * Number(value)
       this.getPrSumP()
     },
-    onDelete(key, recipeItemId) {
-      if (recipeItemId) {
-        deleteRecipeItem(recipeItemId).then((res) => {
+    onDelete(record) {
+      if (record.recipeItemId) {
+        deleteRecipeItem(record.recipeItemId).then((res) => {
           if (res.success) {
             this.$message.success('删除成功！')
           } else {
@@ -414,14 +431,16 @@ export default {
         })
       }
       const data = [...this.data]
-      this.data = data.filter((item) => item.examineId !== key)
+      this.data = data.filter((item) => item.drugId !== record.drugId || item.id !== record.id)
       this.getPrSumP()
     },
     onSearch(value) {
+      this.queryDrugList.page = 1
       this.queryDrugList.keyWord = value
       this.getReceiveDrugList()
     },
     onChangeSearch(e) {
+      this.queryDrugList.page = 1
       this.queryDrugList.keyWord = e.target.value
       this.getReceiveDrugList()
     },
@@ -434,42 +453,79 @@ export default {
       if (this.selectedRowKeys2.length == 0) {
         this.$message.warning('请选择要添加的项目')
       } else {
-        let list = this.data2.map((data) => {
+        let list = this.data2.map((data, index) => {
           return {
-            examineFee: '',
-            examineId: data.id,
-            examineName: data.name,
-            examinePrice: data.price,
-            examineType: data.itemType,
-            itemTypeId: this.queryDrugList.categoryId,
-            number: '',
-            partId: '',
-            partName: '',
+            id: index,
+            // examineFee: '',
+            // examineId: data.drugId,
+            // examineName: data.productName,
+            // examinePrice: data.price,
+            // examineType: data.itemType,
+            // statItemName: data.statItemName,
+            // itemTypeId: this.queryDrugList.categoryId,
+            // number: '',
+            // partId: '',
+            // partName: '',
+            // recipeItemId: '',
+            // remark: '',
+            // statItemId: data.statItemId,
+            // unit: data.unit,
+
+            categoryId: data.categoryId,
+            checkPartId: data.checkPartId ? data.checkPartId : '',
+            checkPartName: data.checkPartName ? data.checkPartName : '',
+            code: data.code,
+            days: undefined,
+            dosageForm: data.dosageForm,
+            dosageNumber: data.dosageNumber ? data.dosageNumber : '',
+            drugId: data.drugId,
+            fee: '',
+            goodsName: data.goodsName,
+            manufactor: data.manufacturer ? data.manufacturer : '',
+            manufactorId: data.manufacturerId ? data.manufacturerId : '',
+            note: data.note,
+            nums: '',
+            price: data.price ? data.price : '',
+            productName: data.productName ? data.productName : '',
+            rateId: '',
+            rateName: undefined,
+            recipeId: '',
             recipeItemId: '',
-            remark: '',
-            statItemId: data.statItemId,
-            unit: data.unit,
+            remarks: '',
+            specs: data.specs,
+            statItemId: data.statItemId ? data.statItemId : '',
+            statItemName: data.statItemName ? data.statItemName : '',
+            unit: data.unit ? data.unit : '',
+            usageName: data.usageName ? data.usageName : '',
+            usageNumber: '',
+            usageUnit: data.usageUnit ? data.usageUnit : '',
+            usageId: data.usageId ? data.usageId : undefined,
           }
         })
         this.selectedRowKeys2.forEach((item) => {
-          let option = list.filter((data) => data.examineId == item)
-          if (this.data.filter((data) => data.examineId == item).length != 0) {
-            this.$message.info('处方中已有此项目，请不要重复添加！')
-          } else {
-            this.data.push(option[0])
-          }
+          let opt = this.data2.filter((data, index) => index === item)
+          opt.forEach((items) => {
+            let option = list.filter((data) => data.id === items.id)
+            console.log(items)
+            console.log(this.data)
+            if (this.data.filter((data) => data.drugId === items.drugId).length !== 0) {
+              this.$message.info('处方中已有此项目，请不要重复添加！')
+            } else {
+              this.data.push(option[0])
+            }
+          })
         })
       }
       this.selectedRowKeys2 = []
-      this.getPrSumP()
+      // this.getPrSumP()
     },
     getPrSumP() {
       let sum = 0
       this.data.forEach((item, index) => {
-        let price = Number(item.examineFee)
+        let price = Number(item.fee) * 100
         sum += price
       })
-      this.prPrice = sum
+      this.prPrice = sum / 100
     },
   },
 }

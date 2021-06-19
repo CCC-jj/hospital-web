@@ -13,7 +13,7 @@
     <div class="manageDown">
       <!--患者列表-->
       <a-spin :spinning="spinning">
-        <a-table :columns="columns" :data-source="tableData" @change="tableChange" :pagination="{ showQuickJumper: true, pageSize: 10, total: total, showTotal: ((total) => {
+        <a-table :columns="columns" :data-source="tableData" @change="tableChange" :pagination="{ showQuickJumper: true, pageSize: 10, total: total, current:params.page, showTotal: ((total) => {
         return `每页10条，共 ${total} 条`;
       }) }" :rowKey="
           (record, index) => {
@@ -141,10 +141,12 @@ export default {
       this.getMaintainList()
     },
     onSearch(value) {
+      this.params.page = 1
       this.params.content = value
       this.getMaintainList()
     },
     onChangeSearch(e) {
+      this.params.page = 1
       this.params.content = e.target.value
       this.getMaintainList()
     },

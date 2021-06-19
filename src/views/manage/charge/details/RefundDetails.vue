@@ -17,7 +17,7 @@
             <div class="refundInfo">
               <div>应收金额：{{orderInfo.receiveFee}} 元</div>
               <div>实收金额：{{orderInfo.payFee}} 元</div>
-              <div>可退全额：{{orderInfo.payFee}} 元</div>
+              <div>可退金额：{{canRefundFee}} 元</div>
               <div>支付方式：{{orderInfo.payMode}}</div>
             </div>
           </div>
@@ -33,8 +33,8 @@
             </div>
           </div> -->
           <div class="refundBottom">
-            <div><span class="refundBottomTitle">实退金额：</span>
-              <a-input style="width:80px;" :value="refund.actualRefund"></a-input> 元
+            <div><span class="refundBottomTitle">合计退费金额：</span>
+              <a-input disabled style="width:80px;" :value="refund.actualRefund"></a-input> 元
             </div>
             <div><span class="refundBottomTitle">退费方式：</span>
               <!-- <a-radio-group :options="plainOptions" :default-value="payTypesValue" @change="payTypesChange" /> -->
@@ -45,10 +45,11 @@
                 <a-radio :value="1">
                   现金
                 </a-radio>
-                <a-radio :disabled="orderInfo.payMode=='现金'" :value="2">
-                  {{orderInfo.payMode}}
+                <a-radio :disabled="orderInfo.payMode=='现金支付'" :value="2">
+                  <span v-if="orderInfo.payMode=='现金支付'">微信</span>
+                  <span v-else>{{orderInfo.payMode}}</span>
                 </a-radio>
-                <a-radio :disabled="orderInfo.payMode=='现金'" :value="3">
+                <a-radio :disabled="orderInfo.payMode=='现金支付'" :value="3">
                   银行卡
                 </a-radio>
               </a-radio-group>
@@ -396,6 +397,7 @@ export default {
       },
       plainOptions: [],
       orderInfo: {},
+      canRefundFee: 0,
       patientInfo: {},
       receiveInfo: {},
       panes: [],
@@ -539,7 +541,7 @@ export default {
       } else {
         record.refundPrice = value * record.price
       }
-      if (value == 0 || value == '') {
+      if (value == 0 || value == '' || record.refundPrice == 0) {
         this.selectedRowKeys = this.selectedRowKeys.filter((item) => item != record.recipeItemId)
       } else if (
         value > 0 &&
@@ -597,6 +599,7 @@ export default {
         })
         refundInfoConfirm({ items: this.refundInfoData, orderNo: this.orderNo }).then((res) => {
           if (res.success) {
+            this.canRefundFee = res.data
             this.visible = true
             let sum = 0
             this.refundInfoData.forEach((item) => {

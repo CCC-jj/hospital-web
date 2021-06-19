@@ -1,5 +1,23 @@
 <template>
   <div class="traditional">
+    <a-form-model ref="recipeRuleForm" :model="recipe" :rules="recipeRules" layout="vertical">
+      <a-row class="form-row" :gutter="16">
+        <a-col :span="12">
+          <a-form-model-item label="诊断" prop="diagnosis">
+            <a-select :disabled="disabledBtn" v-model="recipe.diagnosis" mode="tags" style="width: 100%" :token-separators="[',','，']" @change="handleChange" size="large">
+              <a-select-option v-for="item in diagnosisList" :key="item">{{ item }}</a-select-option>
+            </a-select>
+          </a-form-model-item>
+        </a-col>
+        <a-col :span="12">
+          <a-form-model-item label="医嘱" prop="doctorAdvice">
+            <a-select :disabled="disabledBtn" v-model="recipe.doctorAdvice" mode="tags" style="width: 100%" :token-separators="[',','，']" @change="handleChange" size="large">
+              <a-select-option v-for="item in adviceList" :key="item">{{ item }}</a-select-option>
+            </a-select>
+          </a-form-model-item>
+        </a-col>
+      </a-row>
+    </a-form-model>
     <a-row :gutter="16">
       <a-col :span="16">
         <div class="leftBox">
@@ -12,7 +30,7 @@
             </div>
           </div>
           <div class="leftTable">
-            <a-table :columns="columns" :data-source="data" :pagination="false" :scroll="{ y: 350 }" style="height: 350px" :rowKey="(record, index) => {return record.drugId;}">
+            <a-table :columns="columns" :data-source="data" :pagination="false" :scroll="{ y: 350 }" style="height: 350px" :rowKey="(record, index) => {return index;}">
               <template slot="usageNumber" slot-scope="text, record">
                 <a-input :disabled="recipe.recipeOrderStatus!=0" @change="(e) => dosageChange(e, record)" style="width: 70%;color:#000;" v-model="record.usageNumber"></a-input>
                 <span>{{ record.usageUnit }}</span>
@@ -21,29 +39,29 @@
                 <a-input :disabled="recipe.recipeOrderStatus!=0" v-model="record.dosageNumber" @change="(e) => quantityChange(e, record)" style="width: 70%;color:#000;"></a-input>
                 <span>{{ qtUnit }}</span>
               </template>
-              <template slot="usage" slot-scope="text,record">
-                <a-select :disabled="recipe.recipeOrderStatus!=0" v-model="record.usage" show-search placeholder="请选择" option-filter-prop="children" style="width: 100%;color:#000;" :filter-option="filterOption" @change="handleChange">
+              <template slot="usageId" slot-scope="text,record">
+                <a-select :disabled="recipe.recipeOrderStatus!=0" v-model="record.usageId" show-search placeholder="请选择" option-filter-prop="children" style="width: 100%;color:#000;" :filter-option="filterOption" @change="handleChange">
                   <a-select-option v-for="item in usage" :key="item.id">
                     {{item.name}}
                   </a-select-option>
                 </a-select>
               </template>
-              <template slot="rateName" slot-scope="text,record">
-                <a-select :disabled="recipe.recipeOrderStatus!=0" v-model="record.rateName" show-search placeholder="请选择" option-filter-prop="children" style="width: 100%;color:#000;" :filter-option="filterOption" @change="handleChange">
+              <template slot="rateId" slot-scope="text,record">
+                <a-select :disabled="recipe.recipeOrderStatus!=0" v-model="record.rateId" show-search placeholder="请选择" option-filter-prop="children" style="width: 100%;color:#000;" :filter-option="filterOption" @change="handleChange">
                   <a-select-option v-for="item in frequency" :key="item.id">
                     {{item.name}}
                   </a-select-option>
                 </a-select>
               </template>
 
-              <template slot="drugPrice" slot-scope="text, record">
-                <a-input :disabled="recipe.recipeOrderStatus!=0" style="width: 100%;color:#000;" v-model="record.drugPrice" @change="(e) => priceChange(e, record)"></a-input>
+              <template slot="price" slot-scope="text, record">
+                <a-input :disabled="recipe.recipeOrderStatus!=0" style="width: 100%;color:#000;" v-model="record.price" @change="(e) => priceChange(e, record)"></a-input>
               </template>
-              <template slot="totalFee" slot-scope="text,record">
-                <a-input disabled style="width: 100%;color:#000;" v-model="record.totalFee"></a-input>
+              <template slot="fee" slot-scope="text,record">
+                <a-input disabled style="width: 100%;color:#000;" v-model="record.fee"></a-input>
               </template>
               <template slot="delete" slot-scope="text, record">
-                <a-popconfirm v-show="recipe.recipeOrderStatus==0" v-if="data.length" title="确定删除吗?" @confirm="() => onDelete(record.drugId,record.recipeItemId)">
+                <a-popconfirm v-show="recipe.recipeOrderStatus==0" v-if="data.length" title="确定删除吗?" @confirm="() => onDelete(record)">
                   <a :disabled="recipe.recipeOrderStatus!=0" href="javascript:;" style="font-size: 20px; color: #656ee8">
                     <a-icon type="delete"></a-icon>
                   </a>
@@ -103,13 +121,13 @@
             </div>
             <div class="leftBottomPrice">
               <span>此方合计：<span style="color: red; font-weight: bold">{{
-                  prPrice
+                  Number(prPrice).toFixed(2)
                 }}</span>
                 元；</span>
               <span>共
                 <span style="color: red; font-weight: bold">{{ allPrInfo.total }}</span>
                 个处方，共计：<span style="color: red; font-weight: bold">{{
-                  allPrInfo.totalFee
+                  Number(allPrInfo.totalFee).toFixed(2)
                 }}</span>
                 元
               </span>
@@ -131,8 +149,8 @@
             <a-table :loading="drugLoading" :row-selection="{
                 selectedRowKeys: selectedRowKeys2,
                 onChange: onSelectChange2,
-              }" :columns="columns2" :data-source="data2" @change="changeDurgTable" :pagination="{ showQuickJumper: true, pageSize: 10, total: drugTotal, simple: true, size: 'small', }" :scroll="{ y: 375 }" :rowKey="
-              (record, index) => {return record.id;}">
+              }" :columns="columns2" :data-source="data2" @change="changeDurgTable" :pagination="{ showQuickJumper: true, pageSize: 10, total: drugTotal, current:queryDrugList.page,  simple: true, size: 'small', }" :scroll="{ y: 375 }" :rowKey="
+              (record, index) => {return index;}">
             </a-table>
           </div>
           <div class="rightBoxBottom">
@@ -156,7 +174,7 @@ const columns = [
   },
   {
     title: '名称',
-    dataIndex: 'drugName',
+    dataIndex: 'goodsName',
   },
   {
     title: '单剂量',
@@ -177,33 +195,33 @@ const columns = [
   {
     title: '用法',
     width: 110,
-    dataIndex: 'usage',
+    dataIndex: 'usageId',
     scopedSlots: {
-      customRender: 'usage',
+      customRender: 'usageId',
     },
   },
   {
     title: '频率',
     width: 110,
-    dataIndex: 'rateName',
+    dataIndex: 'rateId',
     scopedSlots: {
-      customRender: 'rateName',
+      customRender: 'rateId',
     },
   },
   {
     title: '单价',
     width: 70,
-    dataIndex: 'drugPrice',
+    dataIndex: 'price',
     scopedSlots: {
-      customRender: 'drugPrice',
+      customRender: 'price',
     },
   },
   {
     title: '金额',
     width: 70,
-    dataIndex: 'totalFee',
+    dataIndex: 'fee',
     scopedSlots: {
-      customRender: 'totalFee',
+      customRender: 'fee',
     },
   },
   {
@@ -216,28 +234,24 @@ const columns = [
   },
 ]
 
-const data = []
-
 const columns2 = [
   {
     title: '名称',
-    dataIndex: 'name',
+    dataIndex: 'goodsName',
   },
   {
     title: '规格',
-    dataIndex: 'spec',
+    dataIndex: 'specs',
   },
   {
     title: '库存',
-    dataIndex: 'stock',
+    dataIndex: 'stockNum',
   },
   {
     title: '价格',
     dataIndex: 'price',
   },
 ]
-
-const data2 = []
 
 const columns3 = [
   {
@@ -273,7 +287,16 @@ for (let i = 0; i < 4; i++) {
 
 export default {
   name: 'Chinese',
-  props: ['prInfo', 'load', 'allPrInfo', 'allRecipe', 'theKey'],
+  props: [
+    'prInfo',
+    'load',
+    'allPrInfo',
+    'allRecipe',
+    'theKey',
+    'diagnosisList',
+    'adviceList',
+    'disabledBtn',
+  ],
   data() {
     return {
       catId: 3,
@@ -281,9 +304,9 @@ export default {
       qtUnit: '剂',
       usage: [],
       frequency: [],
-      data,
+      data: [],
       columns,
-      data2,
+      data2: [],
       columns2,
       data3,
       columns3,
@@ -317,7 +340,7 @@ export default {
           },
         ],
       },
-      prPrice: '0.00',
+      prPrice: 0,
       // prNum: 0,
       // sumPrice: '0.00',
       DrugCategoryList: [],
@@ -334,6 +357,8 @@ export default {
       recipe: {
         deptId: '',
         deptName: '',
+        diagnosis: [],
+        doctorAdvice: [],
         doctorId: '',
         doctorName: '',
         recipeAmount: '',
@@ -342,18 +367,17 @@ export default {
         recipeName: '',
         recipeOrderNo: '',
         recipeOrderStatus: 0,
-        recipeType: 0,
-        westernMedicine: [],
-        chineseMedicine: [],
-        examine: [],
+        recipeType: 3,
+        recipeItem: [],
       },
+      recipeRules: { diagnosis: [{ required: true, message: '请输入诊断', trigger: 'change' }] },
       drugTotal: 0,
     }
   },
   watch: {
     data: {
       handler(newVal, oldVal) {
-        this.recipe.chineseMedicine = newVal
+        this.recipe.recipeItem = newVal
         this.recipe.recipeAmount = this.prPrice
         this.recipe.recipeCount = newVal.length
         if (this.allRecipe.length > this.theKey) {
@@ -362,13 +386,13 @@ export default {
             this.allPrInfo.total = this.allRecipe.length
             let sum = 0
             this.allRecipe.forEach((item) => {
-              let price = Number(item.recipeAmount)
+              let price = Number(item.recipeAmount) * 100
               sum += price
             })
-            this.allPrInfo.totalFee = sum
+            this.allPrInfo.totalFee = sum / 100
           })
         }
-        this.$emit('chineseMedicine', this.recipe)
+        this.$emit('recipeItem', this.recipe)
       },
       deep: true,
     },
@@ -409,15 +433,15 @@ export default {
     this.recipe.doctorName = this.allPrInfo.doctorName
     if (this.prInfo && (this.prInfo.recipeType == 2 || this.prInfo.recipeType == 3)) {
       this.recipe = this.prInfo
-      this.form.deptName = this.prInfo.deptName
-      this.form.doctorName = this.prInfo.doctorName
+      // this.form.deptName = this.prInfo.deptName
+      // this.form.doctorName = this.prInfo.doctorName
       this.prPrice = this.prInfo.recipeAmount
-      if (this.prInfo.chineseMedicine) {
-        this.prInfo.chineseMedicine.map((item) => {
-          item.usage = Number(item.usage)
-          item.rateName = Number(item.rateName)
+      if (this.prInfo.recipeItem) {
+        this.prInfo.recipeItem.map((item) => {
+          item.usageId = Number(item.usageId)
+          item.rateId = Number(item.rateId)
         })
-        this.data = this.prInfo.chineseMedicine
+        this.data = this.prInfo.recipeItem
         this.getPrSumP()
       }
     }
@@ -426,9 +450,15 @@ export default {
     getReceiveDrugList() {
       this.drugLoading = true
       getReceiveDrugList(this.queryDrugList).then((res) => {
-        this.data2 = res.data
+        this.data2 = res.data.map((item, index) => {
+          return {
+            id: index,
+            ...item,
+          }
+        })
         this.drugTotal = res.count
         this.drugLoading = false
+        this.selectedRowKeys2 = []
       })
     },
     onSelectChange(selectedRowKeys) {
@@ -447,6 +477,7 @@ export default {
       console.log(`selected ${value}`)
     },
     handleChangeDrug(value) {
+      this.queryDrugList.page = 1
       this.queryDrugList.categoryId = value
       this.getReceiveDrugList()
     },
@@ -458,24 +489,26 @@ export default {
     dosageChange(e, record) {
       const value = e.target.value
       record.usageNumber = value
-      record.totalFee = Number(value) * Number(record.dosageNumber) * Number(record.drugPrice)
+      record.fee =
+        (Number(value) * Number(record.dosageNumber) * (Number(record.price) * 100)) / 100
       this.getPrSumP()
     },
     quantityChange(e, record) {
       const value = e.target.value
       record.dosageNumber = value
-      record.totalFee = Number(record.usageNumber) * Number(value) * Number(record.drugPrice)
+      record.fee = (Number(record.usageNumber) * Number(value) * (Number(record.price) * 100)) / 100
       this.getPrSumP()
     },
     priceChange(e, record) {
       const value = e.target.value
-      record.drugPrice = value
-      record.totalFee = Number(record.usageNumber) * Number(record.dosageNumber) * Number(value)
+      record.price = value
+      record.fee =
+        (Number(record.usageNumber) * Number(record.dosageNumber) * (Number(value) * 100)) / 100
       this.getPrSumP()
     },
-    onDelete(key, recipeItemId) {
-      if (recipeItemId) {
-        deleteRecipeItem(recipeItemId).then((res) => {
+    onDelete(record) {
+      if (record.recipeItemId) {
+        deleteRecipeItem(record.recipeItemId).then((res) => {
           if (res.success) {
             this.$message.success('删除成功！')
           } else {
@@ -484,13 +517,16 @@ export default {
         })
       }
       const data = [...this.data]
-      this.data = data.filter((item) => item.drugId !== key)
+      this.data = data.filter((item) => item.drugId !== record.drugId || item.id !== record.id)
+      this.getPrSumP()
     },
     onSearch(value) {
+      this.queryDrugList.page = 1
       this.queryDrugList.keyWord = value
       this.getReceiveDrugList()
     },
     onChangeSearch(e) {
+      this.queryDrugList.page = 1
       this.queryDrugList.keyWord = e.target.value
       this.getReceiveDrugList()
     },
@@ -503,31 +539,49 @@ export default {
       if (this.selectedRowKeys2.length == 0) {
         this.$message.warning('请选择要添加的药品')
       } else {
-        let list = this.data2.map((data) => {
+        let list = this.data2.map((data, index) => {
           return {
-            dosageNumber: '',
-            drugId: data.id,
-            drugName: data.name,
-            drugPrice: data.price,
-            drugUnit: data.packUnit,
-            itemTypeId: this.queryDrugList.categoryId,
-            rateId: '',
-            rateName: undefined,
+            id: index,
+            categoryId: data.categoryId,
+            checkPartId: data.checkPartId ? data.checkPartId : '',
+            checkPartName: data.checkPartName ? data.checkPartName : '',
+            code: data.code,
+            days: undefined,
+            dosageForm: data.dosageForm,
+            dosageNumber: data.dosageNumber ? data.dosageNumber : '',
+            drugId: data.drugId,
+            fee: '',
+            goodsName: data.goodsName,
+            manufactor: data.manufacturer ? data.manufacturer : '',
+            manufactorId: data.manufacturerId ? data.manufacturerId : '',
+            note: data.note,
+            nums: '',
+            price: data.price ? data.price : '',
+            productName: data.productName ? data.productName : '',
+            rateId: undefined,
+            rateName: '',
+            recipeId: '',
             recipeItemId: '',
-            totalFee: '',
-            usage: data.usage == null ? undefined : data.usage,
+            remarks: '',
+            specs: data.specs,
+            statItemId: data.statItemId ? data.statItemId : '',
+            unit: data.unit ? data.unit : '',
+            usageName: data.usageName ? data.usageName : '',
             usageNumber: '',
-            usageUnit: data.unit,
-            statItemId: data.statItemId,
+            usageUnit: data.usageUnit ? data.usageUnit : '',
+            usageId: data.usageId ? data.usageId : undefined,
           }
         })
         this.selectedRowKeys2.forEach((item) => {
-          let option = list.filter((data) => data.drugId == item)
-          if (this.data.filter((data) => data.drugId == item).length != 0) {
-            this.$message.info('处方中已有此药品，请不要重复添加！')
-          } else {
-            this.data.push(option[0])
-          }
+          let opt = this.data2.filter((data, index) => index === item)
+          opt.forEach((items) => {
+            let option = list.filter((data) => data.id === items.id)
+            if (this.data.filter((data) => data.drugId === items.drugId).length !== 0) {
+              this.$message.info('处方中已有此药品，请不要重复添加！')
+            } else {
+              this.data.push(option[0])
+            }
+          })
         })
       }
       this.selectedRowKeys2 = []
@@ -551,10 +605,10 @@ export default {
     getPrSumP() {
       let sum = 0
       this.data.forEach((item, index) => {
-        let price = Number(item.totalFee)
+        let price = Number(item.fee) * 100
         sum += price
       })
-      this.prPrice = sum
+      this.prPrice = sum / 100
     },
   },
 }

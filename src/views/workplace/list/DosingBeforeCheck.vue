@@ -113,7 +113,7 @@
           <a-row class="form-row" :gutter="16">
             <a-col :span="6">
               <a-form-model-item class="redLabel" label="给药方式" prop="execDrugTypeName">
-                <a-select v-model="InjectionForm.execDrugTypeId" size="large" @change="changeDrugType">
+                <a-select placeholder="请选择给药方式" v-model="InjectionForm.execDrugTypeId" size="large" @change="changeDrugType">
                   <a-select-option v-for="item in drugTypes" :key="item.typeCode" :title="item.typeName"> {{item.typeName}} </a-select-option>
                 </a-select>
               </a-form-model-item>
@@ -379,6 +379,18 @@ export default {
       if (res.data && res.success) {
         this.InjectionForm = res.data
       }
+      if (!res.data.execDrugTypeId) {
+        this.InjectionForm.execDrugTypeId = undefined
+      }
+      if (!res.data.afterDosageUnit) {
+        this.InjectionForm.afterDosageUnit = 'mCi'
+      }
+      if (!res.data.beforeDosageUnit) {
+        this.InjectionForm.beforeDosageUnit = 'mCi'
+      }
+      if (!res.data.realDosageUnit) {
+        this.InjectionForm.realDosageUnit = 'mCi'
+      }
     })
   },
   methods: {
@@ -397,16 +409,6 @@ export default {
     changeExecDrugTime(times, timeStrings) {
       this.InjectionForm.execDrugTime = timeStrings
     },
-    // clickToNowTime() {
-    //   let hh = new Date().getHours() < 10 ? '0' + new Date().getHours() : new Date().getHours()
-    //   let mf =
-    //     new Date().getMinutes() < 10 ? '0' + new Date().getMinutes() : new Date().getMinutes()
-    //   let ss =
-    //     new Date().getSeconds() < 10 ? '0' + new Date().getSeconds() : new Date().getSeconds()
-    //   let gettime = hh + ':' + mf + ':' + ss
-    //   this.InjectionForm.execDrugTime = gettime
-    //   this.openTimePicker = false
-    // },
     execDrugTimeDisabledDate(current) {
       return current
     },

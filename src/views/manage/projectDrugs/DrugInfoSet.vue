@@ -36,7 +36,7 @@
           近一周: [moment().startOf('day').subtract(1, 'weeks'), moment()],
           近一月: [moment().startOf('day').subtract(1, 'month'), moment()],
           本月: [moment().startOf('month'), moment()],
-        }" @change="onChange" style="width:80%" />
+        }" @change="onChange" style="width:80%" :value="[queryInfo.startDate,queryInfo.endDate]" :disabled-date="disabledDate"/>
       </div>
       <div style="width:29%">
         <a-input-search placeholder="输入药品名称/编码/生产厂家" enter-button @search="onSearch" @change="onChangeSearch" />
@@ -44,7 +44,7 @@
     </div>
     <div class="manageDown">
       <a-spin :spinning="spinning">
-        <a-table :columns="columns" :data-source="tableData" :pagination="{ showQuickJumper: true, pageSize: 10, total: total, showTotal: ((total) => {return `每页10条，共 ${total} 条`}) }" @change="tableChange" :rowKey="
+        <a-table :columns="columns" :data-source="tableData" :pagination="{ showQuickJumper: true, pageSize: 10, total: total, current:queryInfo.page, showTotal: ((total) => {return `每页10条，共 ${total} 条`}) }" @change="tableChange" :rowKey="
           (record, index) => {
             return record.drugSpecId;
           }
@@ -111,12 +111,12 @@ const columns = [
     align: 'center',
   },
   {
-    title: '采购价',
+    title: '采购价（元）',
     dataIndex: 'biddingPrice',
     align: 'center',
   },
   {
-    title: '售药价',
+    title: '售药价（元）',
     dataIndex: 'retailPrice',
     align: 'center',
   },
@@ -170,14 +170,14 @@ export default {
       total: 0,
       queryInfo: {
         drugStatus: '1',
-        endDate: '',
+        endDate: moment().endOf('day'),
         limit: 10,
         orderFiled: '',
         orderType: 'asc',
         page: 1,
         recipeType: '',
         searchWords: '',
-        startDate: '',
+        startDate: moment().startOf('day').subtract(1, 'month'),
       },
     }
   },
@@ -191,6 +191,10 @@ export default {
   },
   methods: {
     moment,
+    // 禁用一个月后日期
+    disabledDate(current) {
+      return current && current > moment().endOf('day')
+    },
     getDrugList() {
       this.spinning = true
       getDrugList(this.queryInfo).then((res) => {
@@ -204,18 +208,22 @@ export default {
       this.getDrugList()
     },
     handleChange(value) {
+      this.queryInfo.page = 1
       this.getDrugList()
     },
     onChange(dates, dateStrings) {
+      this.queryInfo.page = 1
       this.queryInfo.startDate = dateStrings[0]
       this.queryInfo.endDate = dateStrings[1]
       this.getDrugList()
     },
     onSearch(value) {
+      this.queryInfo.page = 1
       this.queryInfo.searchWords = value
       this.getDrugList()
     },
     onChangeSearch(e) {
+      this.queryInfo.page = 1
       this.queryInfo.searchWords = e.target.value
       this.getDrugList()
     },

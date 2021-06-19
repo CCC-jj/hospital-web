@@ -16,16 +16,10 @@
             <img slot="prefix" src="../../assets/u175.png" />
           </a-input>
         </a-form-model-item>
-        <a-form-model-item has-feedback label="" prop="hospital">
-          <a-select class="changebgSelect" placeholder="请选择医院" v-model="ruleForm.hospital" size="large" @change="handleChange">
-            <!-- <img slot="prefix" slot-scope="menu" src="../../assets/account_balance_u169.png" /> -->
-            <a-select-option v-for="item in hospitalList" :key="item.orgCode"> {{item.orgName}} </a-select-option>
-          </a-select>
-        </a-form-model-item>
 
         <div class="forget">
           <a-checkbox v-model="ruleForm.checked" @change="onChange"> 1个月内免登陆 </a-checkbox>
-          <router-link to="/forgetpwd">忘记密码</router-link>
+          <router-link to="/user/forgetpwd">忘记密码</router-link>
         </div>
 
         <a-form-model-item :wrapper-col="{ span: 24, offset: 0 }">
@@ -35,11 +29,19 @@
         </a-form-model-item>
       </a-form-model>
     </div>
+
+    <a-modal class="orgModal" centered v-model="visible" title="进入机构" :footer="null" :keyboard="false" :maskClosable="false" :closable="false">
+      <p class="subtitle">请选择您的机构</p>
+      <div class="orgBox" v-for="item in orgInfoList" :key="item.orgCode" @click="chooseOrg(item)">{{item.orgName}}
+        <a-icon style="float:right;line-height:60px;color:#888;" type="right" />
+      </div>
+    </a-modal>
   </div>
 </template>
 
 <script>
-import { loginByMobile, getHospitalList } from '@/api/login'
+import { login, loginHospitalList, loginHospitalConfirm } from '@/api/login'
+import { getCommonTitle } from '@/api/common'
 import md5 from 'md5'
 export default {
   data() {
@@ -56,11 +58,10 @@ export default {
       callback()
     }
     return {
+      visible: false,
       ruleForm: {
         mobile: '',
         password: '',
-        hospital: undefined,
-        proCode: '',
         checked: false,
       },
       rules: {
@@ -76,13 +77,6 @@ export default {
             trigger: 'change',
           },
         ],
-        hospital: [
-          {
-            required: true,
-            message: '请选择医院',
-            trigger: 'change',
-          },
-        ],
       },
       layout: {
         labelCol: {
@@ -92,15 +86,17 @@ export default {
           span: 24,
         },
       },
-      hospitalList: [],
+      orgInfoList: [],
     }
   },
   created() {
-    getHospitalList().then((res) => {
-      this.hospitalList = res.data
-      this.ruleForm.hospital = res.data[0].orgCode
-      this.ruleForm.proCode = res.data[0].proCode
-    })
+    getCommonTitle()
+      .then((res) => {
+        window.document.title = res.data
+      })
+      .catch((err) => {
+        console.log(err)
+      })
     // 在页面加载时从cookie获取登录信息
     let account = this.getCookie('account')
     let password = this.getCookie('password')
@@ -113,12 +109,14 @@ export default {
   },
   methods: {
     // 储存表单信息
-    setUserInfo: function () {
+    setUserInfo() {
       // 判断用户是否勾选记住密码，如果勾选，向cookie中储存登录信息，
       // 如果没有勾选，储存的信息为空
       if (this.ruleForm.checked) {
-        // base64加密账户密码
+        // 加密密码后在存入cookie
         if (!this.getCookie('password') || this.ruleForm.password != this.getCookie('password')) {
+          this.setCookie('account', '', -1)
+          this.setCookie('password', '', -1)
           const account = this.ruleForm.mobile
           const passWord = md5(this.ruleForm.password)
           this.setCookie('account', account, 30)
@@ -130,7 +128,7 @@ export default {
       }
     },
     // 获取cookie
-    getCookie: function (key) {
+    getCookie(key) {
       if (document.cookie.length > 0) {
         var start = document.cookie.indexOf(key + '=')
         if (start !== -1) {
@@ -143,7 +141,7 @@ export default {
       return ''
     },
     // 保存cookie
-    setCookie: function (cName, value, expiredays) {
+    setCookie(cName, value, expiredays) {
       var exdate = new Date()
       exdate.setDate(exdate.getDate() + expiredays)
       document.cookie =
@@ -159,23 +157,40 @@ export default {
           if (this.getCookie('password') && this.ruleForm.password == this.getCookie('password')) {
             password = this.getCookie('password')
           }
-          loginByMobile(
-            this.ruleForm.mobile,
-            password,
-            this.ruleForm.hospital,
-            this.ruleForm.proCode
-          ).then((res) => {
+          let timestamp = Math.round(new Date().getTime() / 1000)
+          let sign = md5(timestamp + ':123456')
+          login(sign, timestamp, 2, this.ruleForm.mobile, password).then((res) => {
             // this.$store.dispatch('userInfo',res.data)
             if (res.success) {
-              localStorage.setItem('token', res.data.token)
-              localStorage.setItem('photoUrl', res.data.photoUrl)
-              localStorage.setItem('userName', res.data.userName)
-              localStorage.setItem('userSex', res.data.userSex)
-              localStorage.setItem('orgName', res.data.orgName)
-              localStorage.setItem('orgUrl', res.data.orgUrl)
-              this.setUserInfo()
-              this.$router.push('/home')
-              this.$message.success('登录成功')
+              localStorage.setItem('token', res.data)
+              loginHospitalList()
+                .then((res) => {
+                  if (res.success) {
+                    this.orgInfoList = res.data.orgInfo
+                    
+                    localStorage.setItem('photoUrl', res.data.photoUrl)
+                    localStorage.setItem('userName', res.data.userName)
+                    localStorage.setItem('userSex', res.data.userSex)
+                    localStorage.setItem('doctorId', res.data.doctorId)
+                    localStorage.setItem('orgInfoList', JSON.stringify(res.data.orgInfo))
+                    this.setUserInfo()
+                    if (res.data.tokenInfo.status === 1) {
+                      localStorage.setItem('token', res.data.tokenInfo.token)
+                      localStorage.setItem('orgInfo', JSON.stringify(res.data.orgInfo[0]))
+                      this.$router.push('/')
+                      this.$message.success('登录成功')
+                    } else {
+                      this.visible = true
+                      this.$message.info('请选择机构')
+                    }
+                  } else {
+                    this.$message.warning(res.message)
+                  }
+                })
+                .catch((err) => {
+                  console.error(err)
+                })
+              // localStorage.setItem('orgUrl', res.data.orgUrl)
             } else {
               this.$message.warning(res.message)
               return false
@@ -186,11 +201,20 @@ export default {
         }
       })
     },
-    handleChange(value) {
-      // console.log(`selected ${value}`)
-      // let org = this.hospital
-      const org = this.hospitalList.filter((item) => item.orgCode == value)
-      this.ruleForm.proCode = org[0].proCode
+    chooseOrg(item) {
+      const doctorId = localStorage.getItem('doctorId')
+      loginHospitalConfirm(doctorId, item.orgCode, item.proCode)
+        .then((res) => {
+          if (res.success) {
+            localStorage.setItem('token', res.data.token)
+            localStorage.setItem('orgInfo', JSON.stringify(item))
+            this.$router.push('/')
+            this.$message.success('登录成功')
+          } else {
+            this.$message.warning(res.message)
+          }
+        })
+        .catch((err) => {})
     },
     onChange(e) {
       // console.log(`checked = ${e.target.checked}`)
@@ -215,7 +239,7 @@ export default {
   position: absolute;
   width: 280px;
   height: 300px;
-  top: 80px;
+  top: 110px;
   right: 60px;
 }
 
@@ -260,5 +284,23 @@ export default {
 }
 .loginBtn:focus {
   background-color: #656ee8;
+}
+.orgModal /deep/ .ant-modal-title {
+  font-size: 22px;
+  font-weight: bold;
+}
+.subtitle {
+  font-size: 18px;
+}
+.orgBox {
+  cursor: pointer;
+  height: 60px;
+  line-height: 60px;
+  font-size: 16px;
+  border-top: 1px solid #eee;
+  padding: 0 20px;
+}
+.orgBox:hover {
+  background: #eee;
 }
 </style>

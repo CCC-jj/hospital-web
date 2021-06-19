@@ -33,16 +33,12 @@
       <a-input-search placeholder="姓名/手机号/证件号" enter-button @search="onSearch" @change="onChangeSearch" style="width: 30%" />
     </div>
     <div class="manageDown">
-      <a-table :loading="spinning" :columns="columns" :data-source="tableData" :pagination="{ showQuickJumper: true, pageSize: 10, total: total }" :rowKey="
-          (record, index) => {
-            return record.recordId;
-          }
-        ">
+      <a-table :loading="spinning" :columns="columns" :data-source="tableData" :pagination="{ showQuickJumper: true, pageSize: 10, total: total, current:queryInfo.page, showTotal: ((total) => {return `每页10条，共 ${total} 条`}) }" @change="tableChange" :rowKey="(record, index) => {return record.recordId;}">
         <span slot="patientSex" slot-scope="text">
-          <span v-if="text == 0">保密</span>
-          <span v-if="text == 1">男</span>
-          <span v-if="text == 2">女</span>
-          <span v-if="text == 9">未说明</span>
+          <span v-if="text === 0">保密</span>
+          <span v-else-if="text === 1">男</span>
+          <span v-else-if="text === 2">女</span>
+          <span v-else>未说明</span>
         </span>
         <span class="editBtn" slot="action" slot-scope="text,record">
           <!-- <a @click="toAdmission">接诊></a>
@@ -106,7 +102,7 @@
             <a-row class="dateRow" :gutter="50">
               <a-col :span="24">
                 <a-form-model-item label="预约日期" prop="appointDate">
-                  <a-date-picker valueFormat="value" style="width:100%;" v-model="bookForm.appointDate" :disabled-date="disabledDate" @change="onChange" size="large" />
+                  <a-date-picker :showToday="false" valueFormat="value" style="width:100%;" v-model="bookForm.appointDate" :disabled-date="disabledDate" @change="onChange" size="large" />
                 </a-form-model-item>
               </a-col>
             </a-row>
@@ -297,12 +293,9 @@ export default {
         this.spinning = false
       })
     },
-    // 禁用一个月之前日期
+    // 禁用今日之后日期
     searchDisabledDate(current) {
-      return (
-        (current && current < moment().startOf('day').subtract(1, 'month')) ||
-        (current && current > moment().endOf('day'))
-      )
+      return current && current > moment().endOf('day')
     },
     // 禁用今日之前日期
     disabledDate(current) {
@@ -310,6 +303,7 @@ export default {
       return current && current < moment().endOf('day')
     },
     handleChange(value) {
+      this.queryInfo.page = 1
       this.getWorkbenchInfo()
     },
     addCheckingChange(code, name) {
@@ -319,6 +313,7 @@ export default {
       })
     },
     onChangeQuery(dates, dateStrings) {
+      this.queryInfo.page = 1
       this.queryInfo.searchBeginDate = dateStrings[0]
       this.queryInfo.searchEndDate = dateStrings[1]
       this.getWorkbenchInfo()
@@ -330,11 +325,17 @@ export default {
       console.log(`checked = ${e.target.checked}`)
     },
     onSearch(value) {
+      this.queryInfo.page = 1
       this.queryInfo.searchWord = value
       this.getWorkbenchInfo()
     },
     onChangeSearch(e) {
+      this.queryInfo.page = 1
       this.queryInfo.searchWord = e.target.value
+      this.getWorkbenchInfo()
+    },
+    tableChange(pagination, filters, sorter) {
+      this.queryInfo.page = pagination.current
       this.getWorkbenchInfo()
     },
     toAdmission() {
@@ -523,9 +524,6 @@ export default {
 }
 .manageDown {
   margin-top: 25px;
-}
-.editBtn /deep/ .ant-btn {
-  /* color: #656ee8; */
 }
 .editBtn /deep/ .editBtnHover:hover {
   color: #656ee8;
